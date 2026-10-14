@@ -1,0 +1,796 @@
+/* CommuMathy visual system: calm surfaces, clear hierarchy, and red as the learning accent. */
+:root {
+  --cm-bg: #f7f7f5;
+  --cm-surface: #ffffff;
+  --cm-surface-subtle: #f0f0ee;
+  --cm-ink: #171717;
+  --cm-muted: #6f706d;
+  --cm-line: #deded9;
+  --cm-primary: #c82026;
+  --cm-primary-hover: #a9181e;
+  --cm-soft-red: #fae8e8;
+  --cm-shadow: 0 10px 28px rgba(24, 24, 22, .06);
+  --cm-radius: 14px;
+  --ink: var(--cm-ink);
+  --muted: var(--cm-muted);
+  --line: var(--cm-line);
+  --primary: var(--cm-primary);
+  --primary-dark: var(--cm-primary-hover);
+  --lavender: var(--cm-soft-red);
+  --panel: var(--cm-surface);
+  background: var(--cm-bg);
+  color-scheme: light;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  background: var(--cm-bg);
+}
+
+body {
+  color: var(--cm-ink);
+  font-family: 'Noto Sans Thai', 'Inter', Tahoma, sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role='button']:focus-visible {
+  outline: 3px solid rgba(12, 102, 228, .4);
+  outline-offset: 2px;
+}
+
+.app-shell {
+  background: var(--cm-bg);
+}
+
+.sidebar {
+  width: 248px;
+  flex-basis: 248px;
+  padding: 28px 17px 18px;
+  background: var(--cm-surface);
+  border-right-color: var(--cm-line);
+}
+
+.brand {
+  margin: 0 7px 38px;
+}
+
+.brand-mark {
+  background: var(--cm-primary) !important;
+  box-shadow: 0 8px 18px rgba(200, 32, 38, .2);
+}
+
+.brand strong {
+  color: var(--cm-ink);
+  font-size: 17px;
+  letter-spacing: -.5px;
+}
+
+.brand strong span {
+  color: var(--cm-primary);
+}
+
+.brand small,
+.sidebar-section-label {
+  color: var(--cm-muted);
+}
+
+.sidebar-section-label {
+  padding-left: 12px;
+  letter-spacing: .7px;
+}
+
+.sidebar-nav {
+  gap: 3px;
+}
+
+.nav-item {
+  min-height: 42px;
+  border-radius: 9px;
+  color: #666762;
+  padding: 10px 12px;
+}
+
+.nav-item:hover {
+  color: var(--cm-primary);
+  background: #f8f2f2;
+}
+
+.nav-item.active {
+  color: var(--cm-primary);
+  background: var(--cm-soft-red);
+  box-shadow: inset 3px 0 0 var(--cm-primary);
+}
+
+.nav-new {
+  color: var(--cm-primary);
+  background: #fbd7d8;
+}
+
+.sidebar-tip {
+  margin-bottom: 20px;
+  background: #fff7e7;
+  border: 1px solid #f3e2bc;
+}
+
+.sidebar-bottom,
+.mini-profile {
+  border-color: var(--cm-line);
+}
+
+.mini-profile {
+  padding-top: 15px;
+}
+
+.main-area {
+  background: var(--cm-bg);
+}
+
+.topbar {
+  min-height: 72px;
+  height: 72px;
+  padding: 0 42px;
+  background: rgba(255, 255, 255, .88);
+  border-bottom-color: var(--cm-line);
+}
+
+.breadcrumbs,
+.breadcrumbs strong {
+  color: var(--cm-muted);
+}
+
+.breadcrumbs strong {
+  color: var(--cm-ink);
+}
+
+.global-search {
+  background: var(--cm-surface-subtle);
+  border: 1px solid transparent;
+  color: var(--cm-muted);
+}
+
+.global-search:focus-within {
+  border-color: rgba(200, 32, 38, .45);
+  background: var(--cm-surface);
+}
+
+.global-search input {
+  color: var(--cm-ink);
+}
+
+.icon-button:hover {
+  background: var(--cm-soft-red);
+  color: var(--cm-primary);
+}
+
+.notification-button > span {
+  background: var(--cm-primary);
+  border-color: var(--cm-surface);
+}
+
+.top-avatar {
+  color: var(--cm-primary);
+  background: var(--cm-soft-red);
+}
+
+.page-content {
+  max-width: 1400px;
+  padding: 46px 48px 86px;
+}
+
+.page-content h1,
+.page-content h2,
+.page-content h3,
+.page-content strong,
+.section-heading h2 {
+  color: var(--cm-ink);
+}
+
+.page-intro,
+.lesson-card-content p,
+.continue-body p {
+  color: var(--cm-muted);
+}
+
+.eyebrow,
+.card-kicker,
+.text-button,
+.hero-label,
+.progress-text {
+  color: var(--cm-primary);
+}
+
+.eyebrow-dot {
+  background: var(--cm-primary);
+}
+
+.outline-button {
+  color: var(--cm-ink);
+  background: var(--cm-surface);
+  border-color: var(--cm-line);
+}
+
+.outline-button:hover {
+  color: var(--cm-primary);
+  border-color: var(--cm-primary);
+}
+
+.primary-button {
+  background: var(--cm-primary);
+  box-shadow: 0 7px 16px rgba(200, 32, 38, .18);
+}
+
+.primary-button:hover {
+  background: var(--cm-primary-hover);
+}
+
+.hero-card {
+  min-height: 258px;
+  background: linear-gradient(115deg, #fbe6e6 0%, #fff4f4 56%, #f3eeee 100%);
+  border: 1px solid #f0d1d2;
+  border-radius: 20px;
+  box-shadow: var(--cm-shadow);
+}
+
+.hero-copy {
+  padding: 36px 42px;
+}
+
+.hero-copy h2 {
+  font-size: clamp(27px, 3vw, 38px);
+  color: var(--cm-ink);
+}
+
+.hero-copy h2 em {
+  color: var(--cm-primary);
+}
+
+.hero-copy p {
+  color: #696765;
+}
+
+.hero-equation {
+  background: rgba(255, 255, 255, .84);
+  box-shadow: 0 15px 30px rgba(114, 40, 43, .11);
+}
+
+.orbit {
+  border-color: rgba(200, 32, 38, .15);
+}
+
+.stats-grid {
+  gap: 14px;
+  margin-top: 24px;
+  margin-bottom: 38px;
+}
+
+.stat-card,
+.continue-card,
+.lesson-mini-card,
+.side-card,
+.lesson-card,
+.curriculum-card,
+.question-card,
+.exercise-filter-card,
+.session-card,
+.assessment-intro-card,
+.assessment-nav,
+.assessment-question,
+.result-panel,
+.chat-window,
+.post-card,
+.leaderboard-main,
+.profile-hero,
+.profile-progress-card,
+.settings-panel,
+.settings-nav,
+.chapter-overview-main,
+.chapter-meta-card,
+.chapter-lessons-panel,
+.source-card {
+  background: var(--cm-surface);
+  border-color: var(--cm-line);
+  box-shadow: var(--cm-shadow);
+}
+
+.stat-card,
+.continue-card,
+.lesson-mini-card,
+.side-card,
+.lesson-card,
+.curriculum-card,
+.post-card {
+  border-radius: var(--cm-radius);
+}
+
+.stat-card {
+  padding: 17px;
+}
+
+.stat-icon.orange,
+.stat-icon.green,
+.stat-icon.purple,
+.stat-icon.yellow {
+  color: var(--cm-primary);
+  background: var(--cm-soft-red);
+}
+
+.continue-card {
+  min-height: 220px;
+}
+
+.continue-cover,
+.lesson-card-cover {
+  border-right: 1px solid var(--cm-line);
+}
+
+.indigo-cover {
+  background: #f5dddd;
+}
+
+.teal-cover,
+.amber-cover,
+.rose-cover {
+  background: #f5eded;
+}
+
+.cover-formula,
+.teal-cover .cover-formula,
+.amber-cover .cover-formula,
+.rose-cover .cover-formula {
+  color: var(--cm-primary);
+}
+
+.cover-tag,
+.lesson-card-badge {
+  color: var(--cm-primary);
+  background: rgba(255, 255, 255, .72);
+}
+
+.progress-line {
+  background: #e9e9e5;
+}
+
+.progress-line > span {
+  background: var(--cm-primary);
+}
+
+.tutor-shortcut {
+  background: var(--cm-soft-red);
+  border-color: #f0cccc;
+}
+
+.tutor-shortcut:hover {
+  background: #f7dede;
+}
+
+.tutor-orb {
+  color: var(--cm-primary);
+  background: #f4cacc;
+}
+
+.tutor-shortcut span,
+.tutor-shortcut strong,
+.tutor-shortcut > svg {
+  color: var(--cm-primary);
+}
+
+.filter-bar,
+.curriculum-filter-bar,
+.offering-strip,
+.assessment-timer,
+.settings-info-strip {
+  background: var(--cm-surface);
+  border-color: var(--cm-line);
+}
+
+.filter-bar > button.selected,
+.curriculum-filter-group button.selected,
+.choice-buttons button.selected {
+  color: var(--cm-primary);
+  background: var(--cm-soft-red);
+}
+
+.filter-sort,
+.period-select,
+.community-search,
+.global-search {
+  border-color: var(--cm-line);
+}
+
+.notification-dropdown,
+.search-dropdown,
+.create-modal,
+.post-detail-modal {
+  background: var(--cm-surface);
+  border-color: var(--cm-line);
+  box-shadow: 0 20px 50px rgba(18, 18, 17, .16);
+}
+
+.notification-item:hover,
+.search-dropdown button:hover {
+  background: var(--cm-soft-red);
+}
+
+.notification-icon.reply,
+.notification-icon.streak,
+.notification-icon.lesson {
+  color: var(--cm-primary);
+  background: var(--cm-soft-red);
+}
+
+.settings-nav button.active {
+  color: var(--cm-primary);
+  background: var(--cm-soft-red);
+}
+
+.settings-nav button.active small {
+  color: var(--cm-primary);
+}
+
+.profile-summary,
+.choice-card,
+.preview-window {
+  background: var(--cm-surface-subtle);
+  border-color: var(--cm-line);
+}
+
+.profile-settings-avatar {
+  color: var(--cm-primary);
+  background: var(--cm-soft-red);
+}
+
+.settings-info-strip {
+  color: var(--cm-primary);
+}
+
+.choice-buttons {
+  background: var(--cm-surface-subtle);
+}
+
+.choice-buttons button.selected {
+  box-shadow: 0 2px 5px rgba(24, 24, 22, .08);
+}
+
+.mobile-bottom-nav {
+  background: rgba(255, 255, 255, .96);
+  border-top-color: var(--cm-line);
+}
+
+.mobile-bottom-nav button.active {
+  color: var(--cm-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* Dark theme: every shared surface is mapped explicitly so no white cards leak through. */
+html[data-theme='มืด'] {
+  --cm-bg: #101010;
+  --cm-surface: #191919;
+  --cm-surface-subtle: #222222;
+  --cm-ink: #f5f5f2;
+  --cm-muted: #a4a49f;
+  --cm-line: #353533;
+  --cm-primary: #f05252;
+  --cm-primary-hover: #ff7373;
+  --cm-soft-red: #351b1d;
+  --cm-shadow: 0 12px 30px rgba(0, 0, 0, .24);
+  --ink: var(--cm-ink);
+  --muted: var(--cm-muted);
+  --line: var(--cm-line);
+  --primary: var(--cm-primary);
+  --primary-dark: var(--cm-primary-hover);
+  --lavender: var(--cm-soft-red);
+  --panel: var(--cm-surface);
+  background: var(--cm-bg);
+  color-scheme: dark;
+}
+
+html[data-theme='มืด'],
+html[data-theme='มืด'] body,
+html[data-theme='มืด'] #root,
+html[data-theme='มืด'] .app-shell,
+html[data-theme='มืด'] .main-area {
+  background: var(--cm-bg);
+  color: var(--cm-ink);
+}
+
+html[data-theme='มืด'] .sidebar,
+html[data-theme='มืด'] .topbar,
+html[data-theme='มืด'] .mobile-bottom-nav {
+  background: var(--cm-surface);
+  border-color: var(--cm-line);
+}
+
+html[data-theme='มืด'] .topbar {
+  background: rgba(25, 25, 25, .92);
+}
+
+html[data-theme='มืด'] .brand strong,
+html[data-theme='มืด'] .breadcrumbs strong,
+html[data-theme='มืด'] .page-content h1,
+html[data-theme='มืด'] .page-content h2,
+html[data-theme='มืด'] .page-content h3,
+html[data-theme='มืด'] strong,
+html[data-theme='มืด'] label,
+html[data-theme='มืด'] .continue-body h3,
+html[data-theme='มืด'] .lesson-card-content h3 {
+  color: var(--cm-ink);
+}
+
+html[data-theme='มืด'] .breadcrumbs,
+html[data-theme='มืด'] .sidebar-section-label,
+html[data-theme='มืด'] .page-intro,
+html[data-theme='มืด'] .hero-copy p,
+html[data-theme='มืด'] .continue-body p,
+html[data-theme='มืด'] .lesson-card-content p,
+html[data-theme='มืด'] .lesson-card-meta,
+html[data-theme='มืด'] .lesson-card-footer,
+html[data-theme='มืด'] .stat-card span,
+html[data-theme='มืด'] .stat-card small {
+  color: var(--cm-muted);
+}
+
+html[data-theme='มืด'] .nav-item {
+  color: #b5b5b0;
+}
+
+html[data-theme='มืด'] .nav-item:hover,
+html[data-theme='มืด'] .nav-item.active {
+  color: var(--cm-primary);
+  background: var(--cm-soft-red);
+}
+
+html[data-theme='มืด'] .sidebar-tip {
+  background: #302519;
+  border-color: #5a452b;
+}
+
+html[data-theme='มืด'] .global-search,
+html[data-theme='มืด'] .global-search input,
+html[data-theme='มืด'] .filter-sort,
+html[data-theme='มืด'] .period-select,
+html[data-theme='มืด'] .community-search {
+  background: var(--cm-surface-subtle);
+  color: var(--cm-ink);
+}
+
+html[data-theme='มืด'] .global-search input::placeholder,
+html[data-theme='มืด'] input::placeholder,
+html[data-theme='มืด'] textarea::placeholder {
+  color: #777772;
+}
+
+html[data-theme='มืด'] .icon-button,
+html[data-theme='มืด'] .notification-button {
+  color: #c4c4bf;
+}
+
+html[data-theme='มืด'] .icon-button:hover {
+  background: var(--cm-soft-red);
+  color: var(--cm-primary);
+}
+
+html[data-theme='มืด'] .hero-card {
+  background: linear-gradient(115deg, #341b1d, #24191a 60%, #201818);
+  border-color: #5a2d30;
+}
+
+html[data-theme='มืด'] .hero-copy h2 em,
+html[data-theme='มืด'] .hero-label,
+html[data-theme='มืด'] .eyebrow,
+html[data-theme='มืด'] .card-kicker,
+html[data-theme='มืด'] .text-button,
+html[data-theme='มืด'] .progress-text {
+  color: var(--cm-primary);
+}
+
+html[data-theme='มืด'] .hero-equation,
+html[data-theme='มืด'] .floating-card {
+  background: #242424;
+  color: var(--cm-ink);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, .25);
+}
+
+html[data-theme='มืด'] .orbit {
+  border-color: rgba(240, 82, 82, .24);
+}
+
+html[data-theme='มืด'] .stat-card,
+html[data-theme='มืด'] .continue-card,
+html[data-theme='มืด'] .lesson-mini-card,
+html[data-theme='มืด'] .side-card,
+html[data-theme='มืด'] .lesson-card,
+html[data-theme='มืด'] .curriculum-card,
+html[data-theme='มืด'] .question-card,
+html[data-theme='มืด'] .exercise-filter-card,
+html[data-theme='มืด'] .session-card,
+html[data-theme='มืด'] .assessment-intro-card,
+html[data-theme='มืด'] .assessment-nav,
+html[data-theme='มืด'] .assessment-question,
+html[data-theme='มืด'] .result-panel,
+html[data-theme='มืด'] .chat-window,
+html[data-theme='มืด'] .post-card,
+html[data-theme='มืด'] .leaderboard-main,
+html[data-theme='มืด'] .profile-hero,
+html[data-theme='มืด'] .profile-progress-card,
+html[data-theme='มืด'] .settings-panel,
+html[data-theme='มืด'] .settings-nav,
+html[data-theme='มืด'] .chapter-overview-main,
+html[data-theme='มืด'] .chapter-meta-card,
+html[data-theme='มืด'] .chapter-lessons-panel,
+html[data-theme='มืด'] .source-card {
+  background: var(--cm-surface);
+  border-color: var(--cm-line);
+  box-shadow: var(--cm-shadow);
+}
+
+html[data-theme='มืด'] .indigo-cover,
+html[data-theme='มืด'] .teal-cover,
+html[data-theme='มืด'] .amber-cover,
+html[data-theme='มืด'] .rose-cover {
+  background: #302122;
+  border-color: var(--cm-line);
+}
+
+html[data-theme='มืด'] .course-icon.indigo,
+html[data-theme='มืด'] .course-icon.teal,
+html[data-theme='มืด'] .course-icon.amber,
+html[data-theme='มืด'] .course-icon.rose,
+html[data-theme='มืด'] .stat-icon.orange,
+html[data-theme='มืด'] .stat-icon.green,
+html[data-theme='มืด'] .stat-icon.purple,
+html[data-theme='มืด'] .stat-icon.yellow {
+  color: var(--cm-primary);
+  background: var(--cm-soft-red);
+}
+
+html[data-theme='มืด'] .cover-tag,
+html[data-theme='มืด'] .lesson-card-badge {
+  color: var(--cm-primary);
+  background: rgba(25, 25, 25, .78);
+}
+
+html[data-theme='มืด'] .progress-line {
+  background: #353533;
+}
+
+html[data-theme='มืด'] .tutor-shortcut,
+html[data-theme='มืด'] .filter-bar,
+html[data-theme='มืด'] .curriculum-filter-bar,
+html[data-theme='มืด'] .offering-strip,
+html[data-theme='มืด'] .assessment-timer,
+html[data-theme='มืด'] .settings-info-strip,
+html[data-theme='มืด'] .profile-summary,
+html[data-theme='мืด'] .choice-card {
+  background: var(--cm-surface-subtle);
+  border-color: var(--cm-line);
+}
+
+html[data-theme='มืด'] .tutor-shortcut:hover,
+html[data-theme='มืด'] .notification-item:hover,
+html[data-theme='มืด'] .search-dropdown button:hover,
+html[data-theme='มืด'] .filter-bar > button.selected,
+html[data-theme='มืด'] .curriculum-filter-group button.selected,
+html[data-theme='มืด'] .choice-buttons button.selected,
+html[data-theme='มืด'] .settings-nav button.active {
+  color: var(--cm-primary);
+  background: var(--cm-soft-red);
+}
+
+html[data-theme='มืด'] .tutor-orb,
+html[data-theme='มืด'] .profile-settings-avatar,
+html[data-theme='มืด'] .notification-icon.reply,
+html[data-theme='มืด'] .notification-icon.streak,
+html[data-theme='มืด'] .notification-icon.lesson {
+  color: var(--cm-primary);
+  background: #4a2528;
+}
+
+html[data-theme='มืด'] .choice-buttons,
+html[data-theme='มืด'] .preview-window,
+html[data-theme='มืด'] .settings-preview .preview-window {
+  background: var(--cm-surface-subtle);
+  border-color: var(--cm-line);
+}
+
+html[data-theme='มืด'] input,
+html[data-theme='มืด'] select,
+html[data-theme='มืด'] textarea {
+  color: var(--cm-ink);
+  background: var(--cm-surface-subtle);
+  border-color: var(--cm-line);
+}
+
+html[data-theme='มืด'] .notification-dropdown,
+html[data-theme='มืด'] .search-dropdown,
+html[data-theme='มืด'] .create-modal,
+html[data-theme='มืด'] .post-detail-modal {
+  background: var(--cm-surface);
+  border-color: var(--cm-line);
+  color: var(--cm-ink);
+}
+
+html[data-theme='มืด'] .mobile-bottom-nav button {
+  color: #8f8f8a;
+}
+
+html[data-theme='มืด'] .mobile-bottom-nav button.active {
+  color: var(--cm-primary);
+}
+
+@media (max-width: 1100px) {
+  .topbar {
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+
+  .page-content {
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+}
+
+@media (max-width: 840px) {
+  .page-content {
+    padding: 32px 20px 88px;
+  }
+
+  .topbar {
+    padding: 0 20px;
+  }
+
+  .sidebar {
+    box-shadow: 18px 0 40px rgba(0, 0, 0, .16);
+  }
+
+  .hero-copy {
+    padding: 29px 27px;
+  }
+}
+
+@media (max-width: 560px) {
+  .page-content {
+    padding: 26px 15px 84px;
+  }
+
+  .topbar {
+    padding: 0 14px;
+  }
+
+  .hero-card {
+    border-radius: 16px;
+  }
+
+  .hero-copy {
+    padding: 24px 21px;
+  }
+
+  .hero-copy h2 {
+    font-size: 25px;
+  }
+
+  .stats-grid {
+    margin-bottom: 28px;
+  }
+}

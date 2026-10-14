@@ -107,6 +107,7 @@ function geminiApi(serverEnv: Record<string, string | undefined>) {
 export default defineConfig(({ mode }) => {
   const serverEnv = loadEnv(mode, '.', '')
   return {
+    base: './',
     plugins: [react(), geminiApi(serverEnv)],
   }
 })

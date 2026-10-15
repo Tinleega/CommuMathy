@@ -47,6 +47,7 @@ const PROGRESS_KEY = 'commumathy-progress'
 const SETTINGS_KEY = 'commumathy-settings'
 const PERFORMANCE_KEY = 'commumathy-exercise-performance-v2'
 const HISTORY_KEY = 'commumathy-exercise-sessions-v2'
+let userIdCounter = 1;
 
 function rightRotate(value: number, amount: number): number {
   return (value >>> amount) | (value << (32 - amount))
@@ -154,14 +155,16 @@ export function getUserInitials(name: string): string {
 
 export function createNewUser(name: string, grade: GradeLevel): UserProfile {
   const now = new Date().toISOString()
+  // Deterministic user ID using incremental counter
+  const id = `user-${userIdCounter++}`;
   return {
-    id: `user-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    id,
     name: name.trim() || 'นักเรียน',
     grade,
     level: determineLevel(grade),
     createdAt: now,
     lastActiveAt: now,
-  }
+  };
 }
 
 export function getStoredUser(): UserProfile | null {

@@ -2,3 +2,30 @@
 
 /* Content-driven lesson detail additions */
 .lesson-formula-preview{display:flex;align-items:center;justify-content:center;min-width:220px;min-height:150px;padding:1rem 1.25rem;border:1px solid #c7d2fe;border-radius:1.25rem;background:rgba(255,255,255,.72);color:#4338ca;font-size:1.3rem}.lesson-formula-preview .katex-display{margin:0}.lesson-objectives{margin:.6rem 0 0;padding-left:1.2rem;display:grid;gap:.4rem}.lesson-step-copy{margin:.45rem 0 0;color:#64748b;font-size:.875rem;line-height:1.5}@media(max-width:720px){.lesson-formula-preview{min-width:0;min-height:112px;width:100%;padding:.75rem}}
+
+/* Profile personalization: photo upload and math-interest badges */
+.profile-avatar-large,.profile-settings-avatar{overflow:hidden}
+.profile-avatar-large img,.profile-settings-avatar img{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.profile-photo-editor{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px;padding:11px 12px;background:#fbfaff;border:1px solid #e8e7f5;border-radius:10px}
+.profile-photo-copy strong,.profile-photo-copy span{display:block}
+.profile-photo-copy strong{color:#555b70;font-size:10px}
+.profile-photo-copy span{color:#8b90a0;margin-top:4px;font-size:8px;line-height:1.5}
+.profile-photo-controls{display:flex;align-items:center;gap:7px;flex:none}
+.profile-photo-upload{position:relative;display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:0 11px;color:#fff;background:#6654b3;border:1px solid #6654b3;border-radius:7px;font-size:9px;font-weight:700;cursor:pointer}
+.profile-photo-upload:hover{background:#5947a4}
+.profile-photo-upload:focus-within{outline:3px solid #d9d1fb;outline-offset:2px}
+.profile-photo-input{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.profile-photo-remove{min-height:30px;padding:0 9px;font-size:9px}
+.profile-photo-error{flex-basis:100%;margin:0;color:#b42318;font-size:9px}
+.math-interest-section{margin-top:14px;padding-top:13px;border-top:1px solid #efedf7}
+.math-interest-grid{display:flex;flex-wrap:wrap;gap:7px}
+.math-interest-chip{padding:7px 10px;color:#646a7d;background:#fff;border:1px solid #e4e2ef;border-radius:999px;font:inherit;font-size:9px;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
+.math-interest-chip:hover{border-color:#a99bdc;color:#5847a1}
+.math-interest-chip.selected{color:#57459f;background:#f0edff;border-color:#b6a9e8;font-weight:700}
+.math-interest-chip:focus-visible,.profile-interest-add:focus-visible{outline:3px solid #d9d1fb;outline-offset:2px}
+.math-interest-help{margin:8px 0 0;color:#8b90a0;font-size:8px}
+.profile-interest-row{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin:0 0 10px;color:#8b90a0;font-size:9px}
+.profile-interest-label{margin-right:2px;font-weight:700}
+.profile-interest-pill{padding:3px 7px;color:#5847a1;background:#f0edff;border:1px solid #e3def8;border-radius:999px;font-size:8px;font-weight:700}
+.profile-interest-add{padding:0;color:#6251aa;background:transparent;border:0;font:inherit;font-size:9px;font-weight:700;cursor:pointer}
+@media(max-width:640px){.profile-photo-editor{align-items:flex-start;flex-direction:column}.profile-photo-controls{flex-wrap:wrap}.math-interest-grid{gap:6px}.math-interest-chip{padding:7px 9px}}

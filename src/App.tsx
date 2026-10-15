@@ -2,27 +2,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { renderToString } from 'katex'
 import {
   ArrowLeft, ArrowRight, Award, Bell, BookOpen, Bookmark, BookmarkCheck, Bot, Check, ChevronDown, ChevronRight,
-  CircleHelp, Clock3, Download, FileImage, Filter, Flame, GraduationCap, Home, ImagePlus, Info, LayoutDashboard, Lightbulb,
-  ListChecks, LogOut, Menu, MessageCircle, MoreHorizontal, Paperclip, Palette, PenLine, Plus, RotateCcw, Save, Search, Send, Settings, ShieldCheck, Sparkles,
+  CircleHelp, Clock3, FileImage, Filter, Flame, GraduationCap, Home, ImagePlus, Info, LayoutDashboard, Lightbulb,
+  ListChecks, Menu, MessageCircle, MoreHorizontal, Paperclip, Palette, PenLine, Plus, RotateCcw, Save, Search, Send, Settings, Sparkles,
   Target, ThumbsUp, Trophy, Upload, UserRound, Users, X, Zap,
 } from 'lucide-react'
 import { exerciseQuestions, initialPosts, leaderboard, lessons, type DiscussionPost, type ExerciseQuestion, type Lesson } from './data'
 import { chapterOfferingLabel, curriculumChapters, offeringsFor, type CurriculumChapter, type CurriculumCourse, type CurriculumLesson, type EducationLevel } from './curriculum'
 import { QuestionBankExercisesPage } from './QuestionBankExercisesPage'
-import {
-  createNewUser,
-  determineLevel,
-  exportSaveFile,
-  getStoredUser,
-  getUserInitials,
-  parseSaveFileContent,
-  restoreSaveToLocalStorage,
-  saveStoredUser,
-  type GradeLevel,
-  type SavePayload,
-  type UserProfile,
-} from './saveSystem'
-import { SignInModal, SaveManagerModal } from './AuthModals'
 
 type Page = 'home' | 'lessons' | 'lesson-detail' | 'curriculum-chapter' | 'curriculum-lesson' | 'exercises' | 'assessment' | 'tutor' | 'community' | 'leaderboard' | 'profile' | 'settings'
 type ProgressState = { completedLessons: string[]; bookmarks: string[]; xp: number; streak: number; exerciseCorrect: number; exerciseTotal: number; assessmentScore?: number }
@@ -30,8 +16,8 @@ type TutorMessage = { role: 'user' | 'tutor'; text: string; time: string }
 type GeminiStatus = { configured: boolean; model: string }
 type NotificationItem = { id: string; kind: 'reply' | 'streak' | 'lesson'; title: string; body: string; time: string; read: boolean }
 type SettingsTab = 'profile' | 'notifications' | 'appearance' | 'learning'
-type SettingsState = { displayName: string; grade: GradeLevel; bio: string; dailyReminder: boolean; communityReplies: boolean; weeklySummary: boolean; showHints: boolean; fullScreenMath: boolean; difficulty: 'พื้นฐาน' | 'กำลังดี' | 'ท้าทาย'; theme: 'สว่าง' | 'มืด' | 'ตามระบบ'; fontSize: 'มาตรฐาน' | 'ใหญ่' }
-const defaultSettings: SettingsState = { displayName: 'นักเรียน', grade: 'ม.3', bio: 'กำลังฝึกทำความเข้าใจคณิตศาสตร์ให้มากขึ้น', dailyReminder: true, communityReplies: true, weeklySummary: false, showHints: true, fullScreenMath: false, difficulty: 'กำลังดี', theme: 'ตามระบบ', fontSize: 'มาตรฐาน' }
+type SettingsState = { displayName: string; grade: string; bio: string; email: string; dailyReminder: boolean; communityReplies: boolean; weeklySummary: boolean; showHints: boolean; fullScreenMath: boolean; difficulty: 'พื้นฐาน' | 'กำลังดี' | 'ท้าทาย'; theme: 'สว่าง' | 'มืด' | 'ตามระบบ'; fontSize: 'มาตรฐาน' | 'ใหญ่' }
+const defaultSettings: SettingsState = { displayName: 'พิมพ์ชนก', grade: 'ม.3', bio: 'กำลังฝึกทำความเข้าใจคณิตศาสตร์ให้มากขึ้น', email: 'pimchanok@example.com', dailyReminder: true, communityReplies: true, weeklySummary: false, showHints: true, fullScreenMath: false, difficulty: 'กำลังดี', theme: 'ตามระบบ', fontSize: 'มาตรฐาน' }
 
 const defaultProgress: ProgressState = { completedLessons: [], bookmarks: ['linear-equation'], xp: 840, streak: 5, exerciseCorrect: 7, exerciseTotal: 9 }
 const defaultTutor: TutorMessage[] = [
@@ -67,11 +53,6 @@ function MathText({ formula, display = false }: { formula: string; display?: boo
 
 function App() {
   const [page, setPage] = useState<Page>(() => readStorage('commumathy-page', 'home'))
-  const [user, setUser] = useState<UserProfile | null>(() => getStoredUser())
-  const [showAuthModal, setShowAuthModal] = useState<boolean>(() => !getStoredUser())
-  const [showSaveModal, setShowSaveModal] = useState<boolean>(false)
-  const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
-
   const [appTheme, setAppTheme] = useState<SettingsState['theme']>(() => {
     const savedSettings = readStorage<Partial<SettingsState> | null>('commumathy-settings', null)
     return savedSettings?.theme ?? 'ตามระบบ'
@@ -94,12 +75,6 @@ function App() {
   useEffect(() => { localStorage.setItem('commumathy-posts', JSON.stringify(posts)) }, [posts])
   useEffect(() => { localStorage.setItem('commumathy-tutor', JSON.stringify(tutorMessages)) }, [tutorMessages])
   useEffect(() => { localStorage.setItem('commumathy-notifications', JSON.stringify(notifications)) }, [notifications])
-  useEffect(() => {
-    if (!toastMessage) return
-    const timer = setTimeout(() => setToastMessage(null), 4200)
-    return () => clearTimeout(timer)
-  }, [toastMessage])
-
   useEffect(() => {
     if (!notificationsOpen) return
     const closeOnOutsideClick = (event: MouseEvent) => {
@@ -134,49 +109,6 @@ function App() {
   const markNotificationRead = (id: string) => setNotifications((items) => items.map((item) => item.id === id ? { ...item, read: true } : item))
   const markAllNotificationsRead = () => setNotifications((items) => items.map((item) => ({ ...item, read: true })))
 
-  const handleSignIn = (name: string, grade: GradeLevel) => {
-    const newUser = createNewUser(name, grade)
-    setUser(newUser)
-    saveStoredUser(newUser)
-    const savedSettings = readStorage<SettingsState>('commumathy-settings', defaultSettings)
-    localStorage.setItem('commumathy-settings', JSON.stringify({ ...savedSettings, displayName: newUser.name, grade: newUser.grade }))
-    setShowAuthModal(false)
-    setToastMessage({ type: 'success', message: `ยินดีต้อนรับคุณ ${newUser.name} (${newUser.grade}) เริ่มเรียนได้ทันที!` })
-  }
-
-  const handleSignOut = () => {
-    setUser(null)
-    saveStoredUser(null)
-    setShowSaveModal(false)
-    setShowAuthModal(true)
-    setToastMessage({ type: 'success', message: 'ออกจากระบบเรียบร้อยแล้ว' })
-  }
-
-  const handleExportSave = () => {
-    if (!user) {
-      setShowAuthModal(true)
-      return
-    }
-    const savedSettings = readStorage<SettingsState>('commumathy-settings', defaultSettings)
-    exportSaveFile(user, progress, savedSettings)
-    setToastMessage({ type: 'success', message: `ดาวน์โหลดไฟล์ Save (${user.name}) สำเร็จแล้ว!` })
-  }
-
-  const handleImportSuccess = (payload: SavePayload) => {
-    restoreSaveToLocalStorage(payload)
-    setUser(payload.user)
-    setProgress(payload.progress)
-    if (payload.settings) {
-      const saved = readStorage<SettingsState>('commumathy-settings', defaultSettings)
-      const nextSettings = { ...saved, ...payload.settings }
-      localStorage.setItem('commumathy-settings', JSON.stringify(nextSettings))
-      if (nextSettings.theme) setAppTheme(nextSettings.theme)
-    }
-    setShowAuthModal(false)
-    setShowSaveModal(false)
-    setToastMessage({ type: 'success', message: `โหลดไฟล์สำเร็จ! ยินดีต้อนรับกลับ ${payload.user.name}` })
-  }
-
   const searchResults = useMemo(() => {
     if (!globalSearch.trim()) return []
     const q = globalSearch.toLowerCase()
@@ -203,14 +135,7 @@ function App() {
           <button className={`nav-item ${page === 'profile' ? 'active' : ''}`} onClick={() => go('profile')}><UserRound size={19} /><span>โปรไฟล์ของฉัน</span></button>
           <button className={`nav-item ${page === 'settings' ? 'active' : ''}`} onClick={() => go('settings')}><Settings size={19} /><span>ตั้งค่า</span></button>
         </nav>
-        <div className="mini-profile" onClick={() => user ? setShowSaveModal(true) : setShowAuthModal(true)} role="button" tabIndex={0} title="จัดการโปรไฟล์และไฟล์ Save" style={{ cursor: 'pointer' }}>
-          <div className="avatar avatar-indigo">{getUserInitials(user?.name ?? 'นักเรียน')}</div>
-          <div>
-            <strong>{user?.name ?? 'ยังไม่ลงชื่อเข้าใช้'}</strong>
-            <small>{user ? `${user.grade} • ${user.level}` : 'แตะเพื่อลงชื่อเข้าใช้'}</small>
-          </div>
-          <MoreHorizontal size={17} />
-        </div>
+        <div className="mini-profile"><div className="avatar avatar-indigo">พช</div><div><strong>พิมพ์ชนก</strong><small>ม.3 • นักสำรวจ</small></div><MoreHorizontal size={17} /></div>
       </aside>
       {mobileMenu && <div className="sidebar-overlay" onClick={() => setMobileMenu(false)} />}
       <main className="main-area">
@@ -225,73 +150,39 @@ function App() {
               <button className="icon-button notification-button" onClick={() => setNotificationsOpen((open) => !open)} aria-label="การแจ้งเตือน" aria-expanded={notificationsOpen}><Bell size={19} />{unreadNotifications > 0 && <span />}</button>
               {notificationsOpen && <div className="notification-dropdown" role="dialog" aria-label="การแจ้งเตือน"><div className="notification-dropdown-head"><div><strong>การแจ้งเตือน</strong><span>{unreadNotifications > 0 ? `${unreadNotifications} รายการใหม่` : 'ไม่มีรายการใหม่'}</span></div>{unreadNotifications > 0 && <button onClick={markAllNotificationsRead}>อ่านทั้งหมด</button>}</div><div className="notification-list">{notifications.length === 0 ? <div className="notification-empty"><Bell size={18} /><span>ยังไม่มีการแจ้งเตือน</span></div> : notifications.map((notification) => <button className={`notification-item ${notification.read ? 'read' : ''}`} key={notification.id} onClick={() => { markNotificationRead(notification.id); setNotificationsOpen(false) }}><span className={`notification-icon ${notification.kind}`}>{notification.kind === 'reply' ? <MessageCircle size={15} /> : notification.kind === 'streak' ? <Flame size={15} /> : <BookOpen size={15} />}</span><span className="notification-copy"><strong>{notification.title}</strong><span>{notification.body}</span><small>{notification.time}</small></span>{!notification.read && <i />}</button>)}</div></div>}
             </div>
-            <button className="outline-button save-trigger-button" onClick={() => user ? setShowSaveModal(true) : setShowAuthModal(true)} title="จัดการไฟล์ Save & โหลดข้อมูล">
-              <Save size={15} /> <span className="desktop-only">ไฟล์ Save</span>
-            </button>
             <button className="icon-button theme-toggle" onClick={toggleTheme} aria-label="สลับธีม" title="สลับธีม"><Palette size={18} /></button>
-            <button className="top-avatar" onClick={() => go('profile')}>{getUserInitials(user?.name ?? 'นักเรียน')}</button>
+            <button className="top-avatar" onClick={() => go('profile')}>พช</button>
           </div>
         </header>
         <div className="page-content">
-          {page === 'home' && <HomePage user={user} progress={progress} onNavigate={go} onLesson={openLesson} />}
-          {page === 'lessons' && <CurriculumBrowser user={user} progress={progress} onChapter={openChapter} onBookmark={toggleBookmark} />}
+          {page === 'home' && <HomePage progress={progress} onNavigate={go} onLesson={openLesson} />}
+          {page === 'lessons' && <CurriculumBrowser progress={progress} onChapter={openChapter} onBookmark={toggleBookmark} />}
           {page === 'lesson-detail' && <LessonDetail lesson={selectedLesson} progress={progress} onBack={() => go('lessons')} onComplete={completeLesson} onBookmark={toggleBookmark} onPractice={() => go('exercises')} />}
           {page === 'curriculum-chapter' && <CurriculumChapterPage chapter={selectedChapter} progress={progress} onBack={() => go('lessons')} onLesson={(lesson) => openCurriculumLesson(selectedChapter, lesson)} onPractice={() => startChapterPractice(selectedChapter)} onBookmark={toggleBookmark} />}
           {page === 'curriculum-lesson' && <CurriculumLessonPage chapter={selectedChapter} lesson={selectedCurriculumLesson} progress={progress} onBack={() => go('curriculum-chapter')} onLesson={(lesson) => openCurriculumLesson(selectedChapter, lesson)} onComplete={() => completeCurriculumLesson(selectedCurriculumLesson.id)} onPractice={() => startChapterPractice(selectedChapter)} />}
           {page === 'exercises' && <QuestionBankExercisesPage progress={progress} setProgress={setProgress} onLesson={() => practiceChapter ? openChapter(practiceChapter) : openLesson(lessons[0])} activeChapter={practiceChapter} />}
           {page === 'assessment' && <AssessmentPage progress={progress} setProgress={setProgress} onLessons={() => go('lessons')} />}
           {page === 'tutor' && <GeminiTutorPage messages={tutorMessages} setMessages={setTutorMessages} />}
-          {page === 'community' && <CommunityPage posts={posts} setPosts={setPosts} user={user} />}
-          {page === 'leaderboard' && <LeaderboardPage progress={progress} user={user} />}
-          {page === 'profile' && <ProfilePage user={user} progress={progress} onNavigate={go} onLesson={openLesson} onOpenSave={() => setShowSaveModal(true)} onOpenAuth={() => setShowAuthModal(true)} />}
-          {page === 'settings' && <SettingsPage user={user} onUpdateUser={setUser} onThemeChange={changeTheme} onOpenSave={() => setShowSaveModal(true)} onOpenAuth={() => setShowAuthModal(true)} />}
+          {page === 'community' && <CommunityPage posts={posts} setPosts={setPosts} />}
+          {page === 'leaderboard' && <LeaderboardPage progress={progress} />}
+          {page === 'profile' && <ProfilePage progress={progress} onNavigate={go} onLesson={openLesson} />}
+          {page === 'settings' && <SettingsPage onThemeChange={changeTheme} />}
         </div>
       </main>
       <nav className="mobile-bottom-nav">
         {navItems.slice(0, 4).map(({ id, label, icon: Icon }) => <button key={id} className={page === id ? 'active' : ''} onClick={() => go(id)}><Icon size={19} /><span>{label}</span></button>)}
         <button className={page === 'tutor' ? 'active' : ''} onClick={() => go('tutor')}><Sparkles size={19} /><span>ติวเตอร์</span></button>
       </nav>
-
-      {showAuthModal && (
-        <SignInModal
-          isOpen={showAuthModal}
-          onClose={user ? () => setShowAuthModal(false) : undefined}
-          onSignIn={handleSignIn}
-          onImportSuccess={handleImportSuccess}
-          currentGrade={user?.grade}
-        />
-      )}
-
-      {showSaveModal && (
-        <SaveManagerModal
-          isOpen={showSaveModal}
-          onClose={() => setShowSaveModal(false)}
-          user={user}
-          progress={progress}
-          settings={readStorage<SettingsState>('commumathy-settings', defaultSettings)}
-          onExport={handleExportSave}
-          onImportSuccess={handleImportSuccess}
-          onSignOut={handleSignOut}
-        />
-      )}
-
-      {toastMessage && (
-        <div className={`toast-notification ${toastMessage.type}`}>
-          {toastMessage.type === 'success' ? <Check size={18} /> : <CircleHelp size={18} />}
-          <span>{toastMessage.message}</span>
-          <button onClick={() => setToastMessage(null)} aria-label="ปิด"><X size={15} /></button>
-        </div>
-      )}
     </div>
   )
 }
 
 function pageTitle(page: Page) { return ({ home: 'หน้าหลัก', lessons: 'บทเรียน', 'lesson-detail': 'รายละเอียดบทเรียน', 'curriculum-chapter': 'บทในหลักสูตร', 'curriculum-lesson': 'บทเรียนย่อย', exercises: 'แบบฝึกหัด', assessment: 'แบบประเมิน', tutor: 'ติวเตอร์ AI', community: 'ชุมชนการเรียนรู้', leaderboard: 'กระดานคะแนน', profile: 'โปรไฟล์ของฉัน', settings: 'ตั้งค่า' } as Record<Page, string>)[page] }
 
-function HomePage({ user, progress, onNavigate, onLesson }: { user: UserProfile | null; progress: ProgressState; onNavigate: (p: Page) => void; onLesson: (l: Lesson) => void }) {
+function HomePage({ progress, onNavigate, onLesson }: { progress: ProgressState; onNavigate: (p: Page) => void; onLesson: (l: Lesson) => void }) {
   const accuracy = Math.round((progress.exerciseCorrect / progress.exerciseTotal) * 100)
   return <>
-    <section className="welcome-row"><div><div className="eyebrow"><span className="eyebrow-dot" /> ประจำวัน</div><h1>สวัสดี, {user?.name ?? 'นักเรียน'} <span className="wave">👋</span></h1><p className="page-intro">{user ? `กำลังเรียนระดับ ${user.grade} (${user.level}) มาเติบโตไปทีละก้าวด้วยกันนะ` : 'พร้อมเรียนรู้สิ่งใหม่วันนี้หรือยัง? มาเติบโตไปทีละก้าวด้วยกันนะ'}</p></div><button className="outline-button desktop-only"><CalendarIcon /> ตารางการเรียน</button></section>
+    <section className="welcome-row"><div><div className="eyebrow"><span className="eyebrow-dot" /> วันจันทร์ที่ 13 ตุลาคม 2569</div><h1>สวัสดี, พิมพ์ชนก <span className="wave">👋</span></h1><p className="page-intro">พร้อมเรียนรู้สิ่งใหม่วันนี้หรือยัง? มาเติบโตไปทีละก้าวด้วยกันนะ</p></div><button className="outline-button desktop-only"><CalendarIcon /> ตารางการเรียน</button></section>
     <section className="hero-card"><div className="hero-copy"><div className="hero-label"><Sparkles size={15} /> เส้นทางการเรียนรู้ของคุณ</div><h2>วางรากฐานพีชคณิต<br /><em>ให้แน่นขึ้นอีกนิด</em></h2><p>บทเรียนถัดไปของคุณรออยู่ ใช้เวลาเพียง 25 นาทีเพื่อทำความเข้าใจเรื่องสมการให้ชัดเจนขึ้น</p><button className="primary-button" onClick={() => onLesson(lessons[0])}>เรียนต่อ <ArrowRight size={17} /></button></div><div className="hero-art"><div className="orbit orbit-one" /><div className="orbit orbit-two" /><div className="floating-card card-one"><span>∑</span><small>เข้าใจ</small></div><div className="floating-card card-two"><span>x²</span><small>ลองคิด</small></div><div className="hero-equation"><MathText formula="2x + 3 = 11" display /><span>ให้เหตุผลกับทุกคำตอบ</span></div></div></section>
     <div className="stats-grid"><StatCard icon={<Flame size={19} />} label="เรียนต่อเนื่อง" value={`${progress.streak} วัน`} note="เพิ่มขึ้น 2 วันจากสัปดาห์ก่อน" tone="orange" /><StatCard icon={<Target size={19} />} label="ความแม่นยำแบบฝึกหัด" value={`${accuracy}%`} note="ดีขึ้น 8% จากครั้งก่อน" tone="green" /><StatCard icon={<Award size={19} />} label="บทเรียนที่จบแล้ว" value={`${progress.completedLessons.length} บท`} note={`จากทั้งหมด ${lessons.length} บท`} tone="purple" /><StatCard icon={<Zap size={19} />} label="คะแนนสะสม" value={`${progress.xp.toLocaleString()} XP`} note="อีก 160 XP ถึงระดับถัดไป" tone="yellow" /></div>
     <div className="content-grid home-grid"><div className="primary-column"><SectionHeading title="เรียนต่อจากครั้งล่าสุด" link="ดูบทเรียนทั้งหมด" onLink={() => onNavigate('lessons')} /><div className="continue-card"><div className="continue-cover indigo-cover"><span className="cover-formula"><MathText formula="2x + 3 = 11" display /></span><span className="cover-tag">พีชคณิต • ม.1</span></div><div className="continue-body"><div className="card-kicker">บทเรียนที่กำลังเรียน</div><h3>{lessons[0].title}</h3><p>{lessons[0].subtitle}</p><div className="progress-line"><span style={{ width: `${lessons[0].progress}%` }} /></div><div className="progress-meta"><span>เรียนไปแล้ว {lessons[0].progress}%</span><span>{lessons[0].duration} ที่เหลือ</span></div><button className="text-button" onClick={() => onLesson(lessons[0])}>กลับไปเรียนต่อ <ArrowRight size={15} /></button></div></div><SectionHeading title="บทเรียนแนะนำสำหรับคุณ" link="ดูทั้งหมด" onLink={() => onNavigate('lessons')} /><div className="lesson-mini-grid">{lessons.slice(1, 3).map((lesson) => <LessonMiniCard key={lesson.id} lesson={lesson} onClick={() => onLesson(lesson)} />)}</div></div><aside className="secondary-column"><ProgressCard progress={progress} /><TutorShortcut onClick={() => onNavigate('tutor')} /><CommunitySnippet onNavigate={onNavigate} /></aside></div>
@@ -306,9 +197,9 @@ function TutorShortcut({ onClick }: { onClick: () => void }) { return <button cl
 function CommunitySnippet({ onNavigate }: { onNavigate: (p: Page) => void }) { return <div className="side-card community-snippet"><div className="side-card-heading"><h3>พูดคุยล่าสุด</h3><button onClick={() => onNavigate('community')}>ดูทั้งหมด</button></div><div className="snippet-post"><div className="avatar avatar-peach">พพ</div><div><strong>ทำไมเวลาย้ายข้างต้อง...</strong><span><span className="tag-dot" /> พีชคณิต <i>•</i> 12 นาทีที่แล้ว</span></div></div><div className="snippet-post"><div className="avatar avatar-teal">ตน</div><div><strong>มีวิธีจำสูตรพีทาโกรัส...</strong><span><span className="tag-dot teal-dot" /> เรขาคณิต <i>•</i> 1 ชม.ที่แล้ว</span></div></div></div> }
 function LessonMiniCard({ lesson, onClick }: { lesson: Lesson; onClick: () => void }) { return <button className="lesson-mini-card" onClick={onClick}><div className={`course-icon ${lesson.color}`}>{lesson.icon}</div><div className="lesson-mini-info"><div><span>{lesson.grade} • {lesson.subject}</span><Bookmark size={15} /></div><h3>{lesson.title}</h3><p>{lesson.duration} <i>•</i> {lesson.level}</p></div><ChevronRight size={17} /></button> }
 
-function CurriculumBrowser({ user, progress, onChapter, onBookmark }: { user: UserProfile | null; progress: ProgressState; onChapter: (chapter: CurriculumChapter) => void; onBookmark: (id: string) => void }) {
-  const [level, setLevel] = useState<EducationLevel>(() => user?.level ?? 'มัธยมศึกษาตอนต้น')
-  const [grade, setGrade] = useState(() => user?.grade ?? 'ทั้งหมด')
+function CurriculumBrowser({ progress, onChapter, onBookmark }: { progress: ProgressState; onChapter: (chapter: CurriculumChapter) => void; onBookmark: (id: string) => void }) {
+  const [level, setLevel] = useState<EducationLevel>('มัธยมศึกษาตอนต้น')
+  const [grade, setGrade] = useState('ทั้งหมด')
   const [semester, setSemester] = useState('ทั้งหมด')
   const [course, setCourse] = useState<CurriculumCourse | 'ทั้งหมด'>('ทั้งหมด')
   const gradeOptions = level === 'มัธยมศึกษาตอนต้น' ? ['ทั้งหมด', 'ม.1', 'ม.2', 'ม.3'] : ['ทั้งหมด', 'ม.4', 'ม.5', 'ม.6']
@@ -442,76 +333,28 @@ function GeminiTutorPage({ messages, setMessages }: { messages: TutorMessage[]; 
 
 function demoTutorReply(text: string) { if (text.includes('ใบ้')) return 'ได้เลยค่ะ ลองเริ่มจากเขียนสิ่งที่โจทย์ให้มาก่อน แล้วถามตัวเองว่า “เราต้องการหาค่าอะไร” จากนั้นเลือกสมบัติทางคณิตศาสตร์ที่ทำให้ตัวแปรอยู่เพียงข้างเดียว โดยทำเหมือนกันทั้งสองข้างนะคะ'; if (text.includes('ตรวจ')) return 'ส่งวิธีทำมาได้เลยค่ะ ในโหมดสาธิตนี้ฉันจะช่วยชี้จุดที่ควรตรวจ โดยจะแยกให้เห็นชัดว่าคำตอบสุดท้ายถูกหรือไม่ และเหตุผลแต่ละขั้นสมเหตุสมผลหรือเปล่า'; return 'คำถามนี้น่าสนใจมากค่ะ ลองแยกโจทย์เป็น “สิ่งที่รู้” กับ “สิ่งที่ต้องหา” ก่อนนะคะ จากนั้นฉันจะแนะนำคำถามเล็ก ๆ ให้คุณลองคิดต่อเองทีละขั้น (คำตอบนี้เป็นตัวอย่างในโหมดสาธิต)'; }
 
-function CommunityPage({ posts, setPosts, user }: { posts: DiscussionPost[]; setPosts: React.Dispatch<React.SetStateAction<DiscussionPost[]>>; user: UserProfile | null }) {
+function CommunityPage({ posts, setPosts }: { posts: DiscussionPost[]; setPosts: React.Dispatch<React.SetStateAction<DiscussionPost[]>> }) {
   const [query, setQuery] = useState(''); const [sort, setSort] = useState<'recent' | 'popular'>('recent'); const [showCreate, setShowCreate] = useState(false); const [title, setTitle] = useState(''); const [body, setBody] = useState(''); const [selectedPost, setSelectedPost] = useState<DiscussionPost | null>(null); const [reply, setReply] = useState('')
   const visible = posts.filter((post) => `${post.title} ${post.body} ${post.tag}`.toLowerCase().includes(query.toLowerCase())).sort((a, b) => sort === 'popular' ? b.likes - a.likes : b.id.localeCompare(a.id))
-  const createPost = () => {
-    if (!title.trim() || !body.trim()) return
-    const authorName = user?.name ?? 'นักเรียน'
-    setPosts((p) => [{ id: `post-${Date.now()}`, title, body, author: authorName, initials: getUserInitials(authorName), tag: 'คำถาม', time: 'เมื่อสักครู่', likes: 0, comments: 0, replies: [] }, ...p])
-    setTitle('')
-    setBody('')
-    setShowCreate(false)
-  }
-  const addReply = () => {
-    if (!selectedPost || !reply.trim()) return
-    const replyAuthor = user?.name ?? 'นักเรียน'
-    setPosts((all) => all.map((p) => p.id === selectedPost.id ? { ...p, comments: p.comments + 1, replies: [...p.replies, `${replyAuthor}: ${reply}`] } : p))
-    setSelectedPost({ ...selectedPost, comments: selectedPost.comments + 1, replies: [...selectedPost.replies, `${replyAuthor}: ${reply}`] })
-    setReply('')
-  }
-  return <><PageIntro eyebrow="เรียนรู้ไปด้วยกัน" title="ชุมชนการเรียนรู้" description="ถาม แบ่งปันวิธีคิด และช่วยกันทำให้คณิตศาสตร์เข้าใจง่ายขึ้น" action={<button className="primary-button" onClick={() => setShowCreate(true)}><Plus size={17} /> ตั้งคำถามใหม่</button>} /><div className="community-toolbar"><div className="community-search"><Search size={17} /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="ค้นหาคำถามหรือหัวข้อ..." /></div><div className="sort-buttons"><button className={sort === 'recent' ? 'active' : ''} onClick={() => setSort('recent')}>ล่าสุด</button><button className={sort === 'popular' ? 'active' : ''} onClick={() => setSort('popular')}>ยอดนิยม</button></div></div><div className="community-layout"><section className="post-feed"><div className="feed-label"><strong>{visible.length} การสนทนา</strong><span>พื้นที่ปลอดภัยสำหรับการเรียนรู้</span></div>{visible.map((post) => <PostCard key={post.id} post={post} onOpen={() => setSelectedPost(post)} onLike={() => setPosts((all) => all.map((p) => p.id === post.id ? { ...p, likes: p.likes + (p.liked ? -1 : 1), liked: !p.liked } : p))} />)}{visible.length === 0 && <div className="empty-state"><Search size={24} /><h3>ยังไม่พบการสนทนา</h3><p>ลองใช้คำค้นอื่น หรือเป็นคนเริ่มถามคำถามแรกกันเลย</p></div>}</section><aside className="community-aside"><div className="side-card topic-card"><div className="side-card-heading"><h3>หัวข้อยอดนิยม</h3></div>{['พีชคณิต', 'เรขาคณิต', 'โจทย์ประยุกต์', 'เตรียมสอบ ม.3'].map((topic, i) => <button className="topic-row" key={topic}><span className={`topic-color color-${i}`} />{topic}<span>{[24, 18, 12, 9][i]}</span></button>)}</div><div className="community-guideline"><Users size={18} /><strong>ช่วยกันสร้างพื้นที่ที่ดี</strong><p>อธิบายด้วยเหตุผล ให้เกียรติกัน และจำไว้ว่าทุกคนกำลังเรียนรู้</p></div></aside></div>{showCreate && <div className="modal-backdrop"><div className="create-modal"><div className="modal-heading"><div><span className="eyebrow-dot" /> ตั้งคำถามใหม่</div><button onClick={() => setShowCreate(false)}><X size={19} /></button></div><label>หัวข้อคำถาม<input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="เช่น มีวิธีคิดข้อนี้แบบอื่นไหม?" /></label><label>รายละเอียด<textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="เล่าโจทย์หรือสิ่งที่ลองทำมาแล้วได้เลย..." rows={5} /></label><div className="modal-actions"><button className="outline-button" onClick={() => setShowCreate(false)}>ยกเลิก</button><button className="primary-button" disabled={!title.trim() || !body.trim()} onClick={createPost}>เผยแพร่คำถาม <Send size={16} /></button></div></div></div>}{selectedPost && <div className="modal-backdrop" onClick={() => setSelectedPost(null)}><div className="post-detail-modal" onClick={(e) => e.stopPropagation()}><button className="modal-close" onClick={() => setSelectedPost(null)}><X size={18} /></button><PostCard post={selectedPost} onOpen={() => undefined} onLike={() => undefined} /><div className="reply-list">{selectedPost.replies.map((item, i) => <div className="reply-item" key={i}><div className="avatar avatar-lavender">{i === 0 ? 'คม' : 'พช'}</div><div><strong>{i === 0 ? 'ครูเมย์' : (user?.name ?? 'พิมพ์ชนก')}</strong><p>{item}</p></div></div>)}</div><div className="reply-composer"><input value={reply} onChange={(e) => setReply(e.target.value)} placeholder="เขียนคำตอบที่ช่วยให้เพื่อนเข้าใจ..." /><button onClick={addReply}><Send size={16} /></button></div></div></div>}</>
+  const createPost = () => { if (!title.trim() || !body.trim()) return; setPosts((p) => [{ id: `post-${Date.now()}`, title, body, author: 'พิมพ์ชนก', initials: 'พช', tag: 'คำถาม', time: 'เมื่อสักครู่', likes: 0, comments: 0, replies: [] }, ...p]); setTitle(''); setBody(''); setShowCreate(false) }
+  const addReply = () => { if (!selectedPost || !reply.trim()) return; setPosts((all) => all.map((p) => p.id === selectedPost.id ? { ...p, comments: p.comments + 1, replies: [...p.replies, reply] } : p)); setSelectedPost({ ...selectedPost, comments: selectedPost.comments + 1, replies: [...selectedPost.replies, reply] }); setReply('') }
+  return <><PageIntro eyebrow="เรียนรู้ไปด้วยกัน" title="ชุมชนการเรียนรู้" description="ถาม แบ่งปันวิธีคิด และช่วยกันทำให้คณิตศาสตร์เข้าใจง่ายขึ้น" action={<button className="primary-button" onClick={() => setShowCreate(true)}><Plus size={17} /> ตั้งคำถามใหม่</button>} /><div className="community-toolbar"><div className="community-search"><Search size={17} /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="ค้นหาคำถามหรือหัวข้อ..." /></div><div className="sort-buttons"><button className={sort === 'recent' ? 'active' : ''} onClick={() => setSort('recent')}>ล่าสุด</button><button className={sort === 'popular' ? 'active' : ''} onClick={() => setSort('popular')}>ยอดนิยม</button></div></div><div className="community-layout"><section className="post-feed"><div className="feed-label"><strong>{visible.length} การสนทนา</strong><span>พื้นที่ปลอดภัยสำหรับการเรียนรู้</span></div>{visible.map((post) => <PostCard key={post.id} post={post} onOpen={() => setSelectedPost(post)} onLike={() => setPosts((all) => all.map((p) => p.id === post.id ? { ...p, likes: p.likes + (p.liked ? -1 : 1), liked: !p.liked } : p))} />)}{visible.length === 0 && <div className="empty-state"><Search size={24} /><h3>ยังไม่พบการสนทนา</h3><p>ลองใช้คำค้นอื่น หรือเป็นคนเริ่มถามคำถามแรกกันเลย</p></div>}</section><aside className="community-aside"><div className="side-card topic-card"><div className="side-card-heading"><h3>หัวข้อยอดนิยม</h3></div>{['พีชคณิต', 'เรขาคณิต', 'โจทย์ประยุกต์', 'เตรียมสอบ ม.3'].map((topic, i) => <button className="topic-row" key={topic}><span className={`topic-color color-${i}`} />{topic}<span>{[24, 18, 12, 9][i]}</span></button>)}</div><div className="community-guideline"><Users size={18} /><strong>ช่วยกันสร้างพื้นที่ที่ดี</strong><p>อธิบายด้วยเหตุผล ให้เกียรติกัน และจำไว้ว่าทุกคนกำลังเรียนรู้</p></div></aside></div>{showCreate && <div className="modal-backdrop"><div className="create-modal"><div className="modal-heading"><div><span className="eyebrow-dot" /> ตั้งคำถามใหม่</div><button onClick={() => setShowCreate(false)}><X size={19} /></button></div><label>หัวข้อคำถาม<input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="เช่น มีวิธีคิดข้อนี้แบบอื่นไหม?" /></label><label>รายละเอียด<textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="เล่าโจทย์หรือสิ่งที่ลองทำมาแล้วได้เลย..." rows={5} /></label><div className="modal-actions"><button className="outline-button" onClick={() => setShowCreate(false)}>ยกเลิก</button><button className="primary-button" disabled={!title.trim() || !body.trim()} onClick={createPost}>เผยแพร่คำถาม <Send size={16} /></button></div></div></div>}{selectedPost && <div className="modal-backdrop" onClick={() => setSelectedPost(null)}><div className="post-detail-modal" onClick={(e) => e.stopPropagation()}><button className="modal-close" onClick={() => setSelectedPost(null)}><X size={18} /></button><PostCard post={selectedPost} onOpen={() => undefined} onLike={() => undefined} /><div className="reply-list">{selectedPost.replies.map((item, i) => <div className="reply-item" key={i}><div className="avatar avatar-lavender">{i === 0 ? 'คม' : 'พช'}</div><div><strong>{i === 0 ? 'ครูเมย์' : 'พิมพ์ชนก'}</strong><p>{item}</p></div></div>)}</div><div className="reply-composer"><input value={reply} onChange={(e) => setReply(e.target.value)} placeholder="เขียนคำตอบที่ช่วยให้เพื่อนเข้าใจ..." /><button onClick={addReply}><Send size={16} /></button></div></div></div>}</>
 }
 function PostCard({ post, onOpen, onLike }: { post: DiscussionPost; onOpen: () => void; onLike: () => void }) { return <article className="post-card"><div className="post-author"><div className={`avatar ${post.initials === 'พพ' ? 'avatar-peach' : post.initials === 'ตน' ? 'avatar-teal' : 'avatar-lavender'}`}>{post.initials}</div><div><strong>{post.author}</strong><span>{post.time}</span></div><button className="more-button"><MoreHorizontal size={18} /></button></div><button className="post-content" onClick={onOpen}><div className="post-title-row"><h3>{post.title}</h3><span className="post-tag">{post.tag}</span></div><p>{post.body}</p></button><div className="post-actions"><button className={post.liked ? 'liked' : ''} onClick={onLike}><ThumbsUp size={15} /> มีประโยชน์ <span>{post.likes}</span></button><button onClick={onOpen}><MessageCircle size={15} /> ความคิดเห็น <span>{post.comments}</span></button><button className="share-button"><Upload size={15} /> แชร์</button></div></article> }
 
-function LeaderboardPage({ progress, user }: { progress: ProgressState; user: UserProfile | null }) {
-  const currentUserName = user?.name ?? 'คุณ'
-  const currentUserInitials = getUserInitials(currentUserName)
-  return <><PageIntro eyebrow="เติบโตไปด้วยกัน" title="กระดานคะแนน" description="คะแนนเป็นแรงจูงใจเล็ก ๆ ให้เราเรียนต่อเนื่อง ไม่ใช่ตัววัดคุณค่าหรือความเก่งของใคร" action={<div className="leaderboard-actions"><div className="demo-badge"><span className="status-dot" /> ข้อมูลตัวอย่างในโหมดเดโม</div><div className="period-select">สัปดาห์นี้ <ChevronDown size={15} /></div></div>} /><div className="leaderboard-layout"><section className="leaderboard-main"><div className="podium"><div className="podium-person second"><div className="podium-avatar silver-bg">ตน</div><strong>ต้นน้ำ</strong><span>1,080 XP</span><div className="podium-block block-two">2</div></div><div className="podium-person first"><div className="crown">✦</div><div className="podium-avatar gold-bg">ขห</div><strong>น้องข้าวหอม</strong><span>1,240 XP</span><div className="podium-block block-one">1</div></div><div className="podium-person third"><div className="podium-avatar bronze-bg">{currentUserInitials}</div><strong>{currentUserName}</strong><span>{progress.xp.toLocaleString()} XP</span><div className="podium-block block-three">3</div></div></div><div className="rank-list">{leaderboard.map((person) => <div className={`rank-row ${person.rank === 3 ? 'current-user' : ''}`} key={person.rank}><span className="rank-number">{person.rank}</span><div className={`avatar avatar-${person.color}`}>{person.rank === 3 ? currentUserInitials : person.initials}</div><div className="rank-name"><strong>{person.rank === 3 ? currentUserName : person.name} {person.rank === 3 && <span>(คุณ)</span>}</strong><small>{person.rank === 1 ? 'เรียน 4 วันติด' : person.rank === 2 ? 'ทำแบบฝึกหัดเก่ง' : 'กำลังไปได้ดี'}</small></div><strong className="rank-xp">{person.rank === 3 ? progress.xp.toLocaleString() : person.xp.replace(' XP', '')} XP</strong></div>)}</div></section><aside className="leaderboard-side"><div className="side-card your-rank"><div className="side-card-heading"><h3>อันดับของคุณ</h3><span>สัปดาห์นี้</span></div><div className="your-rank-number"><strong>#3</strong><span>จาก 24 คน</span></div><div className="rank-up"><ArrowUpSmall /> ขึ้นมา 2 อันดับจากสัปดาห์ก่อน</div><div className="xp-bar"><span style={{ width: '70%' }} /></div><small>อีก 240 XP จะถึงอันดับ #2</small></div><div className="side-card rewards-card"><div className="reward-icon"><Award size={20} /></div><h3>สะสมความสำเร็จ</h3><p>คุณปลดล็อกแล้ว 4 จาก 12 เหรียญ</p><div className="reward-dots"><i className="unlocked" /><i className="unlocked" /><i className="unlocked" /><i className="unlocked" /><i /><i /><i /><i /></div><button className="text-button">ดูความสำเร็จทั้งหมด <ArrowRight size={14} /></button></div></aside></div></>
-}
+function LeaderboardPage({ progress }: { progress: ProgressState }) { return <><PageIntro eyebrow="เติบโตไปด้วยกัน" title="กระดานคะแนน" description="คะแนนเป็นแรงจูงใจเล็ก ๆ ให้เราเรียนต่อเนื่อง ไม่ใช่ตัววัดคุณค่าหรือความเก่งของใคร" action={<div className="leaderboard-actions"><div className="demo-badge"><span className="status-dot" /> ข้อมูลตัวอย่างในโหมดเดโม</div><div className="period-select">สัปดาห์นี้ <ChevronDown size={15} /></div></div>} /><div className="leaderboard-layout"><section className="leaderboard-main"><div className="podium"><div className="podium-person second"><div className="podium-avatar silver-bg">ตน</div><strong>ต้นน้ำ</strong><span>1,080 XP</span><div className="podium-block block-two">2</div></div><div className="podium-person first"><div className="crown">✦</div><div className="podium-avatar gold-bg">ขห</div><strong>น้องข้าวหอม</strong><span>1,240 XP</span><div className="podium-block block-one">1</div></div><div className="podium-person third"><div className="podium-avatar bronze-bg">พช</div><strong>พิมพ์ชนก</strong><span>{progress.xp.toLocaleString()} XP</span><div className="podium-block block-three">3</div></div></div><div className="rank-list">{leaderboard.map((person) => <div className={`rank-row ${person.rank === 3 ? 'current-user' : ''}`} key={person.rank}><span className="rank-number">{person.rank}</span><div className={`avatar avatar-${person.color}`}>{person.initials}</div><div className="rank-name"><strong>{person.name} {person.rank === 3 && <span>คุณ</span>}</strong><small>{person.rank === 1 ? 'เรียน 4 วันติด' : person.rank === 2 ? 'ทำแบบฝึกหัดเก่ง' : 'กำลังไปได้ดี'}</small></div><strong className="rank-xp">{person.rank === 3 ? progress.xp.toLocaleString() : person.xp.replace(' XP', '')} XP</strong></div>)}</div></section><aside className="leaderboard-side"><div className="side-card your-rank"><div className="side-card-heading"><h3>อันดับของคุณ</h3><span>สัปดาห์นี้</span></div><div className="your-rank-number"><strong>#3</strong><span>จาก 24 คน</span></div><div className="rank-up"><ArrowUpSmall /> ขึ้นมา 2 อันดับจากสัปดาห์ก่อน</div><div className="xp-bar"><span style={{ width: '70%' }} /></div><small>อีก 240 XP จะถึงอันดับ #2</small></div><div className="side-card rewards-card"><div className="reward-icon"><Award size={20} /></div><h3>สะสมความสำเร็จ</h3><p>คุณปลดล็อกแล้ว 4 จาก 12 เหรียญ</p><div className="reward-dots"><i className="unlocked" /><i className="unlocked" /><i className="unlocked" /><i className="unlocked" /><i /><i /><i /><i /></div><button className="text-button">ดูความสำเร็จทั้งหมด <ArrowRight size={14} /></button></div></aside></div></> }
 function ArrowUpSmall() { return <span className="arrow-up-small">↑</span> }
 
-function ProfilePage({ user, progress, onNavigate, onLesson, onOpenSave, onOpenAuth }: { user: UserProfile | null; progress: ProgressState; onNavigate: (p: Page) => void; onLesson: (l: Lesson) => void; onOpenSave: () => void; onOpenAuth: () => void }) {
-  const displayName = user?.name ?? 'นักเรียน'
-  const initials = getUserInitials(displayName)
-  const gradeLabel = user ? `${user.grade} • ${user.level}` : 'ยังไม่ได้ลงชื่อเข้าใช้'
+function ProfilePage({ progress, onNavigate, onLesson }: { progress: ProgressState; onNavigate: (p: Page) => void; onLesson: (l: Lesson) => void }) { return <><div className="profile-hero"><div className="profile-banner-shape" /><div className="profile-main"><div className="profile-avatar-large">พช</div><div><div className="profile-name-row"><h1>พิมพ์ชนก</h1><span className="level-badge"><Sparkles size={13} /> นักสำรวจ</span></div><p>นักเรียนชั้น ม.3 • เริ่มเรียนกับ CommuMathy เมื่อ 3 ต.ค. 2569</p><div className="profile-stat-row"><span><Flame size={15} /> <strong>{progress.streak}</strong> วันต่อเนื่อง</span><span><Zap size={15} /> <strong>{progress.xp.toLocaleString()}</strong> XP</span><span><BookOpen size={15} /> <strong>{progress.completedLessons.length}</strong> บทเรียนจบแล้ว</span></div></div></div><button className="outline-button profile-edit" onClick={() => onNavigate('settings')}><PenLine size={15} /> แก้ไขโปรไฟล์</button></div><div className="profile-grid"><section><SectionHeading title="เส้นทางการเรียนรู้" /><div className="profile-progress-card"><div className="profile-progress-head"><div><span>ความก้าวหน้าโดยรวม</span><strong>{Math.round(progress.xp / 12)}%</strong></div><Target size={22} /></div><div className="progress-line"><span style={{ width: `${Math.min(100, progress.xp / 12)}%` }} /></div><div className="profile-progress-foot"><span>เริ่มต้นได้ดีมาก รักษาจังหวะนี้ไว้</span><span>เป้าหมาย: 1,000 XP</span></div></div><SectionHeading title="บทเรียนที่บันทึกไว้" link="ดูทั้งหมด" onLink={() => onNavigate('lessons')} />{progress.bookmarks.length > 0 ? progress.bookmarks.map((id) => { const l = lessons.find((x) => x.id === id); return l ? <LessonMiniCard key={id} lesson={l} onClick={() => onLesson(l)} /> : null }) : <div className="empty-state compact"><Bookmark size={22} /><p>ยังไม่มีบทเรียนที่บันทึกไว้</p></div>}</section><aside><div className="side-card achievement-card"><div className="side-card-heading"><h3>ความสำเร็จล่าสุด</h3><button>ดูทั้งหมด</button></div><div className="achievement"><div className="achievement-icon yellow-achievement"><Flame size={19} /></div><div><strong>ไฟแรงต่อเนื่อง</strong><span>เรียนติดต่อกันครบ 5 วัน</span></div><Check size={16} /></div><div className="achievement"><div className="achievement-icon purple-achievement"><Target size={19} /></div><div><strong>นักแก้โจทย์</strong><span>ตอบถูกครบ 5 ข้อ</span></div><Check size={16} /></div></div><div className="side-card activity-card"><div className="side-card-heading"><h3>กิจกรรมล่าสุด</h3></div><div className="activity-line"><span className="activity-dot green-dot" /><div><strong>ทำแบบฝึกหัด</strong><p>สมการเชิงเส้น • 3 ข้อ</p></div><small>วันนี้</small></div><div className="activity-line"><span className="activity-dot purple-dot" /><div><strong>เข้าเรียนบทเรียน</strong><p>สมการเชิงเส้นตัวแปรเดียว</p></div><small>เมื่อวาน</small></div></div></aside></div></> }
 
-  return <><div className="profile-hero"><div className="profile-banner-shape" /><div className="profile-main"><div className="profile-avatar-large">{initials}</div><div><div className="profile-name-row"><h1>{displayName}</h1><span className="level-badge"><Sparkles size={13} /> {user?.grade ?? 'นักเรียน'}</span></div><p>นักเรียนชั้น {gradeLabel} • สมาชิก CommuMathy</p><div className="profile-stat-row"><span><Flame size={15} /> <strong>{progress.streak}</strong> วันต่อเนื่อง</span><span><Zap size={15} /> <strong>{progress.xp.toLocaleString()}</strong> XP</span><span><BookOpen size={15} /> <strong>{progress.completedLessons.length}</strong> บทเรียนจบแล้ว</span></div><div style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}><button className="primary-button" onClick={onOpenSave} style={{ height: 36, fontSize: 12 }}><Save size={14} /> จัดการไฟล์ Save</button><button className="outline-button" onClick={onOpenAuth} style={{ height: 36, fontSize: 12 }}><UserRound size={14} /> สลับบัญชี / เข้าสู่ระบบ</button></div></div></div><button className="outline-button profile-edit" onClick={() => onNavigate('settings')}><PenLine size={15} /> แก้ไขโปรไฟล์</button></div><div className="profile-grid"><section><SectionHeading title="เส้นทางการเรียนรู้" /><div className="profile-progress-card"><div className="profile-progress-head"><div><span>ความก้าวหน้าโดยรวม</span><strong>{Math.round(progress.xp / 12)}%</strong></div><Target size={22} /></div><div className="progress-line"><span style={{ width: `${Math.min(100, progress.xp / 12)}%` }} /></div><div className="profile-progress-foot"><span>เริ่มต้นได้ดีมาก รักษาจังหวะนี้ไว้</span><span>เป้าหมาย: 1,000 XP</span></div></div><SectionHeading title="บทเรียนที่บันทึกไว้" link="ดูทั้งหมด" onLink={() => onNavigate('lessons')} />{progress.bookmarks.length > 0 ? progress.bookmarks.map((id) => { const l = lessons.find((x) => x.id === id); return l ? <LessonMiniCard key={id} lesson={l} onClick={() => onLesson(l)} /> : null }) : <div className="empty-state compact"><Bookmark size={22} /><p>ยังไม่มีบทเรียนที่บันทึกไว้</p></div>}</section><aside><div className="side-card achievement-card"><div className="side-card-heading"><h3>ความสำเร็จล่าสุด</h3><button>ดูทั้งหมด</button></div><div className="achievement"><div className="achievement-icon yellow-achievement"><Flame size={19} /></div><div><strong>ไฟแรงต่อเนื่อง</strong><span>เรียนติดต่อกันครบ 5 วัน</span></div><Check size={16} /></div><div className="achievement"><div className="achievement-icon purple-achievement"><Target size={19} /></div><div><strong>นักแก้โจทย์</strong><span>ตอบถูกครบ 5 ข้อ</span></div><Check size={16} /></div></div><div className="side-card activity-card"><div className="side-card-heading"><h3>กิจกรรมล่าสุด</h3></div><div className="activity-line"><span className="activity-dot green-dot" /><div><strong>ทำแบบฝึกหัด</strong><p>สมการเชิงเส้น • 3 ข้อ</p></div><small>วันนี้</small></div><div className="activity-line"><span className="activity-dot purple-dot" /><div><strong>เข้าเรียนบทเรียน</strong><p>สมการเชิงเส้นตัวแปรเดียว</p></div><small>เมื่อวาน</small></div></div></aside></div></>
-}
-
-function SettingsPage({ user, onUpdateUser, onThemeChange, onOpenSave, onOpenAuth }: { user: UserProfile | null; onUpdateUser: (u: UserProfile | null) => void; onThemeChange: (theme: SettingsState['theme']) => void; onOpenSave: () => void; onOpenAuth: () => void }) {
+function SettingsPage({ onThemeChange }: { onThemeChange: (theme: SettingsState['theme']) => void }) {
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile')
   const [settings, setSettings] = useState<SettingsState>(() => readStorage('commumathy-settings', defaultSettings))
   const [saved, setSaved] = useState(true)
 
-  const update = <K extends keyof SettingsState>(key: K, value: SettingsState[K]) => {
-    setSettings((current) => ({ ...current, [key]: value }))
-    if (key === 'theme') onThemeChange(value as SettingsState['theme'])
-    setSaved(false)
-  }
-
-  const save = () => {
-    localStorage.setItem('commumathy-settings', JSON.stringify(settings))
-    if (user) {
-      const updated: UserProfile = {
-        ...user,
-        name: settings.displayName.trim() || user.name,
-        grade: settings.grade,
-        level: determineLevel(settings.grade),
-        lastActiveAt: new Date().toISOString(),
-      }
-      onUpdateUser(updated)
-      saveStoredUser(updated)
-    }
-    setSaved(true)
-  }
-
-  const reset = () => {
-    setSettings(defaultSettings)
-    onThemeChange(defaultSettings.theme)
-    setSaved(false)
-  }
-
+  const update = <K extends keyof SettingsState>(key: K, value: SettingsState[K]) => { setSettings((current) => ({ ...current, [key]: value })); if (key === 'theme') onThemeChange(value as SettingsState['theme']); setSaved(false) }
+  const save = () => { localStorage.setItem('commumathy-settings', JSON.stringify(settings)); setSaved(true) }
+  const reset = () => { setSettings(defaultSettings); onThemeChange(defaultSettings.theme); setSaved(false) }
   const tabs: { id: SettingsTab; label: string; description: string; icon: typeof UserRound }[] = [
     { id: 'profile', label: 'บัญชีและโปรไฟล์', description: 'ข้อมูลที่แสดงกับเพื่อน', icon: UserRound },
     { id: 'notifications', label: 'การแจ้งเตือน', description: 'เลือกสิ่งที่อยากให้เตือน', icon: Bell },
@@ -519,7 +362,7 @@ function SettingsPage({ user, onUpdateUser, onThemeChange, onOpenSave, onOpenAut
     { id: 'learning', label: 'การเรียนรู้', description: 'ตั้งจังหวะการฝึกของคุณ', icon: GraduationCap },
   ]
   const active = tabs.find((tab) => tab.id === activeTab) ?? tabs[0]
-  return <><PageIntro eyebrow="ปรับให้เป็นแบบของคุณ" title="ตั้งค่า" description="จัดการข้อมูลส่วนตัว การแจ้งเตือน และรูปแบบการเรียนรู้ของคุณได้ในที่เดียว" /><div className="settings-layout"><aside className="settings-nav" aria-label="หมวดการตั้งค่า">{tabs.map(({ id, label, description, icon: Icon }) => <button key={id} className={activeTab === id ? 'active' : ''} onClick={() => setActiveTab(id)}><Icon size={17} /><span><strong>{label}</strong><small>{description}</small></span></button>)}</aside><section className="settings-panel"><div className="settings-panel-heading"><div><span className="eyebrow-dot" /> การตั้งค่าของฉัน<h2>{active.label}</h2><p>{active.description}</p></div><span className="settings-status"><span className={`status-dot ${saved ? 'saved' : 'unsaved'}`} /> {saved ? 'บันทึกแล้ว' : 'มีการเปลี่ยนแปลง'}</span></div>{activeTab === 'profile' && <><div className="settings-section profile-settings-section"><div className="settings-section-copy"><h2>ข้อมูลโปรไฟล์</h2><p>ข้อมูลนี้จะแสดงในระบบและช่วยปรับคำแนะนำระดับชั้นให้เหมาะกับคุณ (ไม่ต้องใช้อีเมล)</p></div><div className="profile-summary"><div className="profile-settings-avatar">{getUserInitials(settings.displayName)}</div><div><strong>{settings.displayName}</strong><span>นักเรียน {settings.grade} • สมาชิก CommuMathy</span></div><button className="outline-button" onClick={() => update('displayName', settings.displayName.trim() || 'นักเรียน')}>อัปเดตชื่อ</button></div><div className="profile-form"><label>ชื่อที่แสดง / ชื่อเล่น<input value={settings.displayName} onChange={(event) => update('displayName', event.target.value)} placeholder="เช่น พิมพ์ชนก" /></label><label>ระดับชั้นการศึกษา<select value={settings.grade} onChange={(event) => update('grade', event.target.value as GradeLevel)}><option value="ม.1">มัธยมศึกษาปีที่ 1 (ม.1)</option><option value="ม.2">มัธยมศึกษาปีที่ 2 (ม.2)</option><option value="ม.3">มัธยมศึกษาปีที่ 3 (ม.3)</option><option value="ม.4">มัธยมศึกษาปีที่ 4 (ม.4)</option><option value="ม.5">มัธยมศึกษาปีที่ 5 (ม.5)</option><option value="ม.6">มัธยมศึกษาปีที่ 6 (ม.6)</option></select></label><label>เกี่ยวกับฉัน<textarea value={settings.bio} onChange={(event) => update('bio', event.target.value)} placeholder="เล่าเกี่ยวกับเป้าหมายการเรียนของคุณ" rows={3} /></label></div></div><div style={{ marginTop: 20, paddingTop: 18, borderTop: '1px solid var(--cm-line)' }}><h3>ระบบสำรองข้อมูลและไฟล์ Save</h3><p style={{ fontSize: 11, color: 'var(--cm-muted)', margin: '4px 0 12px' }}>ส่งออกความคืบหน้าเป็นไฟล์ .cmmathy ป้องกันการแก้ไขสถิติ หรือกู้คืนข้อมูลเดิม</p><div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}><button type="button" className="outline-button" onClick={onOpenSave}><Save size={15} /> จัดการไฟล์ Save / ส่งออกไฟล์</button><button type="button" className="text-button" onClick={onOpenAuth}><UserRound size={15} /> สลับบัญชีผู้ใช้</button></div></div><div className="settings-info-strip" style={{ marginTop: 14 }}><Info size={16} /><span>ข้อมูลของคุณถูกบันทึกไว้ในเบราว์เซอร์ของอุปกรณ์นี้ สามารถดาวน์โหลดไฟล์ Save เพื่อสำรองข้อมูลได้ตลอดเวลา</span></div></>}{activeTab === 'notifications' && <SettingsContent title="เลือกการแจ้งเตือนที่มีประโยชน์กับคุณ" description="เปิดเฉพาะสิ่งที่ช่วยให้คุณเรียนต่อเนื่องโดยไม่รบกวนเกินไป"><div className="setting-toggles"><Toggle label="เตือนการเรียนต่อเนื่อง" description="เตือนเบา ๆ เมื่อใกล้หมดวันและยังไม่ได้เรียน" checked={settings.dailyReminder} onChange={(value) => update('dailyReminder', value)} /><Toggle label="แจ้งเตือนการตอบกลับในชุมชน" description="บอกเมื่อมีคนตอบหรือช่วยต่อยอดคำถามของคุณ" checked={settings.communityReplies} onChange={(value) => update('communityReplies', value)} /><Toggle label="สรุปความก้าวหน้ารายสัปดาห์" description="รับภาพรวมบทเรียน แบบฝึกหัด และเป้าหมายที่เหลือ" checked={settings.weeklySummary} onChange={(value) => update('weeklySummary', value)} /></div></SettingsContent>}{activeTab === 'appearance' && <SettingsContent title="ทำให้หน้าจออ่านง่ายขึ้น" description="ตัวเลือกเหล่านี้มีผลกับการแสดงผลบนอุปกรณ์นี้"><div className="settings-choice-grid"><ChoiceCard label="ธีมสี" description="เลือกโหมดที่สบายตา" value={settings.theme} options={['สว่าง', 'มืด', 'ตามระบบ'] as const} onChange={(value) => update('theme', value)} /><ChoiceCard label="ขนาดตัวอักษร" description="ปรับให้เหมาะกับการอ่าน" value={settings.fontSize} options={['มาตรฐาน', 'ใหญ่'] as const} onChange={(value) => update('fontSize', value)} /></div><div className="settings-preview"><div className="preview-window"><span className="preview-dot" /><span className="preview-dot" /><span className="preview-dot" /><div><strong>ตัวอย่างการอ่านบทเรียน</strong><p>ปรับขนาดตัวอักษรเพื่ออ่านคำอธิบายและสมการได้สบายขึ้น</p></div></div><span>ตัวอย่างการแสดงผล</span></div></SettingsContent>}{activeTab === 'learning' && <SettingsContent title="ตั้งค่าจังหวะการเรียน" description="ช่วยให้บทเรียนและแบบฝึกหัดตรงกับเป้าหมายของคุณ"><div className="learning-preferences"><label>ระดับความท้าทายที่แนะนำ<select value={settings.difficulty} onChange={(event) => update('difficulty', event.target.value as SettingsState['difficulty'])}><option>พื้นฐาน</option><option>กำลังดี</option><option>ท้าทาย</option></select></label><div className="setting-toggles"><Toggle label="แสดงคำใบ้ก่อนเฉลย" description="ช่วยให้ได้ลองคิดด้วยตัวเองมากขึ้น" checked={settings.showHints} onChange={(value) => update('showHints', value)} /><Toggle label="แสดงสมการแบบเต็มหน้าจอ" description="เหมาะกับการอ่านบนมือถือ" checked={settings.fullScreenMath} onChange={(value) => update('fullScreenMath', value)} /></div></div></SettingsContent>}<div className="settings-footer"><button className="reset-settings" onClick={reset}><RotateCcw size={14} /> คืนค่าเริ่มต้น</button><div><span>{saved ? <><Check size={15} /> บันทึกแล้ว</> : 'การเปลี่ยนแปลงยังไม่ได้บันทึก'}</span><button className="primary-button" onClick={save}><Save size={15} /> บันทึกการตั้งค่า</button></div></div></section></div></>
+  return <><PageIntro eyebrow="ปรับให้เป็นแบบของคุณ" title="ตั้งค่า" description="จัดการข้อมูลส่วนตัว การแจ้งเตือน และรูปแบบการเรียนรู้ของคุณได้ในที่เดียว" /><div className="settings-layout"><aside className="settings-nav" aria-label="หมวดการตั้งค่า">{tabs.map(({ id, label, description, icon: Icon }) => <button key={id} className={activeTab === id ? 'active' : ''} onClick={() => setActiveTab(id)}><Icon size={17} /><span><strong>{label}</strong><small>{description}</small></span></button>)}</aside><section className="settings-panel"><div className="settings-panel-heading"><div><span className="eyebrow-dot" /> การตั้งค่าของฉัน<h2>{active.label}</h2><p>{active.description}</p></div><span className="settings-status"><span className={`status-dot ${saved ? 'saved' : 'unsaved'}`} /> {saved ? 'บันทึกแล้ว' : 'มีการเปลี่ยนแปลง'}</span></div>{activeTab === 'profile' && <><div className="settings-section profile-settings-section"><div className="settings-section-copy"><h2>ข้อมูลโปรไฟล์</h2><p>ข้อมูลนี้จะแสดงในชุมชนการเรียนรู้และช่วยปรับคำแนะนำให้เหมาะกับคุณ</p></div><div className="profile-summary"><div className="profile-settings-avatar">{settings.displayName.slice(0, 2)}</div><div><strong>{settings.displayName}</strong><span>นักเรียน {settings.grade} • สมาชิก CommuMathy</span></div><button className="outline-button" onClick={() => update('displayName', settings.displayName.trim() || 'พิมพ์ชนก')}>อัปเดตชื่อ</button></div><div className="profile-form"><label>ชื่อที่แสดง<input value={settings.displayName} onChange={(event) => update('displayName', event.target.value)} placeholder="เช่น พิมพ์ชนก" /></label><label>ระดับชั้น<select value={settings.grade} onChange={(event) => update('grade', event.target.value)}><option>ม.1</option><option>ม.2</option><option>ม.3</option><option>ม.4</option><option>ม.5</option><option>ม.6</option></select></label><label>อีเมลสำหรับบัญชี<input value={settings.email} onChange={(event) => update('email', event.target.value)} type="email" /></label><label>เกี่ยวกับฉัน<textarea value={settings.bio} onChange={(event) => update('bio', event.target.value)} placeholder="เล่าเกี่ยวกับเป้าหมายการเรียนของคุณ" rows={3} /></label></div></div><div className="settings-info-strip"><Info size={16} /><span>ข้อมูลของคุณจะถูกเก็บไว้บนอุปกรณ์นี้ในโหมดเดโม และยังไม่มีการเชื่อมต่อบัญชีออนไลน์</span></div></>}{activeTab === 'notifications' && <SettingsContent title="เลือกการแจ้งเตือนที่มีประโยชน์กับคุณ" description="เปิดเฉพาะสิ่งที่ช่วยให้คุณเรียนต่อเนื่องโดยไม่รบกวนเกินไป"><div className="setting-toggles"><Toggle label="เตือนการเรียนต่อเนื่อง" description="เตือนเบา ๆ เมื่อใกล้หมดวันและยังไม่ได้เรียน" checked={settings.dailyReminder} onChange={(value) => update('dailyReminder', value)} /><Toggle label="แจ้งเตือนการตอบกลับในชุมชน" description="บอกเมื่อมีคนตอบหรือช่วยต่อยอดคำถามของคุณ" checked={settings.communityReplies} onChange={(value) => update('communityReplies', value)} /><Toggle label="สรุปความก้าวหน้ารายสัปดาห์" description="รับภาพรวมบทเรียน แบบฝึกหัด และเป้าหมายที่เหลือ" checked={settings.weeklySummary} onChange={(value) => update('weeklySummary', value)} /></div></SettingsContent>}{activeTab === 'appearance' && <SettingsContent title="ทำให้หน้าจออ่านง่ายขึ้น" description="ตัวเลือกเหล่านี้มีผลกับการแสดงผลบนอุปกรณ์นี้"><div className="settings-choice-grid"><ChoiceCard label="ธีมสี" description="เลือกโหมดที่สบายตา" value={settings.theme} options={['สว่าง', 'มืด', 'ตามระบบ'] as const} onChange={(value) => update('theme', value)} /><ChoiceCard label="ขนาดตัวอักษร" description="ปรับให้เหมาะกับการอ่าน" value={settings.fontSize} options={['มาตรฐาน', 'ใหญ่'] as const} onChange={(value) => update('fontSize', value)} /></div><div className="settings-preview"><div className="preview-window"><span className="preview-dot" /><span className="preview-dot" /><span className="preview-dot" /><div><strong>ตัวอย่างการอ่านบทเรียน</strong><p>ปรับขนาดตัวอักษรเพื่ออ่านคำอธิบายและสมการได้สบายขึ้น</p></div></div><span>ตัวอย่างการแสดงผล</span></div></SettingsContent>}{activeTab === 'learning' && <SettingsContent title="ตั้งค่าจังหวะการเรียน" description="ช่วยให้บทเรียนและแบบฝึกหัดตรงกับเป้าหมายของคุณ"><div className="learning-preferences"><label>ระดับความท้าทายที่แนะนำ<select value={settings.difficulty} onChange={(event) => update('difficulty', event.target.value as SettingsState['difficulty'])}><option>พื้นฐาน</option><option>กำลังดี</option><option>ท้าทาย</option></select></label><div className="setting-toggles"><Toggle label="แสดงคำใบ้ก่อนเฉลย" description="ช่วยให้ได้ลองคิดด้วยตัวเองมากขึ้น" checked={settings.showHints} onChange={(value) => update('showHints', value)} /><Toggle label="แสดงสมการแบบเต็มหน้าจอ" description="เหมาะกับการอ่านบนมือถือ" checked={settings.fullScreenMath} onChange={(value) => update('fullScreenMath', value)} /></div></div></SettingsContent>}<div className="settings-footer"><button className="reset-settings" onClick={reset}><RotateCcw size={14} /> คืนค่าเริ่มต้น</button><div><span>{saved ? <><Check size={15} /> บันทึกแล้ว</> : 'การเปลี่ยนแปลงยังไม่ได้บันทึก'}</span><button className="primary-button" onClick={save}><Save size={15} /> บันทึกการตั้งค่า</button></div></div></section></div></>
 }
 
 function SettingsContent({ title, description, children }: { title: string; description: string; children: React.ReactNode }) { return <div className="settings-section"><div className="settings-section-copy"><h2>{title}</h2><p>{description}</p></div>{children}</div> }

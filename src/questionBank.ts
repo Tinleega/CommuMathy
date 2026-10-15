@@ -228,16 +228,16 @@ function algebraPayload(chapter: CurriculumChapter, index: number, seed: number,
   const b = integer(random, -12, 12)
   const c = a * x + b
   const mode = index % 6
-  const label = `Problem ${index + 1}: `
+  const label = `ข้อ ${index + 1}: `
   if (mode === 0 || mode === 3) {
     const answer = String(x)
     const choices = shuffledChoices(answer, [String(x + 1), String(x - 1), String(c)], seed + 1)
-    return { prompt: `${label}Solve ${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)} = ${c}.`, ...choices, correctAnswer: answer, hint: `Undo the constant term first, then divide by ${a}.`, solution: `${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)} = ${c} → ${a}x = ${c - b} → x = ${x}.`, parameters: { a, b, c, x } }
+    return { prompt: `${label}จงแก้สมการ ${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)} = ${c} แล้วหาค่า x`, ...choices, correctAnswer: answer, hint: `กำจัดค่าคงที่ออกก่อน แล้วจึงหารด้วย ${a} ทั้งสองข้าง`, solution: `${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)} = ${c} → ${a}x = ${c - b} → x = ${x}`, parameters: { a, b, c, x } }
   }
   if (mode === 1) {
-    const answer = `Subtract ${b} from both sides`
-    const choices = shuffledChoices(answer, [`Divide by ${a} first`, `Change ${b} to ${-b} on one side only`, `Multiply both sides by ${b}`], seed + 2)
-    return { prompt: `${label}For ${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)} = ${c}, what is the best first step?`, ...choices, correctAnswer: answer, hint: 'Remove the term that does not contain x.', solution: `Subtract ${b} from both sides so that ${a}x = ${c - b}.`, parameters: { a, b, c } }
+    const answer = `ลบ ${b} ออกจากทั้งสองข้าง`
+    const choices = shuffledChoices(answer, [`หารด้วย ${a} ก่อน`, `เปลี่ยน ${b} เป็น ${-b} เฉพาะข้างเดียว`, `คูณทั้งสองข้างด้วย ${b}`], seed + 2)
+    return { prompt: `${label}สำหรับสมการ ${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)} = ${c} ขั้นตอนแรกที่ถูกต้องที่สุดคือข้อใด?`, ...choices, correctAnswer: answer, hint: 'กำจัดพจน์ที่ไม่มีตัวแปร x ออกก่อน', solution: `ลบ ${b} ออกจากทั้งสองข้าง จะได้ ${a}x = ${c - b}`, parameters: { a, b, c } }
   }
   if (mode === 2) {
     const base = integer(random, 20, 80)
@@ -246,16 +246,16 @@ function algebraPayload(chapter: CurriculumChapter, index: number, seed: number,
     const total = base + rate * units
     const answer = String(units)
     const choices = shuffledChoices(answer, [String(units + 1), String(units - 1), String(total - base)], seed + 3)
-    return { prompt: `${label}A service charges ${base} baht plus ${rate} baht per item. If the total is ${total} baht, how many items were bought?`, ...choices, correctAnswer: answer, hint: `Write ${base} + ${rate}n = ${total}.`, solution: `${base} + ${rate}n = ${total} → ${rate}n = ${total - base} → n = ${units}.`, parameters: { base, rate, units, total } }
+    return { prompt: `${label}บริการหนึ่งคิดค่าบริการเริ่มต้น ${base} บาท และคิดเพิ่มชิ้นละ ${rate} บาท ถ้าจ่ายทั้งหมด ${total} บาท แสดงว่าซื้อสินค้ากี่ชิ้น?`, ...choices, correctAnswer: answer, hint: `ตั้งสมการ ${base} + ${rate}n = ${total}`, solution: `${base} + ${rate}n = ${total} → ${rate}n = ${total - base} → n = ${units}`, parameters: { base, rate, units, total } }
   }
   if (mode === 4) {
     const answer = `${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)} = ${c}`
     const choices = shuffledChoices(answer, [`${a}x = ${c}`, `x ${b >= 0 ? '+' : '-'} ${Math.abs(b)} = ${c}`, `${a}x ${b >= 0 ? '-' : '+'} ${Math.abs(b)} = ${c}`], seed + 4)
-    return { prompt: `${label}Which equation represents a number x that becomes ${c} after multiplying by ${a} and then adding ${b}?`, ...choices, correctAnswer: answer, hint: 'Translate the operations in the order they happen.', solution: `Multiply x by ${a}, then add ${b}; therefore ${answer}.`, parameters: { a, b, c } }
+    return { prompt: `${label}สมการใดแทน “จำนวน x จำนวนหนึ่ง เมื่อคูณด้วย ${a} แล้วบวกด้วย ${b} จะเท่ากับ ${c}”?`, ...choices, correctAnswer: answer, hint: 'ถอดความการดำเนินการตามลำดับที่เกิดขึ้น', solution: `คูณ x ด้วย ${a} แล้วบวกด้วย ${b} จึงได้สมการ ${answer}`, parameters: { a, b, c } }
   }
-  const answer = `Apply the same operation to both sides`
-  const choices = shuffledChoices(answer, [`Move a term without changing its sign`, `Divide by zero`, `Ignore the coefficient of x`], seed + 5)
-  return { prompt: `${label}A student changes ${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)} = ${c} by changing only the left side. Which principle was missed?`, ...choices, correctAnswer: answer, hint: 'An equation is a balance.', solution: `An equality stays true only when an equivalent operation is applied to both sides.`, parameters: { a, b, c, subtopic } }
+  const answer = `ใช้การดำเนินการเดียวกันกับทั้งสองข้าง`
+  const choices = shuffledChoices(answer, [`ย้ายพจน์โดยไม่เปลี่ยนเครื่องหมาย`, `หารด้วยศูนย์`, `ละเลยสัมประสิทธิ์ของ x`], seed + 5)
+  return { prompt: `${label}นักเรียนคนหนึ่งเปลี่ยนสมการ ${a}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)} = ${c} โดยเปลี่ยนเฉพาะข้างซ้ายเพียงข้างเดียว หลักการใดที่ถูกละเลย?`, ...choices, correctAnswer: answer, hint: 'สมการเปรียบเสมือนตาชั่งที่สมดุล', solution: `ความเท่ากันจะยังคงเป็นจริงก็ต่อเมื่อใช้การดำเนินการที่สมมูลกับทั้งสองข้างของสมการ`, parameters: { a, b, c, subtopic } }
 }
 
 function geometryPayload(chapter: CurriculumChapter, index: number, seed: number): QuestionPayload {
@@ -267,15 +267,15 @@ function geometryPayload(chapter: CurriculumChapter, index: number, seed: number
   const mode = index % 5
   if (chapter.id.includes('pythagorean') || mode < 2) {
     const answer = mode % 2 === 0 ? String(c) : String(a)
-    const prompt = mode % 2 === 0 ? `A right triangle has legs ${a} and ${b}. Find the hypotenuse.` : `A right triangle has hypotenuse ${c} and one leg ${b}. Find the other leg.`
+    const prompt = mode % 2 === 0 ? `สามเหลี่ยมมุมฉากมีด้านประกอบมุมฉากยาว ${a} และ ${b} หน่วย จงหาความยาวด้านตรงข้ามมุมฉาก` : `สามเหลี่ยมมุมฉากมีด้านตรงข้ามมุมฉากยาว ${c} หน่วย และด้านประกอบมุมฉากด้านหนึ่งยาว ${b} หน่วย จงหาความยาวด้านประกอบมุมฉากอีกด้าน`
     const choices = shuffledChoices(answer, mode % 2 === 0 ? [String(c + 1), String(c - 1), String(a + b)] : [String(a + 1), String(b - 1), String(c - b)], seed + 10)
-    return { prompt, ...choices, correctAnswer: answer, hint: 'Use a² + b² = c².', solution: mode % 2 === 0 ? `${a}² + ${b}² = ${a * a + b * b} = ${c}², so c = ${c}.` : `${c}² - ${b}² = ${c * c - b * b} = ${a}², so the missing leg is ${a}.`, parameters: { a, b, c } }
+    return { prompt, ...choices, correctAnswer: answer, hint: 'ใช้ทฤษฎีบทพีทาโกรัส a² + b² = c²', solution: mode % 2 === 0 ? `${a}² + ${b}² = ${a * a + b * b} = ${c}² ดังนั้น c = ${c}` : `${c}² - ${b}² = ${c * c - b * b} = ${a}² ดังนั้นด้านที่เหลือยาว ${a}`, parameters: { a, b, c } }
   }
   const length = 4 + (index % 19)
   const width = 3 + (Math.floor(index / 19) % 12)
   const answer = String(length * width)
   const choices = shuffledChoices(answer, [String(2 * (length + width)), String(length + width), String(length * width + width)], seed + 11)
-  return { prompt: `A rectangle has length ${length} cm and width ${width} cm. What is its area?`, ...choices, correctAnswer: answer, hint: 'Area of a rectangle is length × width.', solution: `Area = ${length} × ${width} = ${answer} cm².`, parameters: { length, width } }
+  return { prompt: `รูปสี่เหลี่ยมผืนผ้ามีความยาว ${length} ซม. และความกว้าง ${width} ซม. มีพื้นที่เท่าใด?`, ...choices, correctAnswer: answer, hint: 'พื้นที่รูปสี่เหลี่ยมผืนผ้า = ความยาว × ความกว้าง', solution: `พื้นที่ = ${length} × ${width} = ${answer} ตร.ซม.`, parameters: { length, width } }
 }
 
 function probabilityPayload(index: number, seed: number): QuestionPayload {
@@ -284,10 +284,10 @@ function probabilityPayload(index: number, seed: number): QuestionPayload {
   const green = 1 + ((index * 5) % 8)
   const total = red + blue + green
   const target = index % 3 === 0 ? red : index % 3 === 1 ? blue : green
-  const label = index % 3 === 0 ? 'red' : index % 3 === 1 ? 'blue' : 'green'
+  const label = index % 3 === 0 ? 'สีแดง' : index % 3 === 1 ? 'สีน้ำเงิน' : 'สีเขียว'
   const answer = fraction(target, total)
   const choices = shuffledChoices(answer, [fraction(target + 1, total), fraction(total - target, total), fraction(target, total + 1)], seed + 20)
-  return { prompt: `A bag contains ${red} red, ${blue} blue, and ${green} green counters. What is the probability of drawing a ${label} counter?`, ...choices, correctAnswer: answer, hint: 'Favourable outcomes ÷ total outcomes.', solution: `There are ${target} favourable counters out of ${total}; P(${label}) = ${target}/${total} = ${answer}.`, parameters: { red, blue, green, total, target } }
+  return { prompt: `ในถุงมีลูกแก้วสีแดง ${red} ลูก สีน้ำเงิน ${blue} ลูก และสีเขียว ${green} ลูก ความน่าจะเป็นที่จะสุ่มหยิบได้ลูกแก้ว${label}เป็นเท่าใด?`, ...choices, correctAnswer: answer, hint: 'จำนวนผลลัพธ์ที่สนใจ ÷ จำนวนผลลัพธ์ทั้งหมด', solution: `มีลูกแก้วที่สนใจ ${target} ลูก จากทั้งหมด ${total} ลูก ดังนั้น P(${label}) = ${target}/${total} = ${answer}`, parameters: { red, blue, green, total, target } }
 }
 
 function statisticsPayload(index: number, seed: number): QuestionPayload {
@@ -297,9 +297,9 @@ function statisticsPayload(index: number, seed: number): QuestionPayload {
   const mean = values.reduce((sum, value) => sum + value, 0) / values.length
   const mode = index % 3
   const answer = mode === 0 ? decimal(mean) : mode === 1 ? String(values[2]) : String(values[4] - values[0])
-  const label = mode === 0 ? 'mean' : mode === 1 ? 'median' : 'range'
+  const label = mode === 0 ? 'ค่าเฉลี่ย' : mode === 1 ? 'มัธยฐาน' : 'พิสัย'
   const choices = shuffledChoices(answer, [String(values[0]), String(values[1]), String(values[4])], seed + 30)
-  return { prompt: `For the data set {${values.join(', ')}}, what is the ${label}?`, ...choices, correctAnswer: answer, hint: mode === 0 ? 'Add all values and divide by 5.' : mode === 1 ? 'Use the middle value after sorting.' : 'Maximum − minimum.', solution: mode === 0 ? `Mean = (${values.join(' + ')}) ÷ 5 = ${answer}.` : mode === 1 ? `The sorted middle value is ${answer}.` : `Range = ${values[4]} − ${values[0]} = ${answer}.`, parameters: { values } }
+  return { prompt: `จงหา${label}ของข้อมูลชุด {${values.join(', ')}}`, ...choices, correctAnswer: answer, hint: mode === 0 ? 'นำค่าทั้งหมดมารวมกันแล้วหารด้วย 5' : mode === 1 ? 'ใช้ค่าที่อยู่ตรงกลางหลังจากเรียงข้อมูลแล้ว' : 'ค่าสูงสุด − ค่าต่ำสุด', solution: mode === 0 ? `ค่าเฉลี่ย = (${values.join(' + ')}) ÷ 5 = ${answer}` : mode === 1 ? `ค่าที่อยู่ตรงกลางหลังเรียงข้อมูลคือ ${answer}` : `พิสัย = ${values[4]} − ${values[0]} = ${answer}`, parameters: { values } }
 }
 
 function exponentsPayload(index: number, seed: number): QuestionPayload {
@@ -308,7 +308,7 @@ function exponentsPayload(index: number, seed: number): QuestionPayload {
   const exponentB = 1 + (Math.floor(index / 8) % 8)
   const answer = String(base ** (exponentA + exponentB))
   const choices = shuffledChoices(answer, [String(base ** exponentA + base ** exponentB), String(base ** (exponentA * exponentB)), String(base ** (exponentA + exponentB - 1))], seed + 40)
-  return { prompt: `Simplify ${base}^${exponentA} × ${base}^${exponentB}.`, ...choices, correctAnswer: answer, hint: 'When bases match, add the exponents.', solution: `${base}^${exponentA} × ${base}^${exponentB} = ${base}^(${exponentA}+${exponentB}) = ${answer}.`, parameters: { base, exponentA, exponentB } }
+  return { prompt: `จงเขียน ${base}^${exponentA} × ${base}^${exponentB} ให้อยู่ในรูปเลขยกกำลังอย่างง่าย`, ...choices, correctAnswer: answer, hint: 'เมื่อฐานเท่ากัน ให้นำเลขชี้กำลังมาบวกกัน', solution: `${base}^${exponentA} × ${base}^${exponentB} = ${base}^(${exponentA}+${exponentB}) = ${answer}`, parameters: { base, exponentA, exponentB } }
 }
 
 function functionPayload(index: number, seed: number): QuestionPayload {
@@ -318,11 +318,11 @@ function functionPayload(index: number, seed: number): QuestionPayload {
   const x = integer(random, -4, 8)
   const y = m * x + b
   const mode = index % 3
-  const label = `Problem ${index + 1}: `
+  const label = `ข้อ ${index + 1}: `
   const answer = mode === 0 ? String(y) : mode === 1 ? String(m) : String(b)
-  const prompt = mode === 0 ? `${label}For f(x) = ${m}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}, find f(${x}).` : mode === 1 ? `${label}What is the slope of y = ${m}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}?` : `${label}What is the y-intercept of y = ${m}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)}?`
+  const prompt = mode === 0 ? `${label}กำหนด f(x) = ${m}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)} จงหา f(${x})` : mode === 1 ? `${label}ความชันของสมการ y = ${m}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)} มีค่าเท่าใด?` : `${label}จุดตัดแกน y ของสมการ y = ${m}x ${b >= 0 ? '+' : '-'} ${Math.abs(b)} มีค่าเท่าใด?`
   const choices = shuffledChoices(answer, [String(y + 1), String(m + 1), String(b + 1)], seed + 50)
-  return { prompt, ...choices, correctAnswer: answer, hint: mode === 0 ? 'Substitute the given x-value.' : 'Compare with y = mx + b.', solution: mode === 0 ? `f(${x}) = ${m}(${x}) ${b >= 0 ? '+' : '-'} ${Math.abs(b)} = ${y}.` : mode === 1 ? `In y = mx + b, m is the slope, so m = ${m}.` : `In y = mx + b, b is the y-intercept, so b = ${b}.`, parameters: { m, b, x, y } }
+  return { prompt, ...choices, correctAnswer: answer, hint: mode === 0 ? 'แทนค่า x ที่กำหนดลงในฟังก์ชัน' : 'เทียบกับรูปทั่วไป y = mx + b', solution: mode === 0 ? `f(${x}) = ${m}(${x}) ${b >= 0 ? '+' : '-'} ${Math.abs(b)} = ${y}` : mode === 1 ? `ในรูป y = mx + b ค่า m คือความชัน ดังนั้น m = ${m}` : `ในรูป y = mx + b ค่า b คือจุดตัดแกน y ดังนั้น b = ${b}`, parameters: { m, b, x, y } }
 }
 
 function sequencePayload(index: number, seed: number): QuestionPayload {
@@ -332,7 +332,7 @@ function sequencePayload(index: number, seed: number): QuestionPayload {
   const n = integer(random, 5, 12)
   const answer = String(first + (n - 1) * difference)
   const choices = shuffledChoices(answer, [String(first + n * difference), String(first + (n - 2) * difference), String(first * n + difference)], seed + 60)
-  return { prompt: `Sequence ${index + 1}: ${first}, ${first + difference}, ${first + 2 * difference}, … What is its ${n}th term?`, ...choices, correctAnswer: answer, hint: 'Use aₙ = a₁ + (n − 1)d.', solution: `aₙ = ${first} + (${n}−1)(${difference}) = ${answer}.`, parameters: { first, difference, n } }
+  return { prompt: `ลำดับที่ ${index + 1}: ${first}, ${first + difference}, ${first + 2 * difference}, … พจน์ที่ ${n} มีค่าเท่าใด?`, ...choices, correctAnswer: answer, hint: 'ใช้สูตร aₙ = a₁ + (n − 1)d', solution: `aₙ = ${first} + (${n}−1)(${difference}) = ${answer}`, parameters: { first, difference, n } }
 }
 
 function trigonometryPayload(index: number, seed: number): QuestionPayload {
@@ -340,7 +340,7 @@ function trigonometryPayload(index: number, seed: number): QuestionPayload {
   const scale = Math.floor(index / 3) + 1
   const answer = table.value
   const choices = shuffledChoices(answer, ['0', '1', '√3', '2'], seed + 70)
-  return { prompt: `A right triangle has hypotenuse ${2 * scale} units and special angle ${table.angle}°. What is sin(${table.angle}°)?`, ...choices, correctAnswer: answer, hint: 'Recall the special-angle sine table.', solution: `The side ratio stays the same under scaling, so sin(${table.angle}°) = ${answer}.`, parameters: { angle: table.angle, scale } }
+  return { prompt: `สามเหลี่ยมมุมฉากมีด้านตรงข้ามมุมฉากยาว ${2 * scale} หน่วย และมีมุม ${table.angle}° จงหาค่า sin(${table.angle}°)`, ...choices, correctAnswer: answer, hint: 'ใช้ตารางค่าไซน์ของมุมพิเศษ', solution: `อัตราส่วนของด้านไม่เปลี่ยนเมื่อขยายสเกล ดังนั้น sin(${table.angle}°) = ${answer}`, parameters: { angle: table.angle, scale } }
 }
 
 function calculusPayload(index: number, seed: number): QuestionPayload {
@@ -349,25 +349,25 @@ function calculusPayload(index: number, seed: number): QuestionPayload {
   const coefficient = 1 + (Math.floor(index / 40) % 5)
   const answer = String(coefficient * power * x ** (power - 1))
   const choices = shuffledChoices(answer, [String(coefficient * x ** power), String((power - 1) * x), String(coefficient * power + x)], seed + 80)
-  return { prompt: `If f(x) = ${coefficient}x^${power}, what is f'(${x})?`, ...choices, correctAnswer: answer, hint: 'Differentiate axⁿ as an×ⁿ⁻¹, then substitute.', solution: `f'(x) = ${coefficient * power}x^${power - 1}; f'(${x}) = ${coefficient * power}(${x})^${power - 1} = ${answer}.`, parameters: { coefficient, power, x } }
+  return { prompt: `กำหนด f(x) = ${coefficient}x^${power} จงหาค่า f'(${x})`, ...choices, correctAnswer: answer, hint: 'หาอนุพันธ์ axⁿ จะได้ an·xⁿ⁻¹ แล้วแทนค่า x', solution: `f'(x) = ${coefficient * power}x^${power - 1} ดังนั้น f'(${x}) = ${coefficient * power}(${x})^${power - 1} = ${answer}`, parameters: { coefficient, power, x } }
 }
 
 function logicPayload(index: number, seed: number): QuestionPayload {
   const truth = index % 2 === 0
-  const answer = truth ? 'True' : 'False'
+  const answer = truth ? 'จริง' : 'เท็จ'
   const witness = 2 + 2 * (Math.floor(index / 2) % 20)
-  const statement = truth ? `If n is even, then n² is even (for example n = ${witness}).` : `If n² is even, then n is odd (try n = ${witness}).`
-  const choices = shuffledChoices(answer, ['True', 'False', 'Cannot be determined'], seed + 90)
-  return { prompt: `Case ${index + 1}: evaluate the statement “${statement}”`, ...choices, correctAnswer: answer, hint: truth ? 'Write n = 2k.' : 'Try the supplied even counterexample.', solution: truth ? 'If n = 2k, then n² = 4k² = 2(2k²), which is even.' : `The statement is false: n = ${witness} gives an even square, but n is not odd.`, parameters: { truth, witness } }
+  const statement = truth ? `ถ้า n เป็นจำนวนคู่ แล้ว n² เป็นจำนวนคู่ (เช่น n = ${witness})` : `ถ้า n² เป็นจำนวนคู่ แล้ว n เป็นจำนวนคี่ (ลอง n = ${witness})`
+  const choices = shuffledChoices(answer, ['จริง', 'เท็จ', 'ไม่สามารถสรุปได้'], seed + 90)
+  return { prompt: `กรณีที่ ${index + 1}: จงประเมินประพจน์ “${statement}” ว่าเป็นจริงหรือเท็จ`, ...choices, correctAnswer: answer, hint: truth ? 'เขียน n = 2k แล้วแทนค่า' : 'ลองใช้ตัวอย่างจำนวนคู่ที่ให้ไว้เพื่อหักล้าง', solution: truth ? 'ถ้า n = 2k แล้ว n² = 4k² = 2(2k²) ซึ่งเป็นจำนวนคู่' : `ประพจน์นี้เป็นเท็จ: n = ${witness} ให้กำลังสองเป็นจำนวนคู่ แต่ n ไม่ใช่จำนวนคี่`, parameters: { truth, witness } }
 }
 
 function conceptPayload(chapter: CurriculumChapter, index: number, seed: number): QuestionPayload {
   const random = rng(seed)
   const subtopic = chapter.subtopics[index % chapter.subtopics.length] ?? chapter.title
-  const context = ['a worked example', 'a diagram', 'a table of values', 'a word problem', 'a proof outline', 'a calculator result', 'a graph', 'a boundary case', 'a peer explanation', 'a symbolic expression', 'a data set', 'a model'][index % 12]
-  const correct = index % 2 === 0 ? `Use the definition of ${subtopic} and check ${chapter.condition}.` : `Translate the given information into ${chapter.focus}.`
-  const choices = shuffledChoices(correct, ['Choose a formula without checking conditions.', 'Change the question so the calculation is easier.', 'Assume every value is valid.'], seed + 100)
-  return { prompt: `In ${context} ${index + 1}, which approach is most mathematically reliable when solving a problem about ${subtopic}?`, ...choices, correctAnswer: correct, hint: `Start with the definition of ${subtopic}.`, solution: `${correct} The conditions matter because ${chapter.condition}.`, parameters: { blueprint: index, subtopic, chapterId: chapter.id, token: integer(random, 10, 99) } }
+  const context = ['ตัวอย่างที่ทำไว้แล้ว', 'แผนภาพ', 'ตารางค่า', 'โจทย์ปัญหาเชิงบริบท', 'โครงร่างการพิสูจน์', 'ผลจากเครื่องคิดเลข', 'กราฟ', 'กรณีขอบเขต', 'คำอธิบายของเพื่อน', 'นิพจน์เชิงสัญลักษณ์', 'ชุดข้อมูล', 'แบบจำลอง'][index % 12]
+  const correct = index % 2 === 0 ? `ใช้บทนิยามของ ${subtopic} และตรวจ ${chapter.condition}` : `แปลข้อมูลที่โจทย์กำหนดให้เป็น ${chapter.focus}`
+  const choices = shuffledChoices(correct, ['เลือกสูตรโดยไม่ตรวจเงื่อนไข', 'เปลี่ยนโจทย์ให้คำนวณง่ายขึ้น', 'สมมติว่าค่าทุกค่าถูกต้อง'], seed + 100)
+  return { prompt: `ใน${context}ที่ ${index + 1} เมื่อต้องแก้ปัญหาเกี่ยวกับ ${subtopic} วิธีใดน่าเชื่อถือทางคณิตศาสตร์ที่สุด?`, ...choices, correctAnswer: correct, hint: `เริ่มจากบทนิยามของ ${subtopic}`, solution: `${correct} เพราะเงื่อนไขสำคัญคือ ${chapter.condition}`, parameters: { blueprint: index, subtopic, chapterId: chapter.id, token: integer(random, 10, 99) } }
 }
 
 function buildPayload(chapter: CurriculumChapter, index: number, seed: number, generator: GeneratorKey, subtopic: string): QuestionPayload {
@@ -416,10 +416,10 @@ function createPreparedQuestion(unit: PracticeUnit, index: number): PreparedQues
     questionType,
     ...payload,
     parametersSchema: Object.keys(payload.parameters),
-    parameterConstraints: ['All denominators are non-zero.', 'Generated values are checked before publication.', 'Choice values are unique and include exactly one correct answer.'],
-    generationStrategy: `${generator} generator with authored blueprint ${index % 12 + 1}`,
-    answerStrategy: 'Compute the answer from the stored parameter object, then compare the selected choice index.',
-    solutionStrategy: 'Render a deterministic worked solution from the same parameters used in the prompt.',
+    parameterConstraints: ['ตัวส่วนทุกตัวไม่เป็นศูนย์', 'ค่าที่สุ่มได้ถูกตรวจสอบก่อนนำไปใช้', 'ตัวเลือกไม่ซ้ำกันและมีคำตอบที่ถูกต้องเพียงข้อเดียว'],
+    generationStrategy: `ชุดคำสั่ง ${generator} กับพิมพ์เขียวที่ออกแบบไว้ชุดที่ ${index % 12 + 1}`,
+    answerStrategy: 'คำนวณคำตอบจากค่าพารามิเตอร์ที่บันทึกไว้ แล้วเทียบกับดัชนีตัวเลือกที่ผู้เรียนเลือก',
+    solutionStrategy: 'แสดงวิธีทำแบบกำหนดได้จากพารามิเตอร์ชุดเดียวกับที่ใช้สร้างโจทย์',
     answerFormat: 'multiple-choice',
     tags: [unit.chapter.id, subtopicId, generator, difficulty, questionType],
     verificationStatus: 'deterministically-validated',

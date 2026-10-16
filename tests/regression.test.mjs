@@ -10,6 +10,7 @@ import {
   qmmComputeStreak,
   qmmExerciseAccuracy,
   qmmExerciseGeneratorType,
+  qmmGenerateVariedExercise,
   qmmFormatElapsed,
   qmmFormatThaiDate,
   qmmMathInterestOptions,
@@ -159,38 +160,15 @@ test("relative app assets resolve under a GitHub Pages project prefix", async ()
   assert.match(css, /url\(\.\/KaTeX_/);
 });
 
-test("exercise generators are routed only to chapters whose topic matches the template", async () => {
+test("every curriculum chapter receives topic-matched, varied exercise templates", async () => {
   const bundle = await readBundle();
   const chapterIds = [
     ...bundle.matchAll(/zs\(`([^`]+)`\s*,/g),
     ...bundle.matchAll(/Bs\(`(upper-[^`]+)`\s*,/g),
   ].map(([, id]) => id);
-  const specializedRoutes = {
-    "m1-linear-equation": "algebra",
-    "m2-pythagorean": "geometry",
-    "m1-graphs-linear": "function",
-    "m1-exponents": "exponents",
-    "m2-exponent-properties": "exponents",
-    "m1-statistics-1": "statistics",
-    "m2-statistics-2": "statistics",
-    "m3-statistics-3": "statistics",
-    "m3-probability": "probability",
-    "m3-trig-ratios": "trigonometry",
-    "upper-logic": "logic",
-    "upper-probability": "probability",
-    "upper-trig-functions": "trigonometry",
-    "upper-sequences-series": "sequence",
-    "upper-calculus": "calculus",
-    "upper-quantitative-data": "statistics",
-  };
-
   assert.equal(chapterIds.length, 49, "all current curriculum chapters should be checked");
   for (const chapterId of chapterIds) {
-    assert.equal(
-      qmmExerciseGeneratorType(chapterId),
-      specializedRoutes[chapterId] ?? "concept",
-      `unexpected exercise generator for ${chapterId}`,
-    );
+    assert.notEqual(qmmExerciseGeneratorType(chapterId), "mixed-review", `chapter needs an explicit topic route: ${chapterId}`);
   }
 
   for (const chapterId of [
@@ -228,13 +206,49 @@ test("exercise generators are routed only to chapters whose topic matches the te
     "upper-qualitative-data",
     "upper-random-variables",
   ]) {
-    assert.equal(qmmExerciseGeneratorType(chapterId), "concept", chapterId);
+    assert.notEqual(qmmExerciseGeneratorType(chapterId), "mixed-review", `formerly generic chapter needs a topic-specific route: ${chapterId}`);
   }
+
+  for (const chapterId of chapterIds) {
+    const generatorType = qmmExerciseGeneratorType(chapterId);
+    const chapter = { id: chapterId, title: chapterId, subtopics: [chapterId] };
+    const exercises = Array.from({ length: 120 }, (_, index) =>
+      qmmGenerateVariedExercise(chapter, index, 0, generatorType, chapterId),
+    );
+    assert.ok(new Set(exercises.slice(0, 8).map((item) => item.prompt)).size >= 4, `${chapterId} should have several question formats`);
+    for (const [index, exercise] of exercises.entries()) {
+      assert.equal(exercise.choices.length, 4, `${chapterId} question ${index} should have four choices`);
+      assert.equal(new Set(exercise.choices).size, 4, `${chapterId} question ${index} should have unique choices`);
+      assert.equal(exercise.choices[exercise.correctChoice], exercise.correctAnswer, `${chapterId} question ${index} answer key should match its choices`);
+      assert.ok(exercise.solution.includes(exercise.correctAnswer), `${chapterId} question ${index} solution should explain the answer`);
+      assert.doesNotMatch(JSON.stringify(exercise), /\$\{|NaN|undefined|ตัวเลือก \d+/, `${chapterId} question ${index} should contain no template artifacts`);
+      assert.deepEqual(
+        exercise,
+        qmmGenerateVariedExercise(chapter, index, 0, generatorType, chapterId),
+        `${chapterId} question ${index} should be deterministic for stable review and scoring`,
+      );
+    }
+  }
+
+  const sample = (chapterId, index) => qmmGenerateVariedExercise(
+    { id: chapterId, title: chapterId, subtopics: [chapterId] },
+    index,
+    0,
+    qmmExerciseGeneratorType(chapterId),
+    chapterId,
+  );
+  assert.ok(sample("m1-decimals-fractions", 3).prompt.includes("."), "fraction chapter should also include decimal arithmetic");
+  assert.ok([0, 1, 2, 3].every((index) => sample("m3-higher-degree-factoring", index).prompt.includes("x³")), "higher-degree factoring should generate cubic problems");
+  assert.ok([0, 1, 2, 3].every((index) => /ปริซึม|ทรงกระบอก/.test(sample("m2-prisms-cylinders", index).prompt) && !/พีระมิด|กรวย|ทรงกลม/.test(sample("m2-prisms-cylinders", index).prompt)), "prisms/cylinders chapter should not receive pyramid or sphere questions");
+  assert.ok([0, 1, 2, 3].every((index) => /พีระมิด|กรวย|ทรงกลม/.test(sample("m3-pyramids-cones-spheres", index).prompt)), "pyramid/cone/sphere chapter should cover those solids");
+  assert.ok([0, 1, 2, 3].every((index) => sample("m3-linear-systems", index).prompt.includes("ระบบ")), "linear-systems chapter should always ask about systems");
+  assert.doesNotMatch(JSON.stringify([0, 1, 2, 3].map((index) => sample("m2-congruence", index))), /夹/, "congruence copy should remain Thai, without a stray Chinese character");
 
   const patchedBundle = patchBundle(bundle);
   assert.match(patchedBundle, /function uc\(e\)\{return qmmExerciseGeneratorType\(e\)\}/);
-  assert.ok(patchedBundle.includes("function Cc(e,t,n,selectedSubtopic)"));
-  assert.ok(patchedBundle.includes("default:return Cc(e,t,n,i)}}"));
+  assert.ok(patchedBundle.includes("function qmmGenerateVariedExercise("));
+  assert.ok(patchedBundle.includes("function wc(e,t,n,r,i){return qmmGenerateVariedExercise(e,t,n,r,i)}"));
+  assert.ok(patchedBundle.includes("var Ec=Gs.flatMap("), "the unit/offering collection must remain available to the prepared exercise pool");
 });
 
 test("Pythagorean lesson metadata and the lesson renderer stay topic-consistent", async () => {

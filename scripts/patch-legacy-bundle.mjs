@@ -1,6 +1,9 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { qmmExerciseGeneratorType, qmmGenerateVariedExercise } from "./exercise-generators.mjs";
+
+export { qmmExerciseGeneratorType, qmmGenerateVariedExercise };
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const projectDir = path.resolve(scriptDir, "..");
@@ -962,28 +965,6 @@ function xl({ lesson, progress, onBack, onComplete, onBookmark, onPractice }) {
   });
 }
 
-export function qmmExerciseGeneratorType(chapterId) {
-  const chapterRoutes = {
-    "m1-linear-equation": "algebra",
-    "m2-pythagorean": "geometry",
-    "m1-graphs-linear": "function",
-    "m1-exponents": "exponents",
-    "m2-exponent-properties": "exponents",
-    "m1-statistics-1": "statistics",
-    "m2-statistics-2": "statistics",
-    "m3-statistics-3": "statistics",
-    "m3-probability": "probability",
-    "m3-trig-ratios": "trigonometry",
-    "upper-logic": "logic",
-    "upper-probability": "probability",
-    "upper-trig-functions": "trigonometry",
-    "upper-sequences-series": "sequence",
-    "upper-calculus": "calculus",
-    "upper-quantitative-data": "statistics",
-  };
-  return chapterRoutes[String(chapterId).toLowerCase()] ?? "concept";
-}
-
 function replaceExactlyOnce(source, oldText, newText, description) {
   const first = source.indexOf(oldText);
   if (first < 0 || source.indexOf(oldText, first + oldText.length) >= 0) {
@@ -1020,29 +1001,31 @@ function replaceEveryOrVerify(source, oldText, newText, marker, description) {
 export function patchBundle(input) {
   let output = input;
 
-  if (!output.includes("function qmmExerciseGeneratorType(")) {
+  const exerciseRuntime = `${qmmExerciseGeneratorType.toString()}\nfunction uc(e){return qmmExerciseGeneratorType(e)}\n${qmmGenerateVariedExercise.toString()}`;
+  if (output.includes("function qmmExerciseGeneratorType(")) {
+    output = replaceFunctionRegion(
+      output,
+      "function qmmExerciseGeneratorType(",
+      "function dc(e){",
+      exerciseRuntime,
+      "refresh chapter routes and install varied exercise generator",
+    );
+  } else {
     output = replaceFunctionRegion(
       output,
       "function uc(e){",
       "function dc(e){",
-      `${qmmExerciseGeneratorType.toString()}\nfunction uc(e){return qmmExerciseGeneratorType(e)}`,
-      "chapter-specific exercise routing",
+      exerciseRuntime,
+      "install chapter-specific routes and varied exercise generator",
     );
   }
 
-  output = replaceOrVerify(
+  output = replaceFunctionRegion(
     output,
-    "function Cc(e,t,n){let r=ic(n),i=e.subtopics[t%e.subtopics.length]??e.title,",
-    "function Cc(e,t,n,selectedSubtopic){let r=ic(n),i=selectedSubtopic??e.subtopics[t%e.subtopics.length]??e.title,",
-    "function Cc(e,t,n,selectedSubtopic){",
-    "fallback question subtopic handling",
-  );
-  output = replaceOrVerify(
-    output,
-    "default:return Cc(e,t,n)}}",
-    "default:return Cc(e,t,n,i)}}",
-    "default:return Cc(e,t,n,i)}}",
-    "fallback generator subtopic propagation",
+    "function wc(e,t,n,r,i){",
+    "function Tc(e,t){",
+    "function wc(e,t,n,r,i){return qmmGenerateVariedExercise(e,t,n,r,i)}",
+    "replace generic exercise fallback with topic-specific varied questions",
   );
 
   if (!output.includes("lesson-formula-preview")) {

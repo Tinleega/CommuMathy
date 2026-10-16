@@ -966,6 +966,600 @@ function xl({ lesson, progress, onBack, onComplete, onBookmark, onPractice }) {
   });
 }
 
+// The app is served as static files (GitHub Pages), so there is no server to hold a
+// Gemini API key. Each local profile pastes its own Google AI Studio key, which stays in
+// this browser and is sent only to Google's Generative Language API.
+export const qmmGeminiDefaultModel = "gemini-3.8-flash";
+
+export const qmmGeminiModels = [
+  { id: "gemini-3.8-flash", label: "Gemini 3.8 Flash • แนะนำ" },
+  { id: "gemini-3.5-flash-lite", label: "Gemini 3.5 Flash-Lite • เร็วและประหยัด" },
+];
+
+export function qmmNormalizeGeminiModel(model) {
+  const id = String(model ?? "").trim();
+  return qmmGeminiModels.some((option) => option.id === id) ? id : qmmGeminiDefaultModel;
+}
+
+function qmmReadGeminiStore(storage) {
+  try {
+    const parsed = JSON.parse(storage?.getItem("commumathy-gemini") || "{}");
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+export function qmmReadGeminiConfig(profileId, storage = globalThis.localStorage) {
+  const entry = qmmReadGeminiStore(storage)[profileId];
+  const apiKey = typeof entry?.apiKey === "string" ? entry.apiKey.trim() : "";
+  return apiKey ? { apiKey, model: qmmNormalizeGeminiModel(entry.model) } : null;
+}
+
+export function qmmWriteGeminiConfig(profileId, config, storage = globalThis.localStorage) {
+  const store = qmmReadGeminiStore(storage);
+  const apiKey = String(config?.apiKey ?? "").trim();
+  if (apiKey) store[profileId] = { apiKey, model: qmmNormalizeGeminiModel(config.model) };
+  else delete store[profileId];
+  storage.setItem("commumathy-gemini", JSON.stringify(store));
+  return apiKey ? store[profileId] : null;
+}
+
+export function qmmBuildGeminiContents(messages = [], image = null) {
+  const contents = [];
+  for (const message of Array.isArray(messages) ? messages.slice(-24) : []) {
+    const text = typeof message?.text === "string" ? message.text.trim() : "";
+    // Demo answers and error notices are shown locally but are not part of the conversation.
+    if (!text || message.local) continue;
+    const role = message.role === "tutor" ? "model" : "user";
+    if (!contents.length && role === "model") continue;
+    const previous = contents[contents.length - 1];
+    if (previous?.role === role) previous.parts[0].text += `\n\n${text}`;
+    else contents.push({ role, parts: [{ text }] });
+  }
+  if (contents[contents.length - 1]?.role !== "user") return [];
+  if (image?.data && image?.mimeType) {
+    contents[contents.length - 1].parts.push({ inlineData: { mimeType: image.mimeType, data: image.data } });
+  }
+  return contents;
+}
+
+export function qmmBuildGeminiRequest(messages, { image = null, grade = "", model = qmmGeminiDefaultModel } = {}) {
+  const level = grade ? `ผู้เรียนอยู่ชั้น ${grade} ` : "";
+  // Thinking tokens count against maxOutputTokens, so keep the cap roomy and, on
+  // 3.8 Flash (default "medium"), think less so a tutoring reply is quick and never empty.
+  const generationConfig = { maxOutputTokens: 8192 };
+  if (qmmNormalizeGeminiModel(model) === "gemini-3.8-flash") generationConfig.thinkingConfig = { thinkingLevel: "low" };
+  return {
+    systemInstruction: {
+      parts: [{
+        text: [
+          "คุณคือ Mathy Tutor ติวเตอร์คณิตศาสตร์ภาษาไทยของแอป CommuMathy",
+          `${level}อธิบายเป็นขั้นตอนสั้น ๆ ด้วยภาษาที่เป็นมิตร ชวนผู้เรียนคิดเองก่อนเฉลย และให้คำใบ้แทนคำตอบเมื่อผู้เรียนขอคำใบ้`,
+          "ถ้าข้อมูลในโจทย์ไม่พอหรืออ่านรูปไม่ชัด ให้บอกตรง ๆ และถามกลับ อย่าเดาคำตอบ",
+          "ตอบเป็นข้อความธรรมดา ไม่ใช้ Markdown หรือ LaTeX เขียนสมการแบบ 2x + 3 = 11 และใช้สัญลักษณ์ เช่น ² √ π ≤ ≥ ได้",
+        ].join("\n"),
+      }],
+    },
+    contents: qmmBuildGeminiContents(messages, image),
+    generationConfig,
+  };
+}
+
+export function qmmGeminiError(status, payload) {
+  const detail = payload?.error;
+  const reasons = (Array.isArray(detail?.details) ? detail.details : []).map((item) => item?.reason);
+  const message = String(detail?.message || "");
+  const failure = (code, text) => Object.assign(new Error(text), { code, status });
+  if (reasons.includes("API_KEY_INVALID") || /api key not valid/i.test(message)) {
+    return failure("auth", "API key ไม่ถูกต้อง กรุณาตรวจสอบแล้ววางใหม่อีกครั้ง");
+  }
+  if (status === 401 || status === 403) {
+    return failure("auth", "API key นี้ไม่มีสิทธิ์ใช้ Gemini API กรุณาตรวจสอบ key ใน Google AI Studio");
+  }
+  if (status === 404) return failure("model", "ไม่พบโมเดลที่เลือก ลองเปลี่ยนโมเดลในหน้าการเชื่อมต่อ Gemini");
+  if (status === 429) return failure("quota", "ใช้งาน Gemini เกินโควตาชั่วคราว กรุณารอสักครู่แล้วลองใหม่");
+  if (status >= 500) return failure("server", "เซิร์ฟเวอร์ Gemini ขัดข้องชั่วคราว กรุณาลองใหม่อีกครั้ง");
+  return failure("request", message ? `Gemini แจ้งข้อผิดพลาด: ${message}` : `Gemini แจ้งข้อผิดพลาด (HTTP ${status})`);
+}
+
+export function qmmReadGeminiReply(payload) {
+  const safetyBlock = "Gemini ไม่ตอบคำถามนี้เพราะติดตัวกรองความปลอดภัย ลองถามใหม่ด้วยถ้อยคำอื่น";
+  if (payload?.promptFeedback?.blockReason) throw Object.assign(new Error(safetyBlock), { code: "blocked" });
+  const candidate = payload?.candidates?.[0];
+  const text = (candidate?.content?.parts ?? [])
+    .filter((part) => !part?.thought)
+    .map((part) => (typeof part?.text === "string" ? part.text : ""))
+    .join("")
+    .trim();
+  if (text) {
+    return candidate.finishReason === "MAX_TOKENS"
+      ? `${text}…\n\n(คำตอบยาวเกินกำหนด พิมพ์ “ต่อ” เพื่อให้อธิบายต่อได้ค่ะ)`
+      : text;
+  }
+  if (candidate?.finishReason === "SAFETY") throw Object.assign(new Error(safetyBlock), { code: "blocked" });
+  if (candidate?.finishReason === "MAX_TOKENS") {
+    throw Object.assign(new Error("Gemini ใช้เวลาคิดนานเกินกำหนดจนยังไม่ได้ตอบ ลองแบ่งโจทย์ให้สั้นลงแล้วถามใหม่"), { code: "empty" });
+  }
+  throw Object.assign(new Error("Gemini ไม่ได้ส่งคำตอบกลับมา ลองส่งใหม่อีกครั้ง"), { code: "empty" });
+}
+
+async function qmmFetchGemini(fetchImpl, url, init) {
+  let response;
+  try {
+    response = await fetchImpl(url, init);
+  } catch {
+    throw Object.assign(new Error("เชื่อมต่อ Gemini ไม่ได้ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่"), { code: "network" });
+  }
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw qmmGeminiError(response.status, payload);
+  return payload;
+}
+
+export async function qmmCallGemini({ apiKey, model, messages, image = null, grade = "", fetchImpl = globalThis.fetch }) {
+  const body = qmmBuildGeminiRequest(messages, { image, grade, model });
+  if (!body.contents.length) throw Object.assign(new Error("ยังไม่มีคำถามให้ส่งถึง Gemini"), { code: "empty" });
+  const payload = await qmmFetchGemini(
+    fetchImpl,
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(qmmNormalizeGeminiModel(model))}:generateContent`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+      body: JSON.stringify(body),
+    },
+  );
+  return qmmReadGeminiReply(payload);
+}
+
+// Looks up the model's metadata: confirms the key and model work without spending tokens.
+export async function qmmVerifyGeminiKey({ apiKey, model, fetchImpl = globalThis.fetch }) {
+  await qmmFetchGemini(
+    fetchImpl,
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(qmmNormalizeGeminiModel(model))}`,
+    { method: "GET", headers: { "x-goog-api-key": apiKey } },
+  );
+  return true;
+}
+
+export function qmmGeminiImageAccepted(file) {
+  const size = Number(file?.size);
+  return Boolean(
+    file
+      && ["image/jpeg", "image/png", "image/webp"].includes(file.type)
+      && Number.isFinite(size)
+      && size > 0
+      && size <= 15 * 1024 * 1024,
+  );
+}
+
+export function qmmPrepareGeminiImage(file) {
+  if (!qmmGeminiImageAccepted(file)) {
+    return Promise.reject(new Error("แนบได้เฉพาะรูป JPG, PNG หรือ WebP ขนาดไม่เกิน 15 MB"));
+  }
+
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("ไฟล์นี้ไม่ใช่รูปภาพที่รองรับ"));
+    };
+    image.onload = () => {
+      URL.revokeObjectURL(url);
+      const originalWidth = image.naturalWidth || image.width;
+      const originalHeight = image.naturalHeight || image.height;
+      // Large enough to read handwriting, small enough to keep the request quick.
+      const scale = Math.min(1, 1600 / Math.max(originalWidth, originalHeight));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(originalWidth * scale));
+      canvas.height = Math.max(1, Math.round(originalHeight * scale));
+      const context = canvas.getContext("2d");
+      if (!context) {
+        reject(new Error("ไม่สามารถเตรียมรูปภาพได้"));
+        return;
+      }
+      context.fillStyle = "#ffffff";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      try {
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+        resolve({ name: file.name || "รูปโจทย์", mimeType: "image/jpeg", data: dataUrl.slice(dataUrl.indexOf(",") + 1) });
+      } catch {
+        reject(new Error("ไม่สามารถเตรียมรูปภาพได้"));
+      }
+    };
+    image.src = url;
+  });
+}
+
+function QmmGeminiConnectPanel({ config, onSave, onDisconnect, onClose }) {
+  const [apiKey, setApiKey] = (0, l.useState)(config?.apiKey ?? "");
+  const [model, setModel] = (0, l.useState)(config?.model ?? qmmGeminiDefaultModel);
+  const [status, setStatus] = (0, l.useState)({ state: "idle", text: "" });
+  const checking = status.state === "checking";
+
+  const save = async (event) => {
+    event.preventDefault();
+    const key = apiKey.trim();
+    if (!key) {
+      setStatus({ state: "error", text: "กรุณาวาง Gemini API key ก่อน" });
+      return;
+    }
+    setStatus({ state: "checking", text: "กำลังทดสอบการเชื่อมต่อกับ Gemini…" });
+    try {
+      await qmmVerifyGeminiKey({ apiKey: key, model });
+      onSave({ apiKey: key, model });
+    } catch (error) {
+      setStatus({ state: "error", text: error instanceof Error ? error.message : "ทดสอบการเชื่อมต่อไม่สำเร็จ" });
+    }
+  };
+
+  return (0, X.jsxs)("form", {
+    className: "gemini-connect-card",
+    onSubmit: save,
+    children: [
+      (0, X.jsxs)("div", {
+        className: "gemini-connect-heading",
+        children: [
+          (0, X.jsx)("div", { className: "tutor-avatar", children: (0, X.jsx)(ds, { size: 19 }) }),
+          (0, X.jsxs)("div", {
+            children: [
+              (0, X.jsx)("h2", { children: "เชื่อมต่อ Google Gemini" }),
+              (0, X.jsx)("p", { children: "วาง API key จาก Google AI Studio เพื่อให้ Mathy Tutor ตอบด้วย Gemini แทนคำตอบตัวอย่าง" }),
+            ],
+          }),
+          (0, X.jsx)("button", {
+            type: "button",
+            className: "icon-button",
+            onClick: onClose,
+            "aria-label": "ปิดหน้าการเชื่อมต่อ Gemini",
+            children: (0, X.jsx)(Ts, { size: 17 }),
+          }),
+        ],
+      }),
+      (0, X.jsxs)("div", {
+        className: "gemini-connect-fields",
+        children: [
+          (0, X.jsxs)("label", {
+            children: [
+              "Gemini API key",
+              (0, X.jsx)("input", {
+                type: "password",
+                value: apiKey,
+                onChange: (event) => setApiKey(event.target.value),
+                placeholder: "วาง API key ที่นี่",
+                autoComplete: "off",
+                spellCheck: false,
+                disabled: checking,
+              }),
+            ],
+          }),
+          (0, X.jsxs)("label", {
+            children: [
+              "โมเดล",
+              (0, X.jsx)("select", {
+                value: model,
+                onChange: (event) => setModel(event.target.value),
+                disabled: checking,
+                children: qmmGeminiModels.map((option) => (0, X.jsx)("option", { value: option.id, children: option.label }, option.id)),
+              }),
+            ],
+          }),
+        ],
+      }),
+      (0, X.jsx)("a", {
+        className: "gemini-connect-link",
+        href: "https://aistudio.google.com/apikey",
+        target: "_blank",
+        rel: "noopener noreferrer",
+        children: "ยังไม่มี key? สร้างได้ที่ Google AI Studio",
+      }),
+      status.text && (0, X.jsx)("p", {
+        className: `gemini-connect-status ${status.state}`,
+        role: status.state === "error" ? "alert" : "status",
+        children: status.text,
+      }),
+      (0, X.jsxs)("div", {
+        className: "gemini-connect-actions",
+        children: [
+          config && (0, X.jsx)("button", {
+            type: "button",
+            className: "outline-button",
+            onClick: onDisconnect,
+            disabled: checking,
+            children: "ยกเลิกการเชื่อมต่อ",
+          }),
+          (0, X.jsx)("button", {
+            type: "submit",
+            className: "primary-button",
+            disabled: checking,
+            children: checking ? "กำลังทดสอบ…" : "บันทึกและเชื่อมต่อ",
+          }),
+        ],
+      }),
+      (0, X.jsxs)("small", {
+        className: "privacy-note",
+        children: [
+          (0, X.jsx)(Fo, { size: 13 }),
+          " key จะถูกเก็บในเบราว์เซอร์นี้สำหรับโปรไฟล์นี้เท่านั้น และส่งตรงถึง Google เมื่อถามติวเตอร์ ไม่ควรบันทึก key บนเครื่องที่ใช้ร่วมกับผู้อื่น",
+        ],
+      }),
+    ],
+  });
+}
+
+function Tl({ messages, setMessages }) {
+  const profileId = qmmGetActiveLocalUser()?.id || "device";
+  const [draft, setDraft] = (0, l.useState)("");
+  const [attachment, setAttachment] = (0, l.useState)(null);
+  const [attachmentError, setAttachmentError] = (0, l.useState)("");
+  const [gemini, setGemini] = (0, l.useState)(() => qmmReadGeminiConfig(profileId));
+  const [panelOpen, setPanelOpen] = (0, l.useState)(false);
+  const [sending, setSending] = (0, l.useState)(false);
+  const fileInput = (0, l.useRef)(null);
+  const connected = Boolean(gemini?.apiKey);
+  const userInitials = qmmLocalUserInitials();
+  const modelLabel = connected ? `Gemini • ${gemini.model}` : "โหมดสาธิต • เชื่อมต่อ Gemini";
+  const clockTime = () => new Date().toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+
+  const saveGemini = (value) => {
+    try {
+      setGemini(qmmWriteGeminiConfig(profileId, value));
+    } catch {
+      throw new Error("บันทึก key ในเบราว์เซอร์นี้ไม่ได้ (อาจเปิดโหมดส่วนตัวอยู่)");
+    }
+    setPanelOpen(false);
+  };
+  const disconnectGemini = () => {
+    try {
+      qmmWriteGeminiConfig(profileId, null);
+    } catch {}
+    setGemini(null);
+    setPanelOpen(false);
+  };
+
+  const attachImage = async (event) => {
+    const input = event.currentTarget;
+    const file = input.files && input.files[0];
+    if (!file) return;
+    setAttachmentError("");
+    try {
+      setAttachment(await qmmPrepareGeminiImage(file));
+    } catch (error) {
+      setAttachment(null);
+      setAttachmentError(error instanceof Error ? error.message : "แนบรูปไม่สำเร็จ");
+    } finally {
+      input.value = "";
+    }
+  };
+
+  const send = async (value = draft) => {
+    const question = value.trim() || (attachment ? "ช่วยดูโจทย์จากรูปนี้ให้หน่อยค่ะ" : "");
+    if (!question || sending) return;
+    const image = attachment;
+    const userMessage = { role: "user", text: image ? `${question}\n📎 ${image.name}` : question, time: clockTime() };
+    const history = [...messages, userMessage];
+    setMessages(history);
+    setDraft("");
+    setAttachment(null);
+    setAttachmentError("");
+
+    if (!connected) {
+      setMessages((current) => [...current, { role: "tutor", text: El(question), time: clockTime(), local: true }]);
+      return;
+    }
+
+    setSending(true);
+    try {
+      const text = await qmmCallGemini({
+        apiKey: gemini.apiKey,
+        model: gemini.model,
+        // The starter chat (nl) is a sample the student never typed; keep it out of the prompt.
+        messages: history.filter((message) => !nl.some((sample) => sample.role === message.role && sample.text === message.text)),
+        image,
+        grade: qmmGetActiveLocalUser()?.grade || "",
+      });
+      setMessages((current) => [...current, { role: "tutor", text, time: clockTime() }]);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : "เชื่อมต่อ Gemini ไม่สำเร็จ";
+      setMessages((current) => [...current, { role: "tutor", text: `ขออภัยค่ะ ${reason}`, time: clockTime(), local: true }]);
+      if (error?.code === "auth" || error?.code === "model") setPanelOpen(true);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (0, X.jsxs)(X.Fragment, {
+    children: [
+      (0, X.jsx)(bl, {
+        eyebrow: "ผู้ช่วยคิดไปด้วยกัน",
+        title: "ติวเตอร์คณิตศาสตร์ AI",
+        description: "ถามได้ทุกเรื่อง ค่อย ๆ คิดไปทีละขั้น และเลือกขอคำใบ้แทนคำตอบได้",
+        action: (0, X.jsxs)("button", {
+          type: "button",
+          className: `demo-badge gemini-badge-button ${connected ? "model-badge" : ""}`,
+          onClick: () => setPanelOpen((open) => !open),
+          "aria-expanded": panelOpen,
+          children: [(0, X.jsx)("span", { className: "status-dot" }), " ", modelLabel],
+        }),
+      }),
+      panelOpen && (0, X.jsx)(QmmGeminiConnectPanel, {
+        config: gemini,
+        onSave: saveGemini,
+        onDisconnect: disconnectGemini,
+        onClose: () => setPanelOpen(false),
+      }),
+      (0, X.jsxs)("div", {
+        className: "tutor-layout",
+        children: [
+          (0, X.jsxs)("aside", {
+            className: "tutor-history",
+            children: [
+              (0, X.jsxs)("button", {
+                className: "primary-button new-chat",
+                onClick: () => setMessages(nl),
+                children: [(0, X.jsx)(Zo, { size: 17 }), " เริ่มบทสนทนาใหม่"],
+              }),
+              (0, X.jsx)("div", { className: "history-label", children: "ประวัติการคุย" }),
+              ["ทำความเข้าใจเรื่องย้ายข้าง", "โจทย์พีทาโกรัส", "ทบทวนก่อนสอบ ม.3"].map((title, index) => (0, X.jsxs)("button", {
+                className: `history-item ${index === 0 ? "active" : ""}`,
+                children: [(0, X.jsx)(Uo, { size: 16 }), (0, X.jsx)("span", { children: title }), (0, X.jsx)(Eo, { size: 15 })],
+              }, title)),
+              (0, X.jsxs)("div", {
+                className: "tutor-history-footer",
+                children: [
+                  (0, X.jsx)(Fo, { size: 15 }),
+                  (0, X.jsxs)("div", {
+                    children: [
+                      (0, X.jsx)("span", {
+                        children: connected
+                          ? "เชื่อมต่อ Gemini แล้ว คำถามจะถูกส่งตรงถึง Google ด้วย key ของคุณ"
+                          : "คำตอบในโหมดสาธิตเป็นตัวอย่าง เชื่อมต่อ Gemini เพื่อให้ AI ตอบจริง",
+                      }),
+                      (0, X.jsx)("button", {
+                        type: "button",
+                        className: "text-button",
+                        onClick: () => setPanelOpen(true),
+                        children: connected ? "จัดการการเชื่อมต่อ" : "เชื่อมต่อ Gemini",
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            ],
+          }),
+          (0, X.jsxs)("section", {
+            className: "chat-window",
+            children: [
+              (0, X.jsxs)("div", {
+                className: "chat-header",
+                children: [
+                  (0, X.jsx)("div", { className: "tutor-avatar", children: (0, X.jsx)(mo, { size: 21 }) }),
+                  (0, X.jsxs)("div", {
+                    children: [
+                      (0, X.jsx)("strong", { children: "Mathy Tutor" }),
+                      (0, X.jsxs)("span", {
+                        children: [(0, X.jsx)("span", { className: "status-dot" }), " ", connected ? `Gemini • ${gemini.model}` : "โหมดสาธิต"],
+                      }),
+                    ],
+                  }),
+                  (0, X.jsx)("button", { className: "icon-button", children: (0, X.jsx)(Eo, { size: 18 }) }),
+                ],
+              }),
+              (0, X.jsxs)("div", {
+                className: "chat-messages",
+                children: [
+                  messages.map((message, index) => (0, X.jsxs)("div", {
+                    className: `chat-row ${message.role}`,
+                    children: [
+                      (0, X.jsx)("div", {
+                        className: `chat-avatar ${message.role}`,
+                        children: message.role === "tutor" ? (0, X.jsx)(ds, { size: 16 }) : userInitials,
+                      }),
+                      (0, X.jsxs)("div", {
+                        className: "message-wrap",
+                        children: [
+                          (0, X.jsxs)("div", {
+                            className: "message-bubble",
+                            children: [
+                              message.text.split("\n").map((line, lineIndex, lines) => (0, X.jsxs)("span", {
+                                children: [line, lineIndex < lines.length - 1 && (0, X.jsx)("br", {})],
+                              }, lineIndex)),
+                              message.role === "tutor" && index > 0 && (0, X.jsxs)("div", {
+                                className: "message-reaction",
+                                children: [
+                                  (0, X.jsx)("button", { children: (0, X.jsx)(hs, { size: 13 }) }),
+                                  (0, X.jsx)("button", { children: (0, X.jsx)(hs, { size: 13, className: "downvote" }) }),
+                                ],
+                              }),
+                            ],
+                          }),
+                          (0, X.jsx)("small", { children: message.time }),
+                        ],
+                      }),
+                    ],
+                  }, `${message.time}-${index}`)),
+                  sending && (0, X.jsxs)("div", {
+                    className: "chat-row tutor",
+                    children: [
+                      (0, X.jsx)("div", { className: "chat-avatar tutor", children: (0, X.jsx)(ds, { size: 16 }) }),
+                      (0, X.jsx)("div", {
+                        className: "message-wrap",
+                        children: (0, X.jsx)("div", { className: "message-bubble", children: "กำลังคิด…" }),
+                      }),
+                    ],
+                  }),
+                  attachment && (0, X.jsxs)("div", {
+                    className: "upload-preview",
+                    children: [
+                      (0, X.jsx)(Po, { size: 16 }),
+                      ` แนบรูปแล้ว: ${attachment.name} `,
+                      (0, X.jsx)("button", {
+                        onClick: () => setAttachment(null),
+                        "aria-label": "เอารูปที่แนบออก",
+                        children: (0, X.jsx)(Ts, { size: 14 }),
+                      }),
+                    ],
+                  }),
+                  attachmentError && (0, X.jsxs)("div", {
+                    className: "upload-preview upload-error",
+                    role: "alert",
+                    children: [(0, X.jsx)(Po, { size: 16 }), ` ${attachmentError}`],
+                  }),
+                ],
+              }),
+              (0, X.jsx)("div", {
+                className: "suggestion-row",
+                children: ["ขอคำใบ้หน่อย", "ช่วยตรวจวิธีทำ", "อธิบายแบบง่าย ๆ"].map((suggestion) => (0, X.jsxs)("button", {
+                  disabled: sending,
+                  onClick: () => send(suggestion),
+                  children: [(0, X.jsx)(Lo, { size: 14 }), " ", suggestion],
+                }, suggestion)),
+              }),
+              (0, X.jsxs)("div", {
+                className: "chat-composer",
+                children: [
+                  (0, X.jsx)("button", {
+                    className: "attach-button",
+                    onClick: () => fileInput.current?.click(),
+                    "aria-label": "แนบรูป",
+                    disabled: sending,
+                    children: (0, X.jsx)(qo, { size: 19 }),
+                  }),
+                  (0, X.jsx)("input", {
+                    ref: fileInput,
+                    type: "file",
+                    accept: "image/jpeg,image/png,image/webp",
+                    hidden: true,
+                    onChange: attachImage,
+                  }),
+                  (0, X.jsx)("input", {
+                    value: draft,
+                    onChange: (event) => setDraft(event.target.value),
+                    onKeyDown: (event) => {
+                      if (event.key === "Enter" && !event.nativeEvent.isComposing) send();
+                    },
+                    placeholder: "พิมพ์คำถามคณิตศาสตร์ของคุณ...",
+                    "aria-label": "คำถามถึงติวเตอร์",
+                    disabled: sending,
+                  }),
+                  (0, X.jsx)("button", {
+                    className: "send-button",
+                    onClick: () => send(),
+                    "aria-label": sending ? "กำลังส่ง" : "ส่ง",
+                    disabled: sending,
+                    children: (0, X.jsx)(as, { size: 18 }),
+                  }),
+                ],
+              }),
+            ],
+          }),
+        ],
+      }),
+    ],
+  });
+}
+
 function replaceExactlyOnce(source, oldText, newText, description) {
   const first = source.indexOf(oldText);
   if (first < 0 || source.indexOf(oldText, first + oldText.length) >= 0) {
@@ -1610,6 +2204,34 @@ export function patchBundle(input) {
     "QmmLocalAccountCard,{})",
     "show a prominent local profile switcher at the top of Settings",
   );
+
+  if (!output.includes("function qmmCallGemini(")) {
+    output = replaceFunctionRegion(
+      output,
+      "function Tl({messages:e,setMessages:t}){",
+      "function El(e){",
+      [
+        `const qmmGeminiDefaultModel=${JSON.stringify(qmmGeminiDefaultModel)};`,
+        `const qmmGeminiModels=${JSON.stringify(qmmGeminiModels)};`,
+        qmmNormalizeGeminiModel.toString(),
+        qmmReadGeminiStore.toString(),
+        qmmReadGeminiConfig.toString(),
+        qmmWriteGeminiConfig.toString(),
+        qmmBuildGeminiContents.toString(),
+        qmmBuildGeminiRequest.toString(),
+        qmmGeminiError.toString(),
+        qmmReadGeminiReply.toString(),
+        qmmFetchGemini.toString(),
+        qmmCallGemini.toString(),
+        qmmVerifyGeminiKey.toString(),
+        qmmGeminiImageAccepted.toString(),
+        qmmPrepareGeminiImage.toString(),
+        QmmGeminiConnectPanel.toString(),
+        Tl.toString(),
+      ].join("\n"),
+      "AI tutor Gemini connection",
+    );
+  }
 
   return output;
 }

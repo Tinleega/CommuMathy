@@ -262,13 +262,2500 @@ l0,-`+(t+144)+`c-2,-159.3,-10,-310.7,-24,-454c-53.3,-528,-210,-949.7,
 |[ \r	]+
 ?)[ \r	]*`,ha=`[̀-ͯ]`,ga=RegExp(ha+`+$`),_a=`(`+ua+`+)|`+(ma+`|`)+`([!-\\[\\]-‧‪-퟿豈-￿]`+(ha+`*`)+`|[\ud800-\udbff][\udc00-\udfff]`+(ha+`*`)+`|\\\\verb\\*([^]).*?\\4|\\\\verb([^*a-zA-Z]).*?\\5`+(`|`+pa)+(`|`+fa+`)`),va=class{constructor(e,t){this.input=void 0,this.settings=void 0,this.tokenRegex=void 0,this.catcodes=void 0,this.input=e,this.settings=t,this.tokenRegex=new RegExp(_a,`g`),this.catcodes={"%":14,"~":13}}setCatcode(e,t){this.catcodes[e]=t}lex(){var e=this.input,t=this.tokenRegex.lastIndex;if(t===e.length)return new yi(`EOF`,new vi(this,t,t));var n=this.tokenRegex.exec(e);if(n===null||n.index!==t)throw new d(`Unexpected character: '`+e[t]+`'`,new yi(e[t],new vi(this,t,t+1)));var r=n[6]||n[3]||(n[2]?`\\ `:` `);if(this.catcodes[r]===14){var i=e.indexOf(`
 `,this.tokenRegex.lastIndex);return i===-1?(this.tokenRegex.lastIndex=e.length,Gt({strict:this.settings.strict,errorCode:`commentAtEnd`,errorMsg:`% comment has no terminating newline; LaTeX would fail because of commenting the end of math mode (e.g. $)`,report:!0})):this.tokenRegex.lastIndex=i+1,this.lex()}return new yi(r,new vi(this,t,this.tokenRegex.lastIndex))}},ya=class{constructor(e,t){e===void 0&&(e={}),t===void 0&&(t={}),this.current=void 0,this.builtins=void 0,this.undefStack=void 0,this.current=t,this.builtins=e,this.undefStack=[]}beginGroup(){this.undefStack.push({})}endGroup(){if(this.undefStack.length===0)throw new d(`Unbalanced namespace destruction: attempt to pop global namespace; please report this as a bug`);var e=this.undefStack.pop();for(var t of Object.keys(e))e[t]===void 0?delete this.current[t]:this.current[t]=e[t]}endGroups(){for(;this.undefStack.length>0;)this.endGroup()}has(e){return Object.prototype.hasOwnProperty.call(this.current,e)||Object.prototype.hasOwnProperty.call(this.builtins,e)}get(e){if(Object.prototype.hasOwnProperty.call(this.current,e))return this.current[e];if(Object.prototype.hasOwnProperty.call(this.builtins,e))return this.builtins[e]}set(e,t,n){if(n===void 0&&(n=!1),n){for(var r=0;r<this.undefStack.length;r++)delete this.undefStack[r][e];this.undefStack.length>0&&(this.undefStack[this.undefStack.length-1][e]=t)}else{var i=this.undefStack[this.undefStack.length-1];i&&!Object.prototype.hasOwnProperty.call(i,e)&&(i[e]=Object.prototype.hasOwnProperty.call(this.current,e)?this.current[e]:void 0)}t==null?delete this.current[e]:this.current[e]=t}},ba=_i;K(`\\noexpand`,function(e){var t=e.popToken();return e.isExpandable(t.text)&&(t.noexpand=!0,t.treatAsRelax=!0),{tokens:[t],numArgs:0}}),K(`\\expandafter`,function(e){var t=e.popToken();return e.expandOnce(!0),{tokens:[t],numArgs:0}}),K(`\\@firstoftwo`,function(e){return{tokens:e.consumeArgs(2)[0],numArgs:0}}),K(`\\@secondoftwo`,function(e){return{tokens:e.consumeArgs(2)[1],numArgs:0}}),K(`\\@ifnextchar`,function(e){var t=e.consumeArgs(3);e.consumeSpaces();var n=e.future();return t[0].length===1&&t[0][0].text===n.text?{tokens:t[1],numArgs:0}:{tokens:t[2],numArgs:0}}),K(`\\@ifstar`,`\\@ifnextchar *{\\@firstoftwo{#1}}`),K(`\\TextOrMath`,function(e){var t=e.consumeArgs(2);return e.mode===`text`?{tokens:t[0],numArgs:0}:{tokens:t[1],numArgs:0}});var xa={0:0,1:1,2:2,3:3,4:4,5:5,6:6,7:7,8:8,9:9,a:10,A:10,b:11,B:11,c:12,C:12,d:13,D:13,e:14,E:14,f:15,F:15};K(`\\char`,function(e){var t=e.popToken(),n,r=0;if(t.text===`'`)n=8,t=e.popToken();else if(t.text===`"`)n=16,t=e.popToken();else if(t.text==="`"){if(t=e.popToken(),t.text[0]===`\\`)r=t.text.charCodeAt(1);else if(t.text===`EOF`)throw new d("\\char` missing argument");else r=t.text.charCodeAt(0)}else n=10;if(n){if(r=xa[t.text],r==null||r>=n)throw new d(`Invalid base-`+n+` digit `+t.text);for(var i;(i=xa[e.future().text])!=null&&i<n;)r*=n,r+=i,e.popToken()}return`\\@char{`+r+`}`});var Sa=(e,t,n,r)=>{var i=e.consumeArg().tokens;if(i.length!==1)throw new d(`\\newcommand's first argument must be a macro name`);var a=i[0].text,o=e.isDefined(a);if(o&&!t)throw new d(`\\newcommand{`+a+`} attempting to redefine `+(a+`; use \\renewcommand`));if(!o&&!n)throw new d(`\\renewcommand{`+a+`} when command `+a+` does not yet exist; use \\newcommand`);var s=0;if(i=e.consumeArg().tokens,i.length===1&&i[0].text===`[`){for(var c=``,l=e.expandNextToken();l.text!==`]`&&l.text!==`EOF`;)c+=l.text,l=e.expandNextToken();if(!c.match(/^\s*[0-9]+\s*$/))throw new d(`Invalid number of arguments: `+c);s=parseInt(c),i=e.consumeArg().tokens}return o&&r||e.macros.set(a,{tokens:i,numArgs:s}),``};K(`\\newcommand`,e=>Sa(e,!1,!0,!1)),K(`\\renewcommand`,e=>Sa(e,!0,!1,!1)),K(`\\providecommand`,e=>Sa(e,!0,!0,!0)),K(`\\message`,e=>{var t=e.consumeArgs(1)[0];return console.log(t.reverse().map(e=>e.text).join(``)),``}),K(`\\errmessage`,e=>{var t=e.consumeArgs(1)[0];return console.error(t.reverse().map(e=>e.text).join(``)),``}),K(`\\show`,e=>{var t=e.popToken(),n=t.text;return console.log(t,e.macros.get(n),la[n],at.math[n],at.text[n]),``}),K(`\\bgroup`,`{`),K(`\\egroup`,`}`),K(`~`,`\\nobreakspace`),K(`\\lq`,"`"),K(`\\rq`,`'`),K(`\\aa`,`\\r a`),K(`\\AA`,`\\r A`),K(`\\textcopyright`,"\\html@mathml{\\textcircled{c}}{\\char`©}"),K(`\\copyright`,`\\TextOrMath{\\textcopyright}{\\text{\\textcopyright}}`),K(`\\textregistered`,"\\html@mathml{\\textcircled{\\scriptsize R}}{\\char`®}"),K(`ℬ`,`\\mathscr{B}`),K(`ℰ`,`\\mathscr{E}`),K(`ℱ`,`\\mathscr{F}`),K(`ℋ`,`\\mathscr{H}`),K(`ℐ`,`\\mathscr{I}`),K(`ℒ`,`\\mathscr{L}`),K(`ℳ`,`\\mathscr{M}`),K(`ℛ`,`\\mathscr{R}`),K(`ℭ`,`\\mathfrak{C}`),K(`ℌ`,`\\mathfrak{H}`),K(`ℨ`,`\\mathfrak{Z}`),K(`\\Bbbk`,`\\Bbb{k}`),K(`\\llap`,`\\mathllap{\\textrm{#1}}`),K(`\\rlap`,`\\mathrlap{\\textrm{#1}}`),K(`\\clap`,`\\mathclap{\\textrm{#1}}`),K(`\\mathstrut`,`\\vphantom{(}`),K(`\\underbar`,`\\underline{\\text{#1}}`),K(`\\not`,`\\html@mathml{\\mathrel{\\mathrlap\\@not}\\nobreak}{\\char"338}`),K(`\\neq`,"\\html@mathml{\\mathrel{\\not=}}{\\mathrel{\\char`≠}}"),K(`\\ne`,`\\neq`),K(`≠`,`\\neq`),K(`\\notin`,"\\html@mathml{\\mathrel{{\\in}\\mathllap{/\\mskip1mu}}}{\\mathrel{\\char`∉}}"),K(`∉`,`\\notin`),K(`≘`,"\\html@mathml{\\mathrel{=\\kern{-1em}\\raisebox{0.4em}{$\\scriptsize\\frown$}}}{\\mathrel{\\char`≘}}"),K(`≙`,"\\html@mathml{\\stackrel{\\tiny\\wedge}{=}}{\\mathrel{\\char`≘}}"),K(`≚`,"\\html@mathml{\\stackrel{\\tiny\\vee}{=}}{\\mathrel{\\char`≚}}"),K(`≛`,"\\html@mathml{\\stackrel{\\scriptsize\\star}{=}}{\\mathrel{\\char`≛}}"),K(`≝`,"\\html@mathml{\\stackrel{\\tiny\\mathrm{def}}{=}}{\\mathrel{\\char`≝}}"),K(`≞`,"\\html@mathml{\\stackrel{\\tiny\\mathrm{m}}{=}}{\\mathrel{\\char`≞}}"),K(`≟`,"\\html@mathml{\\stackrel{\\tiny?}{=}}{\\mathrel{\\char`≟}}"),K(`⟂`,`\\perp`),K(`‼`,`\\mathclose{!\\mkern-0.8mu!}`),K(`∌`,`\\notni`),K(`⌜`,`\\ulcorner`),K(`⌝`,`\\urcorner`),K(`⌞`,`\\llcorner`),K(`⌟`,`\\lrcorner`),K(`©`,`\\copyright`),K(`®`,`\\textregistered`),K(`\\ulcorner`,`\\html@mathml{\\@ulcorner}{\\mathop{\\char"231c}}`),K(`\\urcorner`,`\\html@mathml{\\@urcorner}{\\mathop{\\char"231d}}`),K(`\\llcorner`,`\\html@mathml{\\@llcorner}{\\mathop{\\char"231e}}`),K(`\\lrcorner`,`\\html@mathml{\\@lrcorner}{\\mathop{\\char"231f}}`),K(`\\vdots`,`{\\varvdots\\rule{0pt}{15pt}}`),K(`⋮`,`\\vdots`),K(`\\varGamma`,`\\mathit{\\Gamma}`),K(`\\varDelta`,`\\mathit{\\Delta}`),K(`\\varTheta`,`\\mathit{\\Theta}`),K(`\\varLambda`,`\\mathit{\\Lambda}`),K(`\\varXi`,`\\mathit{\\Xi}`),K(`\\varPi`,`\\mathit{\\Pi}`),K(`\\varSigma`,`\\mathit{\\Sigma}`),K(`\\varUpsilon`,`\\mathit{\\Upsilon}`),K(`\\varPhi`,`\\mathit{\\Phi}`),K(`\\varPsi`,`\\mathit{\\Psi}`),K(`\\varOmega`,`\\mathit{\\Omega}`),K(`\\substack`,`\\begin{subarray}{c}#1\\end{subarray}`),K(`\\colon`,`\\nobreak\\mskip2mu\\mathpunct{}\\mathchoice{\\mkern-3mu}{\\mkern-3mu}{}{}{:}\\mskip6mu\\relax`),K(`\\boxed`,`\\fbox{$\\displaystyle{#1}$}`),K(`\\iff`,`\\DOTSB\\;\\Longleftrightarrow\\;`),K(`\\implies`,`\\DOTSB\\;\\Longrightarrow\\;`),K(`\\impliedby`,`\\DOTSB\\;\\Longleftarrow\\;`),K(`\\dddot`,`{\\overset{\\raisebox{-0.1ex}{\\normalsize ...}}{#1}}`),K(`\\ddddot`,`{\\overset{\\raisebox{-0.1ex}{\\normalsize ....}}{#1}}`);var Ca={",":`\\dotsc`,"\\not":`\\dotsb`,"+":`\\dotsb`,"=":`\\dotsb`,"<":`\\dotsb`,">":`\\dotsb`,"-":`\\dotsb`,"*":`\\dotsb`,":":`\\dotsb`,"\\DOTSB":`\\dotsb`,"\\coprod":`\\dotsb`,"\\bigvee":`\\dotsb`,"\\bigwedge":`\\dotsb`,"\\biguplus":`\\dotsb`,"\\bigcap":`\\dotsb`,"\\bigcup":`\\dotsb`,"\\prod":`\\dotsb`,"\\sum":`\\dotsb`,"\\bigotimes":`\\dotsb`,"\\bigoplus":`\\dotsb`,"\\bigodot":`\\dotsb`,"\\bigsqcup":`\\dotsb`,"\\And":`\\dotsb`,"\\longrightarrow":`\\dotsb`,"\\Longrightarrow":`\\dotsb`,"\\longleftarrow":`\\dotsb`,"\\Longleftarrow":`\\dotsb`,"\\longleftrightarrow":`\\dotsb`,"\\Longleftrightarrow":`\\dotsb`,"\\mapsto":`\\dotsb`,"\\longmapsto":`\\dotsb`,"\\hookrightarrow":`\\dotsb`,"\\doteq":`\\dotsb`,"\\mathbin":`\\dotsb`,"\\mathrel":`\\dotsb`,"\\relbar":`\\dotsb`,"\\Relbar":`\\dotsb`,"\\xrightarrow":`\\dotsb`,"\\xleftarrow":`\\dotsb`,"\\DOTSI":`\\dotsi`,"\\int":`\\dotsi`,"\\oint":`\\dotsi`,"\\iint":`\\dotsi`,"\\iiint":`\\dotsi`,"\\iiiint":`\\dotsi`,"\\idotsint":`\\dotsi`,"\\DOTSX":`\\dotsx`},wa=new Set([`bin`,`rel`]);K(`\\dots`,function(e){var t=`\\dotso`,n=e.expandAfterFuture().text;return n in Ca?t=Ca[n]:(n.slice(0,4)===`\\not`||n in at.math&&wa.has(at.math[n].group))&&(t=`\\dotsb`),t});var Ta={")":!0,"]":!0,"\\rbrack":!0,"\\}":!0,"\\rbrace":!0,"\\rangle":!0,"\\rceil":!0,"\\rfloor":!0,"\\rgroup":!0,"\\rmoustache":!0,"\\right":!0,"\\bigr":!0,"\\biggr":!0,"\\Bigr":!0,"\\Biggr":!0,$:!0,";":!0,".":!0,",":!0};K(`\\dotso`,function(e){return e.future().text in Ta?`\\ldots\\,`:`\\ldots`}),K(`\\dotsc`,function(e){var t=e.future().text;return t in Ta&&t!==`,`?`\\ldots\\,`:`\\ldots`}),K(`\\cdots`,function(e){return e.future().text in Ta?`\\@cdots\\,`:`\\@cdots`}),K(`\\dotsb`,`\\cdots`),K(`\\dotsm`,`\\cdots`),K(`\\dotsi`,`\\!\\cdots`),K(`\\dotsx`,`\\ldots\\,`),K(`\\DOTSI`,`\\relax`),K(`\\DOTSB`,`\\relax`),K(`\\DOTSX`,`\\relax`),K(`\\tmspace`,`\\TextOrMath{\\kern#1#3}{\\mskip#1#2}\\relax`),K(`\\,`,`\\tmspace+{3mu}{.1667em}`),K(`\\thinspace`,`\\,`),K(`\\>`,`\\mskip{4mu}`),K(`\\:`,`\\tmspace+{4mu}{.2222em}`),K(`\\medspace`,`\\:`),K(`\\;`,`\\tmspace+{5mu}{.2777em}`),K(`\\thickspace`,`\\;`),K(`\\!`,`\\tmspace-{3mu}{.1667em}`),K(`\\negthinspace`,`\\!`),K(`\\negmedspace`,`\\tmspace-{4mu}{.2222em}`),K(`\\negthickspace`,`\\tmspace-{5mu}{.277em}`),K(`\\enspace`,`\\kern.5em `),K(`\\enskip`,`\\hskip.5em\\relax`),K(`\\quad`,`\\hskip1em\\relax`),K(`\\qquad`,`\\hskip2em\\relax`),K(`\\tag`,`\\@ifstar\\tag@literal\\tag@paren`),K(`\\tag@paren`,`\\tag@literal{({#1})}`),K(`\\tag@literal`,e=>{if(e.macros.get(`\\df@tag`))throw new d(`Multiple \\tag`);return`\\gdef\\df@tag{\\text{#1}}`}),K(`\\bmod`,`\\mathchoice{\\mskip1mu}{\\mskip1mu}{\\mskip5mu}{\\mskip5mu}\\mathbin{\\rm mod}\\mathchoice{\\mskip1mu}{\\mskip1mu}{\\mskip5mu}{\\mskip5mu}`),K(`\\pod`,`\\allowbreak\\mathchoice{\\mkern18mu}{\\mkern8mu}{\\mkern8mu}{\\mkern8mu}(#1)`),K(`\\pmod`,`\\pod{{\\rm mod}\\mkern6mu#1}`),K(`\\mod`,`\\allowbreak\\mathchoice{\\mkern18mu}{\\mkern12mu}{\\mkern12mu}{\\mkern12mu}{\\rm mod}\\,\\,#1`),K(`\\newline`,`\\\\\\relax`),K(`\\TeX`,`\\textrm{\\html@mathml{T\\kern-.1667em\\raisebox{-.5ex}{E}\\kern-.125emX}{TeX}}`);var Ea=A($e[`Main-Regular`][84][1]-.7*$e[`Main-Regular`][65][1]);K(`\\LaTeX`,`\\textrm{\\html@mathml{`+(`L\\kern-.36em\\raisebox{`+Ea+`}{\\scriptstyle A}`)+`\\kern-.15em\\TeX}{LaTeX}}`),K(`\\KaTeX`,`\\textrm{\\html@mathml{`+(`K\\kern-.17em\\raisebox{`+Ea+`}{\\scriptstyle A}`)+`\\kern-.15em\\TeX}{KaTeX}}`),K(`\\hspace`,`\\@ifstar\\@hspacer\\@hspace`),K(`\\@hspace`,`\\hskip #1\\relax`),K(`\\@hspacer`,`\\rule{0pt}{0pt}\\hskip #1\\relax`),K(`\\ordinarycolon`,`:`),K(`\\vcentcolon`,`\\mathrel{\\mathop\\ordinarycolon}`),K(`\\dblcolon`,`\\html@mathml{\\mathrel{\\vcentcolon\\mathrel{\\mkern-.9mu}\\vcentcolon}}{\\mathop{\\char"2237}}`),K(`\\coloneqq`,`\\html@mathml{\\mathrel{\\vcentcolon\\mathrel{\\mkern-1.2mu}=}}{\\mathop{\\char"2254}}`),K(`\\Coloneqq`,`\\html@mathml{\\mathrel{\\dblcolon\\mathrel{\\mkern-1.2mu}=}}{\\mathop{\\char"2237\\char"3d}}`),K(`\\coloneq`,`\\html@mathml{\\mathrel{\\vcentcolon\\mathrel{\\mkern-1.2mu}\\mathrel{-}}}{\\mathop{\\char"3a\\char"2212}}`),K(`\\Coloneq`,`\\html@mathml{\\mathrel{\\dblcolon\\mathrel{\\mkern-1.2mu}\\mathrel{-}}}{\\mathop{\\char"2237\\char"2212}}`),K(`\\eqqcolon`,`\\html@mathml{\\mathrel{=\\mathrel{\\mkern-1.2mu}\\vcentcolon}}{\\mathop{\\char"2255}}`),K(`\\Eqqcolon`,`\\html@mathml{\\mathrel{=\\mathrel{\\mkern-1.2mu}\\dblcolon}}{\\mathop{\\char"3d\\char"2237}}`),K(`\\eqcolon`,`\\html@mathml{\\mathrel{\\mathrel{-}\\mathrel{\\mkern-1.2mu}\\vcentcolon}}{\\mathop{\\char"2239}}`),K(`\\Eqcolon`,`\\html@mathml{\\mathrel{\\mathrel{-}\\mathrel{\\mkern-1.2mu}\\dblcolon}}{\\mathop{\\char"2212\\char"2237}}`),K(`\\colonapprox`,`\\html@mathml{\\mathrel{\\vcentcolon\\mathrel{\\mkern-1.2mu}\\approx}}{\\mathop{\\char"3a\\char"2248}}`),K(`\\Colonapprox`,`\\html@mathml{\\mathrel{\\dblcolon\\mathrel{\\mkern-1.2mu}\\approx}}{\\mathop{\\char"2237\\char"2248}}`),K(`\\colonsim`,`\\html@mathml{\\mathrel{\\vcentcolon\\mathrel{\\mkern-1.2mu}\\sim}}{\\mathop{\\char"3a\\char"223c}}`),K(`\\Colonsim`,`\\html@mathml{\\mathrel{\\dblcolon\\mathrel{\\mkern-1.2mu}\\sim}}{\\mathop{\\char"2237\\char"223c}}`),K(`∷`,`\\dblcolon`),K(`∹`,`\\eqcolon`),K(`≔`,`\\coloneqq`),K(`≕`,`\\eqqcolon`),K(`⩴`,`\\Coloneqq`),K(`\\ratio`,`\\vcentcolon`),K(`\\coloncolon`,`\\dblcolon`),K(`\\colonequals`,`\\coloneqq`),K(`\\coloncolonequals`,`\\Coloneqq`),K(`\\equalscolon`,`\\eqqcolon`),K(`\\equalscoloncolon`,`\\Eqqcolon`),K(`\\colonminus`,`\\coloneq`),K(`\\coloncolonminus`,`\\Coloneq`),K(`\\minuscolon`,`\\eqcolon`),K(`\\minuscoloncolon`,`\\Eqcolon`),K(`\\coloncolonapprox`,`\\Colonapprox`),K(`\\coloncolonsim`,`\\Colonsim`),K(`\\simcolon`,`\\mathrel{\\sim\\mathrel{\\mkern-1.2mu}\\vcentcolon}`),K(`\\simcoloncolon`,`\\mathrel{\\sim\\mathrel{\\mkern-1.2mu}\\dblcolon}`),K(`\\approxcolon`,`\\mathrel{\\approx\\mathrel{\\mkern-1.2mu}\\vcentcolon}`),K(`\\approxcoloncolon`,`\\mathrel{\\approx\\mathrel{\\mkern-1.2mu}\\dblcolon}`),K(`\\notni`,"\\html@mathml{\\not\\ni}{\\mathrel{\\char`∌}}"),K(`\\limsup`,`\\DOTSB\\operatorname*{lim\\,sup}`),K(`\\liminf`,`\\DOTSB\\operatorname*{lim\\,inf}`),K(`\\injlim`,`\\DOTSB\\operatorname*{inj\\,lim}`),K(`\\projlim`,`\\DOTSB\\operatorname*{proj\\,lim}`),K(`\\varlimsup`,`\\DOTSB\\operatorname*{\\overline{lim}}`),K(`\\varliminf`,`\\DOTSB\\operatorname*{\\underline{lim}}`),K(`\\varinjlim`,`\\DOTSB\\operatorname*{\\underrightarrow{lim}}`),K(`\\varprojlim`,`\\DOTSB\\operatorname*{\\underleftarrow{lim}}`),K(`\\gvertneqq`,`\\html@mathml{\\@gvertneqq}{≩}`),K(`\\lvertneqq`,`\\html@mathml{\\@lvertneqq}{≨}`),K(`\\ngeqq`,`\\html@mathml{\\@ngeqq}{≱}`),K(`\\ngeqslant`,`\\html@mathml{\\@ngeqslant}{≱}`),K(`\\nleqq`,`\\html@mathml{\\@nleqq}{≰}`),K(`\\nleqslant`,`\\html@mathml{\\@nleqslant}{≰}`),K(`\\nshortmid`,`\\html@mathml{\\@nshortmid}{∤}`),K(`\\nshortparallel`,`\\html@mathml{\\@nshortparallel}{∦}`),K(`\\nsubseteqq`,`\\html@mathml{\\@nsubseteqq}{⊈}`),K(`\\nsupseteqq`,`\\html@mathml{\\@nsupseteqq}{⊉}`),K(`\\varsubsetneq`,`\\html@mathml{\\@varsubsetneq}{⊊}`),K(`\\varsubsetneqq`,`\\html@mathml{\\@varsubsetneqq}{⫋}`),K(`\\varsupsetneq`,`\\html@mathml{\\@varsupsetneq}{⊋}`),K(`\\varsupsetneqq`,`\\html@mathml{\\@varsupsetneqq}{⫌}`),K(`\\imath`,`\\html@mathml{\\@imath}{ı}`),K(`\\jmath`,`\\html@mathml{\\@jmath}{ȷ}`),K(`\\llbracket`,"\\html@mathml{\\mathopen{[\\mkern-3.2mu[}}{\\mathopen{\\char`⟦}}"),K(`\\rrbracket`,"\\html@mathml{\\mathclose{]\\mkern-3.2mu]}}{\\mathclose{\\char`⟧}}"),K(`⟦`,`\\llbracket`),K(`⟧`,`\\rrbracket`),K(`\\lBrace`,"\\html@mathml{\\mathopen{\\{\\mkern-3.2mu[}}{\\mathopen{\\char`⦃}}"),K(`\\rBrace`,"\\html@mathml{\\mathclose{]\\mkern-3.2mu\\}}}{\\mathclose{\\char`⦄}}"),K(`↤`,`\\mapsfrom`),K(`\\mapsfrom`,"\\html@mathml{\\mathrel{\\mathreflectbox{\\mapsto}}}{\\mathrel{\\char`↤}}"),K(`⦃`,`\\lBrace`),K(`⦄`,`\\rBrace`),K(`\\minuso`,"\\mathbin{\\html@mathml{{\\mathrlap{\\mathchoice{\\kern{0.145em}}{\\kern{0.145em}}{\\kern{0.1015em}}{\\kern{0.0725em}}\\circ}{-}}}{\\char`⦵}}"),K(`⦵`,`\\minuso`),K(`\\darr`,`\\downarrow`),K(`\\dArr`,`\\Downarrow`),K(`\\Darr`,`\\Downarrow`),K(`\\lang`,`\\langle`),K(`\\rang`,`\\rangle`),K(`\\uarr`,`\\uparrow`),K(`\\uArr`,`\\Uparrow`),K(`\\Uarr`,`\\Uparrow`),K(`\\N`,`\\mathbb{N}`),K(`\\R`,`\\mathbb{R}`),K(`\\Z`,`\\mathbb{Z}`),K(`\\alef`,`\\aleph`),K(`\\alefsym`,`\\aleph`),K(`\\Alpha`,`\\mathrm{A}`),K(`\\Beta`,`\\mathrm{B}`),K(`\\bull`,`\\bullet`),K(`\\Chi`,`\\mathrm{X}`),K(`\\clubs`,`\\clubsuit`),K(`\\cnums`,`\\mathbb{C}`),K(`\\Complex`,`\\mathbb{C}`),K(`\\Dagger`,`\\ddagger`),K(`\\diamonds`,`\\diamondsuit`),K(`\\empty`,`\\emptyset`),K(`\\Epsilon`,`\\mathrm{E}`),K(`\\Eta`,`\\mathrm{H}`),K(`\\exist`,`\\exists`),K(`\\harr`,`\\leftrightarrow`),K(`\\hArr`,`\\Leftrightarrow`),K(`\\Harr`,`\\Leftrightarrow`),K(`\\hearts`,`\\heartsuit`),K(`\\image`,`\\Im`),K(`\\infin`,`\\infty`),K(`\\Iota`,`\\mathrm{I}`),K(`\\isin`,`\\in`),K(`\\Kappa`,`\\mathrm{K}`),K(`\\larr`,`\\leftarrow`),K(`\\lArr`,`\\Leftarrow`),K(`\\Larr`,`\\Leftarrow`),K(`\\lrarr`,`\\leftrightarrow`),K(`\\lrArr`,`\\Leftrightarrow`),K(`\\Lrarr`,`\\Leftrightarrow`),K(`\\Mu`,`\\mathrm{M}`),K(`\\natnums`,`\\mathbb{N}`),K(`\\Nu`,`\\mathrm{N}`),K(`\\Omicron`,`\\mathrm{O}`),K(`\\plusmn`,`\\pm`),K(`\\rarr`,`\\rightarrow`),K(`\\rArr`,`\\Rightarrow`),K(`\\Rarr`,`\\Rightarrow`),K(`\\real`,`\\Re`),K(`\\reals`,`\\mathbb{R}`),K(`\\Reals`,`\\mathbb{R}`),K(`\\Rho`,`\\mathrm{P}`),K(`\\sdot`,`\\cdot`),K(`\\sect`,`\\S`),K(`\\spades`,`\\spadesuit`),K(`\\sub`,`\\subset`),K(`\\sube`,`\\subseteq`),K(`\\supe`,`\\supseteq`),K(`\\Tau`,`\\mathrm{T}`),K(`\\thetasym`,`\\vartheta`),K(`\\weierp`,`\\wp`),K(`\\Zeta`,`\\mathrm{Z}`),K(`\\argmin`,`\\DOTSB\\operatorname*{arg\\,min}`),K(`\\argmax`,`\\DOTSB\\operatorname*{arg\\,max}`),K(`\\plim`,`\\DOTSB\\mathop{\\operatorname{plim}}\\limits`),K(`\\bra`,`\\mathinner{\\langle{#1}|}`),K(`\\ket`,`\\mathinner{|{#1}\\rangle}`),K(`\\braket`,`\\mathinner{\\langle{#1}\\rangle}`),K(`\\Bra`,`\\left\\langle#1\\right|`),K(`\\Ket`,`\\left|#1\\right\\rangle`);var Da=e=>t=>{var n=t.consumeArg().tokens,r=t.consumeArg().tokens,i=t.consumeArg().tokens,a=t.consumeArg().tokens,o=t.macros.get(`|`),s=t.macros.get(`\\|`);t.macros.beginGroup();var c=t=>n=>{e&&(n.macros.set(`|`,o),i.length&&n.macros.set(`\\|`,s));var a=t;return!t&&i.length&&n.future().text===`|`&&(n.popToken(),a=!0),{tokens:a?i:r,numArgs:0}};t.macros.set(`|`,c(!1)),i.length&&t.macros.set(`\\|`,c(!0));var l=t.consumeArg().tokens,u=t.expandTokens([...a,...l,...n]);return t.macros.endGroup(),{tokens:u.reverse(),numArgs:0}};K(`\\bra@ket`,Da(!1)),K(`\\bra@set`,Da(!0)),K(`\\Braket`,`\\bra@ket{\\left\\langle}{\\,\\middle\\vert\\,}{\\,\\middle\\vert\\,}{\\right\\rangle}`),K(`\\Set`,`\\bra@set{\\left\\{\\:}{\\;\\middle\\vert\\;}{\\;\\middle\\Vert\\;}{\\:\\right\\}}`),K(`\\set`,`\\bra@set{\\{\\,}{\\mid}{}{\\,\\}}`),K(`\\angln`,`{\\angl n}`),K(`\\blue`,`\\textcolor{##6495ed}{#1}`),K(`\\orange`,`\\textcolor{##ffa500}{#1}`),K(`\\pink`,`\\textcolor{##ff00af}{#1}`),K(`\\red`,`\\textcolor{##df0030}{#1}`),K(`\\green`,`\\textcolor{##28ae7b}{#1}`),K(`\\gray`,`\\textcolor{gray}{#1}`),K(`\\purple`,`\\textcolor{##9d38bd}{#1}`),K(`\\blueA`,`\\textcolor{##ccfaff}{#1}`),K(`\\blueB`,`\\textcolor{##80f6ff}{#1}`),K(`\\blueC`,`\\textcolor{##63d9ea}{#1}`),K(`\\blueD`,`\\textcolor{##11accd}{#1}`),K(`\\blueE`,`\\textcolor{##0c7f99}{#1}`),K(`\\tealA`,`\\textcolor{##94fff5}{#1}`),K(`\\tealB`,`\\textcolor{##26edd5}{#1}`),K(`\\tealC`,`\\textcolor{##01d1c1}{#1}`),K(`\\tealD`,`\\textcolor{##01a995}{#1}`),K(`\\tealE`,`\\textcolor{##208170}{#1}`),K(`\\greenA`,`\\textcolor{##b6ffb0}{#1}`),K(`\\greenB`,`\\textcolor{##8af281}{#1}`),K(`\\greenC`,`\\textcolor{##74cf70}{#1}`),K(`\\greenD`,`\\textcolor{##1fab54}{#1}`),K(`\\greenE`,`\\textcolor{##0d923f}{#1}`),K(`\\goldA`,`\\textcolor{##ffd0a9}{#1}`),K(`\\goldB`,`\\textcolor{##ffbb71}{#1}`),K(`\\goldC`,`\\textcolor{##ff9c39}{#1}`),K(`\\goldD`,`\\textcolor{##e07d10}{#1}`),K(`\\goldE`,`\\textcolor{##a75a05}{#1}`),K(`\\redA`,`\\textcolor{##fca9a9}{#1}`),K(`\\redB`,`\\textcolor{##ff8482}{#1}`),K(`\\redC`,`\\textcolor{##f9685d}{#1}`),K(`\\redD`,`\\textcolor{##e84d39}{#1}`),K(`\\redE`,`\\textcolor{##bc2612}{#1}`),K(`\\maroonA`,`\\textcolor{##ffbde0}{#1}`),K(`\\maroonB`,`\\textcolor{##ff92c6}{#1}`),K(`\\maroonC`,`\\textcolor{##ed5fa6}{#1}`),K(`\\maroonD`,`\\textcolor{##ca337c}{#1}`),K(`\\maroonE`,`\\textcolor{##9e034e}{#1}`),K(`\\purpleA`,`\\textcolor{##ddd7ff}{#1}`),K(`\\purpleB`,`\\textcolor{##c6b9fc}{#1}`),K(`\\purpleC`,`\\textcolor{##aa87ff}{#1}`),K(`\\purpleD`,`\\textcolor{##7854ab}{#1}`),K(`\\purpleE`,`\\textcolor{##543b78}{#1}`),K(`\\mintA`,`\\textcolor{##f5f9e8}{#1}`),K(`\\mintB`,`\\textcolor{##edf2df}{#1}`),K(`\\mintC`,`\\textcolor{##e0e5cc}{#1}`),K(`\\grayA`,`\\textcolor{##f6f7f7}{#1}`),K(`\\grayB`,`\\textcolor{##f0f1f2}{#1}`),K(`\\grayC`,`\\textcolor{##e3e5e6}{#1}`),K(`\\grayD`,`\\textcolor{##d6d8da}{#1}`),K(`\\grayE`,`\\textcolor{##babec2}{#1}`),K(`\\grayF`,`\\textcolor{##888d93}{#1}`),K(`\\grayG`,`\\textcolor{##626569}{#1}`),K(`\\grayH`,`\\textcolor{##3b3e40}{#1}`),K(`\\grayI`,`\\textcolor{##21242c}{#1}`),K(`\\kaBlue`,`\\textcolor{##314453}{#1}`),K(`\\kaGreen`,`\\textcolor{##71B307}{#1}`);var Oa={"^":!0,_:!0,"\\limits":!0,"\\nolimits":!0},ka=class{constructor(e,t,n){this.settings=void 0,this.expansionCount=void 0,this.lexer=void 0,this.macros=void 0,this.stack=void 0,this.mode=void 0,this.settings=t,this.expansionCount=0,this.feed(e),this.macros=new ya(ba,t.macros),this.mode=n,this.stack=[]}feed(e){this.lexer=new va(e,this.settings)}switchMode(e){this.mode=e}beginGroup(){this.macros.beginGroup()}endGroup(){this.macros.endGroup()}endGroups(){this.macros.endGroups()}future(){return this.stack.length===0&&this.pushToken(this.lexer.lex()),this.stack[this.stack.length-1]}popToken(){return this.future(),this.stack.pop()}pushToken(e){this.stack.push(e)}pushTokens(e){this.stack.push(...e)}scanArgument(e){var t,n,r;if(e){if(this.consumeSpaces(),this.future().text!==`[`)return null;t=this.popToken();var i=this.consumeArg([`]`]);r=i.tokens,n=i.end}else{var a=this.consumeArg();r=a.tokens,t=a.start,n=a.end}return this.pushToken(new yi(`EOF`,n.loc)),this.pushTokens(r),new yi(``,vi.range(t,n))}consumeSpaces(){for(;this.future().text===` `;)this.stack.pop()}consumeArg(e){var t=[],n=e&&e.length>0;n||this.consumeSpaces();var r=this.future(),i,a=0,o=0;do{if(i=this.popToken(),t.push(i),i.text===`{`)++a;else if(i.text===`}`){if(--a,a===-1)throw new d(`Extra }`,i)}else if(i.text===`EOF`)throw new d(`Unexpected end of input in a macro argument, expected '`+(e&&n?e[o]:`}`)+`'`,i);if(e&&n){if((a===0||a===1&&e[o]===`{`)&&i.text===e[o]){if(++o,o===e.length){t.splice(-o,o);break}}else o=0}}while(a!==0||n);return r.text===`{`&&t[t.length-1].text===`}`&&(t.pop(),t.shift()),t.reverse(),{tokens:t,start:r,end:i}}consumeArgs(e,t){if(t){if(t.length!==e+1)throw new d(`The length of delimiters doesn't match the number of args!`);for(var n=t[0],r=0;r<n.length;r++){var i=this.popToken();if(n[r]!==i.text)throw new d(`Use of the macro doesn't match its definition`,i)}}for(var a=[],o=0;o<e;o++)a.push(this.consumeArg(t&&t[o+1]).tokens);return a}countExpansion(e){if(this.expansionCount+=e,this.expansionCount>this.settings.maxExpand)throw new d(`Too many expansions: infinite loop or need to increase maxExpand setting`)}expandOnce(e){var t=this.popToken(),n=t.text,r=t.noexpand?null:this._getExpansion(n);if(r==null||e&&r.unexpandable){if(e&&r==null&&n[0]===`\\`&&!this.isDefined(n))throw new d(`Undefined control sequence: `+n);return this.pushToken(t),!1}this.countExpansion(1);var i=r.tokens,a=this.consumeArgs(r.numArgs,r.delimiters);if(r.numArgs){i=i.slice();for(var o=i.length-1;o>=0;--o){var s=i[o];if(s.text===`#`){if(o===0)throw new d(`Incomplete placeholder at end of macro body`,s);if(s=i[--o],s.text===`#`)i.splice(o+1,1);else if(/^[1-9]$/.test(s.text))i.splice(o,2,...a[s.text-1]);else throw new d(`Not a valid argument number`,s)}}}return this.pushTokens(i),i.length}expandAfterFuture(){return this.expandOnce(),this.future()}expandNextToken(){for(;;)if(this.expandOnce()===!1){var e=this.stack.pop();return e.treatAsRelax&&(e.text=`\\relax`),e}}expandMacro(e){return this.macros.has(e)?this.expandTokens([new yi(e)]):void 0}expandTokens(e){var t=[],n=this.stack.length;for(this.pushTokens(e);this.stack.length>n;)if(this.expandOnce(!0)===!1){var r=this.stack.pop();r.treatAsRelax&&=(r.noexpand=!1,!1),t.push(r)}return this.countExpansion(t.length),t}expandMacroAsText(e){var t=this.expandMacro(e);return t&&t.map(e=>e.text).join(``)}_getExpansion(e){var t=this.macros.get(e);if(t==null)return t;if(e.length===1){var n=this.lexer.catcodes[e];if(n!=null&&n!==13)return}var r=typeof t==`function`?t(this):t;if(typeof r==`string`){var i=0;if(r.includes(`#`))for(var a=r.replace(/##/g,``);a.includes(`#`+(i+1));)++i;for(var o=new va(r,this.settings),s=[],c=o.lex();c.text!==`EOF`;)s.push(c),c=o.lex();return s.reverse(),{tokens:s,numArgs:i}}return r}isDefined(e){return this.macros.has(e)||Object.prototype.hasOwnProperty.call(la,e)||Object.prototype.hasOwnProperty.call(at.math,e)||Object.prototype.hasOwnProperty.call(at.text,e)||Object.prototype.hasOwnProperty.call(Oa,e)}isExpandable(e){var t=this.macros.get(e);return t==null?Object.prototype.hasOwnProperty.call(la,e)&&!la[e].primitive:typeof t==`string`||typeof t==`function`||!t.unexpandable}},Aa=/^[₊₋₌₍₎₀₁₂₃₄₅₆₇₈₉ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓᵦᵧᵨᵩᵪ]/,ja=Object.freeze({"₊":`+`,"₋":`-`,"₌":`=`,"₍":`(`,"₎":`)`,"₀":`0`,"₁":`1`,"₂":`2`,"₃":`3`,"₄":`4`,"₅":`5`,"₆":`6`,"₇":`7`,"₈":`8`,"₉":`9`,ₐ:`a`,ₑ:`e`,ₕ:`h`,ᵢ:`i`,ⱼ:`j`,ₖ:`k`,ₗ:`l`,ₘ:`m`,ₙ:`n`,ₒ:`o`,ₚ:`p`,ᵣ:`r`,ₛ:`s`,ₜ:`t`,ᵤ:`u`,ᵥ:`v`,ₓ:`x`,ᵦ:`β`,ᵧ:`γ`,ᵨ:`ρ`,ᵩ:`ϕ`,ᵪ:`χ`,"⁺":`+`,"⁻":`-`,"⁼":`=`,"⁽":`(`,"⁾":`)`,"⁰":`0`,"¹":`1`,"²":`2`,"³":`3`,"⁴":`4`,"⁵":`5`,"⁶":`6`,"⁷":`7`,"⁸":`8`,"⁹":`9`,ᴬ:`A`,ᴮ:`B`,ᴰ:`D`,ᴱ:`E`,ᴳ:`G`,ᴴ:`H`,ᴵ:`I`,ᴶ:`J`,ᴷ:`K`,ᴸ:`L`,ᴹ:`M`,ᴺ:`N`,ᴼ:`O`,ᴾ:`P`,ᴿ:`R`,ᵀ:`T`,ᵁ:`U`,ⱽ:`V`,ᵂ:`W`,ᵃ:`a`,ᵇ:`b`,ᶜ:`c`,ᵈ:`d`,ᵉ:`e`,ᶠ:`f`,ᵍ:`g`,ʰ:`h`,ⁱ:`i`,ʲ:`j`,ᵏ:`k`,ˡ:`l`,ᵐ:`m`,ⁿ:`n`,ᵒ:`o`,ᵖ:`p`,ʳ:`r`,ˢ:`s`,ᵗ:`t`,ᵘ:`u`,ᵛ:`v`,ʷ:`w`,ˣ:`x`,ʸ:`y`,ᶻ:`z`,ᵝ:`β`,ᵞ:`γ`,ᵟ:`δ`,ᵠ:`ϕ`,ᵡ:`χ`,ᶿ:`θ`}),Ma={"́":{text:`\\'`,math:`\\acute`},"̀":{text:"\\`",math:`\\grave`},"̈":{text:`\\"`,math:`\\ddot`},"̃":{text:`\\~`,math:`\\tilde`},"̄":{text:`\\=`,math:`\\bar`},"̆":{text:`\\u`,math:`\\breve`},"̌":{text:`\\v`,math:`\\check`},"̂":{text:`\\^`,math:`\\hat`},"̇":{text:`\\.`,math:`\\dot`},"̊":{text:`\\r`,math:`\\mathring`},"̋":{text:`\\H`},"̧":{text:`\\c`}},Na={á:`á`,à:`à`,ä:`ä`,ǟ:`ǟ`,ã:`ã`,ā:`ā`,ă:`ă`,ắ:`ắ`,ằ:`ằ`,ẵ:`ẵ`,ǎ:`ǎ`,â:`â`,ấ:`ấ`,ầ:`ầ`,ẫ:`ẫ`,ȧ:`ȧ`,ǡ:`ǡ`,å:`å`,ǻ:`ǻ`,ḃ:`ḃ`,ć:`ć`,ḉ:`ḉ`,č:`č`,ĉ:`ĉ`,ċ:`ċ`,ç:`ç`,ď:`ď`,ḋ:`ḋ`,ḑ:`ḑ`,é:`é`,è:`è`,ë:`ë`,ẽ:`ẽ`,ē:`ē`,ḗ:`ḗ`,ḕ:`ḕ`,ĕ:`ĕ`,ḝ:`ḝ`,ě:`ě`,ê:`ê`,ế:`ế`,ề:`ề`,ễ:`ễ`,ė:`ė`,ȩ:`ȩ`,ḟ:`ḟ`,ǵ:`ǵ`,ḡ:`ḡ`,ğ:`ğ`,ǧ:`ǧ`,ĝ:`ĝ`,ġ:`ġ`,ģ:`ģ`,ḧ:`ḧ`,ȟ:`ȟ`,ĥ:`ĥ`,ḣ:`ḣ`,ḩ:`ḩ`,í:`í`,ì:`ì`,ï:`ï`,ḯ:`ḯ`,ĩ:`ĩ`,ī:`ī`,ĭ:`ĭ`,ǐ:`ǐ`,î:`î`,ǰ:`ǰ`,ĵ:`ĵ`,ḱ:`ḱ`,ǩ:`ǩ`,ķ:`ķ`,ĺ:`ĺ`,ľ:`ľ`,ļ:`ļ`,ḿ:`ḿ`,ṁ:`ṁ`,ń:`ń`,ǹ:`ǹ`,ñ:`ñ`,ň:`ň`,ṅ:`ṅ`,ņ:`ņ`,ó:`ó`,ò:`ò`,ö:`ö`,ȫ:`ȫ`,õ:`õ`,ṍ:`ṍ`,ṏ:`ṏ`,ȭ:`ȭ`,ō:`ō`,ṓ:`ṓ`,ṑ:`ṑ`,ŏ:`ŏ`,ǒ:`ǒ`,ô:`ô`,ố:`ố`,ồ:`ồ`,ỗ:`ỗ`,ȯ:`ȯ`,ȱ:`ȱ`,ő:`ő`,ṕ:`ṕ`,ṗ:`ṗ`,ŕ:`ŕ`,ř:`ř`,ṙ:`ṙ`,ŗ:`ŗ`,ś:`ś`,ṥ:`ṥ`,š:`š`,ṧ:`ṧ`,ŝ:`ŝ`,ṡ:`ṡ`,ş:`ş`,ẗ:`ẗ`,ť:`ť`,ṫ:`ṫ`,ţ:`ţ`,ú:`ú`,ù:`ù`,ü:`ü`,ǘ:`ǘ`,ǜ:`ǜ`,ǖ:`ǖ`,ǚ:`ǚ`,ũ:`ũ`,ṹ:`ṹ`,ū:`ū`,ṻ:`ṻ`,ŭ:`ŭ`,ǔ:`ǔ`,û:`û`,ů:`ů`,ű:`ű`,ṽ:`ṽ`,ẃ:`ẃ`,ẁ:`ẁ`,ẅ:`ẅ`,ŵ:`ŵ`,ẇ:`ẇ`,ẘ:`ẘ`,ẍ:`ẍ`,ẋ:`ẋ`,ý:`ý`,ỳ:`ỳ`,ÿ:`ÿ`,ỹ:`ỹ`,ȳ:`ȳ`,ŷ:`ŷ`,ẏ:`ẏ`,ẙ:`ẙ`,ź:`ź`,ž:`ž`,ẑ:`ẑ`,ż:`ż`,Á:`Á`,À:`À`,Ä:`Ä`,Ǟ:`Ǟ`,Ã:`Ã`,Ā:`Ā`,Ă:`Ă`,Ắ:`Ắ`,Ằ:`Ằ`,Ẵ:`Ẵ`,Ǎ:`Ǎ`,Â:`Â`,Ấ:`Ấ`,Ầ:`Ầ`,Ẫ:`Ẫ`,Ȧ:`Ȧ`,Ǡ:`Ǡ`,Å:`Å`,Ǻ:`Ǻ`,Ḃ:`Ḃ`,Ć:`Ć`,Ḉ:`Ḉ`,Č:`Č`,Ĉ:`Ĉ`,Ċ:`Ċ`,Ç:`Ç`,Ď:`Ď`,Ḋ:`Ḋ`,Ḑ:`Ḑ`,É:`É`,È:`È`,Ë:`Ë`,Ẽ:`Ẽ`,Ē:`Ē`,Ḗ:`Ḗ`,Ḕ:`Ḕ`,Ĕ:`Ĕ`,Ḝ:`Ḝ`,Ě:`Ě`,Ê:`Ê`,Ế:`Ế`,Ề:`Ề`,Ễ:`Ễ`,Ė:`Ė`,Ȩ:`Ȩ`,Ḟ:`Ḟ`,Ǵ:`Ǵ`,Ḡ:`Ḡ`,Ğ:`Ğ`,Ǧ:`Ǧ`,Ĝ:`Ĝ`,Ġ:`Ġ`,Ģ:`Ģ`,Ḧ:`Ḧ`,Ȟ:`Ȟ`,Ĥ:`Ĥ`,Ḣ:`Ḣ`,Ḩ:`Ḩ`,Í:`Í`,Ì:`Ì`,Ï:`Ï`,Ḯ:`Ḯ`,Ĩ:`Ĩ`,Ī:`Ī`,Ĭ:`Ĭ`,Ǐ:`Ǐ`,Î:`Î`,İ:`İ`,Ĵ:`Ĵ`,Ḱ:`Ḱ`,Ǩ:`Ǩ`,Ķ:`Ķ`,Ĺ:`Ĺ`,Ľ:`Ľ`,Ļ:`Ļ`,Ḿ:`Ḿ`,Ṁ:`Ṁ`,Ń:`Ń`,Ǹ:`Ǹ`,Ñ:`Ñ`,Ň:`Ň`,Ṅ:`Ṅ`,Ņ:`Ņ`,Ó:`Ó`,Ò:`Ò`,Ö:`Ö`,Ȫ:`Ȫ`,Õ:`Õ`,Ṍ:`Ṍ`,Ṏ:`Ṏ`,Ȭ:`Ȭ`,Ō:`Ō`,Ṓ:`Ṓ`,Ṑ:`Ṑ`,Ŏ:`Ŏ`,Ǒ:`Ǒ`,Ô:`Ô`,Ố:`Ố`,Ồ:`Ồ`,Ỗ:`Ỗ`,Ȯ:`Ȯ`,Ȱ:`Ȱ`,Ő:`Ő`,Ṕ:`Ṕ`,Ṗ:`Ṗ`,Ŕ:`Ŕ`,Ř:`Ř`,Ṙ:`Ṙ`,Ŗ:`Ŗ`,Ś:`Ś`,Ṥ:`Ṥ`,Š:`Š`,Ṧ:`Ṧ`,Ŝ:`Ŝ`,Ṡ:`Ṡ`,Ş:`Ş`,Ť:`Ť`,Ṫ:`Ṫ`,Ţ:`Ţ`,Ú:`Ú`,Ù:`Ù`,Ü:`Ü`,Ǘ:`Ǘ`,Ǜ:`Ǜ`,Ǖ:`Ǖ`,Ǚ:`Ǚ`,Ũ:`Ũ`,Ṹ:`Ṹ`,Ū:`Ū`,Ṻ:`Ṻ`,Ŭ:`Ŭ`,Ǔ:`Ǔ`,Û:`Û`,Ů:`Ů`,Ű:`Ű`,Ṽ:`Ṽ`,Ẃ:`Ẃ`,Ẁ:`Ẁ`,Ẅ:`Ẅ`,Ŵ:`Ŵ`,Ẇ:`Ẇ`,Ẍ:`Ẍ`,Ẋ:`Ẋ`,Ý:`Ý`,Ỳ:`Ỳ`,Ÿ:`Ÿ`,Ỹ:`Ỹ`,Ȳ:`Ȳ`,Ŷ:`Ŷ`,Ẏ:`Ẏ`,Ź:`Ź`,Ž:`Ž`,Ẑ:`Ẑ`,Ż:`Ż`,ά:`ά`,ὰ:`ὰ`,ᾱ:`ᾱ`,ᾰ:`ᾰ`,έ:`έ`,ὲ:`ὲ`,ή:`ή`,ὴ:`ὴ`,ί:`ί`,ὶ:`ὶ`,ϊ:`ϊ`,ΐ:`ΐ`,ῒ:`ῒ`,ῑ:`ῑ`,ῐ:`ῐ`,ό:`ό`,ὸ:`ὸ`,ύ:`ύ`,ὺ:`ὺ`,ϋ:`ϋ`,ΰ:`ΰ`,ῢ:`ῢ`,ῡ:`ῡ`,ῠ:`ῠ`,ώ:`ώ`,ὼ:`ὼ`,Ύ:`Ύ`,Ὺ:`Ὺ`,Ϋ:`Ϋ`,Ῡ:`Ῡ`,Ῠ:`Ῠ`,Ώ:`Ώ`,Ὼ:`Ὼ`},Pa=class e{constructor(e,t){this.mode=void 0,this.gullet=void 0,this.settings=void 0,this.leftrightDepth=void 0,this.nextToken=void 0,this.mode=`math`,this.gullet=new ka(e,t,this.mode),this.settings=t,this.leftrightDepth=0,this.nextToken=null}expect(e,t){if(t===void 0&&(t=!0),this.fetch().text!==e)throw new d(`Expected '`+e+`', got '`+this.fetch().text+`'`,this.fetch());t&&this.consume()}consume(){this.nextToken=null}fetch(){return this.nextToken??=this.gullet.expandNextToken(),this.nextToken}switchMode(e){this.mode=e,this.gullet.switchMode(e)}parse(){this.settings.globalGroup||this.gullet.beginGroup(),this.settings.colorIsTextColor&&this.gullet.macros.set(`\\color`,`\\textcolor`);try{var e=this.parseExpression(!1);return this.expect(`EOF`),this.settings.globalGroup||this.gullet.endGroup(),e}finally{this.gullet.endGroups()}}subparse(e){var t=this.nextToken;this.consume(),this.gullet.pushToken(new yi(`}`)),this.gullet.pushTokens(e);var n=this.parseExpression(!1);return this.expect(`}`),this.nextToken=t,n}parseExpression(t,n){for(var r=[];;){this.mode===`math`&&this.consumeSpaces();var i=this.fetch();if(e.endOfExpression.has(i.text)||n&&i.text===n||t&&la[i.text]&&la[i.text].infix)break;var a=this.parseAtom(n);if(!a)break;a.type!==`internal`&&r.push(a)}return this.mode===`text`&&this.formLigatures(r),this.handleInfixNodes(r)}handleInfixNodes(e){for(var t=-1,n,r=0;r<e.length;r++){var i=e[r];if(i.type===`infix`){if(t!==-1)throw new d(`only one infix operator per group`,i.token);t=r,n=i.replaceWith}}if(t!==-1&&n){var a,o,s=e.slice(0,t),c=e.slice(t+1);return a=s.length===1&&s[0].type===`ordgroup`?s[0]:{type:`ordgroup`,mode:this.mode,body:s},o=c.length===1&&c[0].type===`ordgroup`?c[0]:{type:`ordgroup`,mode:this.mode,body:c},[n===`\\\\abovefrac`?this.callFunction(n,[a,e[t],o],[]):this.callFunction(n,[a,o],[])]}return e}handleSupSubscript(e){var t=this.fetch(),n=t.text;this.consume(),this.consumeSpaces();var r;do r=this.parseGroup(e);while(r?.type===`internal`);if(!r)throw new d(`Expected group after '`+n+`'`,t);return r}formatUnsupportedCmd(e){for(var t=[],n=0;n<e.length;n++)t.push({type:`textord`,mode:`text`,text:e[n]});var r={type:`text`,mode:this.mode,body:t};return{type:`color`,mode:this.mode,color:this.settings.errorColor,body:[r]}}parseAtom(e){var t=this.parseGroup(`atom`,e);if(t?.type===`internal`||this.mode===`text`)return t;for(var n,r;;){this.consumeSpaces();var i=this.fetch();if(i.text===`\\limits`||i.text===`\\nolimits`){if(t&&t.type===`op`)t.limits=i.text===`\\limits`,t.alwaysHandleSupSub=!0;else if(t&&t.type===`operatorname`)t.alwaysHandleSupSub&&(t.limits=i.text===`\\limits`);else throw new d(`Limit controls must follow a math operator`,i);this.consume()}else if(i.text===`^`){if(n)throw new d(`Double superscript`,i);n=this.handleSupSubscript(`superscript`)}else if(i.text===`_`){if(r)throw new d(`Double subscript`,i);r=this.handleSupSubscript(`subscript`)}else if(i.text===`'`){if(n)throw new d(`Double superscript`,i);var a={type:`textord`,mode:this.mode,text:`\\prime`},o=[a];for(this.consume();this.fetch().text===`'`;)o.push(a),this.consume();this.fetch().text===`^`&&o.push(this.handleSupSubscript(`superscript`)),n={type:`ordgroup`,mode:this.mode,body:o}}else if(ja[i.text]){var s=Aa.test(i.text),c=[];for(c.push(new yi(ja[i.text])),this.consume();;){var l=this.fetch().text;if(!ja[l]||Aa.test(l)!==s)break;c.unshift(new yi(ja[l])),this.consume()}var u=this.subparse(c);s?r={type:`ordgroup`,mode:`math`,body:u}:n={type:`ordgroup`,mode:`math`,body:u}}else break}return n&&r?{type:`supsub`,mode:this.mode,base:t,sup:n,sub:r}:n?{type:`supsub`,mode:this.mode,base:t,sup:n}:r?{type:`supsub`,mode:this.mode,base:t,sub:r}:t}parseFunction(e,t){var n=this.fetch(),r=n.text,i=la[r];if(!i)return null;if(this.consume(),t&&t!==`atom`&&!i.allowedInArgument)throw new d(`Got function '`+r+`' with no arguments`+(t?` as `+t:``),n);if(this.mode===`text`&&!i.allowedInText)throw new d(`Can't use function '`+r+`' in text mode`,n);if(this.mode===`math`&&i.allowedInMath===!1)throw new d(`Can't use function '`+r+`' in math mode`,n);var a=this.parseArguments(r,i),o=a.args,s=a.optArgs;return this.callFunction(r,o,s,n,e)}callFunction(e,t,n,r,i){var a={funcName:e,parser:this,token:r,breakOnTokenText:i},o=la[e];if(o&&o.handler)return o.handler(a,t,n);throw new d(`No function handler for `+e)}parseArguments(e,t){var n=t.numOptionalArgs??0,r=t.numArgs+n;if(r===0)return{args:[],optArgs:[]};for(var i=[],a=[],o=0;o<r;o++){var s=t.argTypes?.[o],c=o<n;(`primitive`in t&&t.primitive&&s==null||t.type===`sqrt`&&o===1&&a[0]==null)&&(s=`primitive`);var l=this.parseGroupOfType(`argument to '`+e+`'`,s,c);if(c)a.push(l);else if(l!=null)i.push(l);else throw new d(`Null argument, please report this as a bug`)}return{args:i,optArgs:a}}parseGroupOfType(e,t,n){switch(t){case`color`:return this.parseColorGroup(n);case`size`:return this.parseSizeGroup(n);case`url`:return this.parseUrlGroup(n);case`math`:case`text`:return this.parseArgumentGroup(n,t);case`hbox`:var r=this.parseArgumentGroup(n,`text`);return r==null?null:{type:`styling`,mode:r.mode,body:[r],style:`text`,resetFont:!0};case`raw`:var i=this.parseStringGroup(n);return i==null?null:{type:`raw`,mode:`text`,string:i.text};case`primitive`:if(n)throw new d(`A primitive argument cannot be optional`);var a=this.parseGroup(e);if(a==null)throw new d(`Expected group as `+e,this.fetch());return a;case`original`:case void 0:return this.parseArgumentGroup(n);default:throw new d(`Unknown group type as `+e,this.fetch())}}consumeSpaces(){for(;this.fetch().text===` `;)this.consume()}parseStringGroup(e){var t=this.gullet.scanArgument(e);if(t==null)return null;for(var n=``,r;(r=this.fetch()).text!==`EOF`;)n+=r.text,this.consume();return this.consume(),t.text=n,t}parseRegexGroup(e,t){for(var n=this.fetch(),r=n,i=``,a;(a=this.fetch()).text!==`EOF`&&e.test(i+a.text);)r=a,i+=r.text,this.consume();if(i===``)throw new d(`Invalid `+t+`: '`+n.text+`'`,n);return n.range(r,i)}parseColorGroup(e){var t=this.parseStringGroup(e);if(t==null)return null;var n=/^(#[a-f0-9]{3,4}|#[a-f0-9]{6}|#[a-f0-9]{8}|[a-f0-9]{6}|[a-z]+)$/i.exec(t.text);if(!n)throw new d(`Invalid color: '`+t.text+`'`,t);var r=n[0];return/^[0-9a-f]{6}$/i.test(r)&&(r=`#`+r),{type:`color-token`,mode:this.mode,color:r}}parseSizeGroup(e){var t,n=!1;if(this.gullet.consumeSpaces(),t=!e&&this.gullet.future().text!==`{`?this.parseRegexGroup(/^[-+]? *(?:$|\d+|\d+\.\d*|\.\d*) *[a-z]{0,2} *$/,`size`):this.parseStringGroup(e),!t)return null;!e&&t.text.length===0&&(t.text=`0pt`,n=!0);var r=/([-+]?) *(\d+(?:\.\d*)?|\.\d+) *([a-z]{2})/.exec(t.text);if(!r)throw new d(`Invalid size: '`+t.text+`'`,t);var i={number:+(r[1]+r[2]),unit:r[3]};if(!Pe(i))throw new d(`Invalid unit: '`+i.unit+`'`,t);return{type:`size`,mode:this.mode,value:i,isBlank:n}}parseUrlGroup(e){this.gullet.lexer.setCatcode(`%`,13),this.gullet.lexer.setCatcode(`~`,12);var t=this.parseStringGroup(e);if(this.gullet.lexer.setCatcode(`%`,14),this.gullet.lexer.setCatcode(`~`,13),t==null)return null;var n=t.text.replace(/\\([#$%&~_^{}])/g,`$1`);return{type:`url`,mode:this.mode,url:n}}parseArgumentGroup(e,t){var n=this.gullet.scanArgument(e);if(n==null)return null;var r=this.mode;t&&this.switchMode(t),this.gullet.beginGroup();var i=this.parseExpression(!1,`EOF`);this.expect(`EOF`),this.gullet.endGroup();var a={type:`ordgroup`,mode:this.mode,loc:n.loc,body:i};return t&&this.switchMode(r),a}parseGroup(e,t){var n=this.fetch(),r=n.text,i;if(r===`{`||r===`\\begingroup`){this.consume();var a=r===`{`?`}`:`\\endgroup`;this.gullet.beginGroup();var o=this.parseExpression(!1,a),s=this.fetch();this.expect(a),this.gullet.endGroup(),i={type:`ordgroup`,mode:this.mode,loc:vi.range(n,s),body:o,semisimple:r===`\\begingroup`||void 0}}else if(i=this.parseFunction(t,e)||this.parseSymbol(),i==null&&r[0]===`\\`&&!Object.prototype.hasOwnProperty.call(Oa,r)){if(this.settings.throwOnError)throw new d(`Undefined control sequence: `+r,n);i=this.formatUnsupportedCmd(r),this.consume()}return i}formLigatures(e){for(var t=e.length-1,n=0;n<t;++n){var r=e[n];if(r.type===`textord`){var i=r.text,a=e[n+1];if(a&&a.type===`textord`){if(i===`-`&&a.text===`-`){var o=e[n+2];n+1<t&&o&&o.type===`textord`&&o.text===`-`?(e.splice(n,3,{type:`textord`,mode:`text`,loc:vi.range(r,o),text:`---`}),t-=2):(e.splice(n,2,{type:`textord`,mode:`text`,loc:vi.range(r,a),text:`--`}),--t)}(i===`'`||i==="`")&&a.text===i&&(e.splice(n,2,{type:`textord`,mode:`text`,loc:vi.range(r,a),text:i+i}),--t)}}}}parseSymbol(){var e=this.fetch(),t=e.text;if(/^\\verb[^a-zA-Z]/.test(t)){this.consume();var n=t.slice(5),r=n.charAt(0)===`*`;if(r&&(n=n.slice(1)),n.length<2||n.charAt(0)!==n.slice(-1))throw new d(`\\verb assertion failed --
-                    please report what input caused this bug`);return n=n.slice(1,-1),{type:`verb`,mode:`text`,body:n,star:r}}Object.prototype.hasOwnProperty.call(Na,t[0])&&!at[this.mode][t[0]]&&(this.settings.strict&&this.mode===`math`&&Gt({strict:this.settings.strict,errorCode:`unicodeTextInMathMode`,errorMsg:`Accented Unicode text character "`+t[0]+`" used in math mode`,report:!0,token:e}),t=Na[t[0]]+t.slice(1));var i=ga.exec(t);i&&(t=t.substring(0,i.index),t===`i`?t=`ı`:t===`j`&&(t=`ȷ`));var a;if(at[this.mode][t]){this.settings.strict&&this.mode===`math`&&Dt.includes(t)&&Gt({strict:this.settings.strict,errorCode:`unicodeTextInMathMode`,errorMsg:`Latin-1/Unicode text character "`+t[0]+`" used in math mode`,report:!0,token:e});var o=at[this.mode][t].group,s=vi.range(e);a=pr(o)?{type:`atom`,mode:this.mode,family:o,loc:s,text:t}:{type:o,mode:this.mode,loc:s,text:t}}else if(t.charCodeAt(0)>=128)this.settings.strict&&(_e(t.charCodeAt(0))?this.mode===`math`&&Gt({strict:this.settings.strict,errorCode:`unicodeTextInMathMode`,errorMsg:`Unicode text character "`+t[0]+`" used in math mode`,report:!0,token:e}):Gt({strict:this.settings.strict,errorCode:`unknownSymbol`,errorMsg:`Unrecognized Unicode character "`+t[0]+`"`+(` (`+t.charCodeAt(0)+`)`),report:!0,token:e})),a={type:`textord`,mode:`text`,loc:vi.range(e),text:t};else return null;if(this.consume(),i)for(var c=0;c<i[0].length;c++){var l=i[0][c];if(!Ma[l])throw new d(`Unknown accent ' `+l+`'`,e);var u=Ma[l][this.mode]||Ma[l].text;if(!u)throw new d(`Accent `+l+` unsupported in `+this.mode+` mode`,e);a={type:`accent`,mode:this.mode,loc:vi.range(e),label:u,isStretchy:!1,isShifty:!0,base:a}}return a}};Pa.endOfExpression=new Set([`}`,`\\endgroup`,`\\end`,`\\right`,`&`]);var Fa=function(e,t){if(!(typeof e==`string`||e instanceof String))throw TypeError(`KaTeX can only parse string typed expression`);var n=new Pa(e,t);delete n.gullet.macros.current[`\\df@tag`];var r=n.parse();if(delete n.gullet.macros.current[`\\current@color`],delete n.gullet.macros.current[`\\color`],n.gullet.macros.get(`\\df@tag`)){if(!t.displayMode)throw new d(`\\tag works only in display equations`);r=[{type:`tag`,mode:`text`,body:r,tag:n.subparse([new yi(`\\df@tag`)])}]}return r};typeof document<`u`&&document.compatMode!==`CSS1Compat`&&typeof console<`u`&&console.warn(`Warning: KaTeX doesn't work in quirks mode. Make sure your website has a suitable doctype.`);var Ia=function(e,t){return Ra(e,t).toMarkup()},La=function(e,t,n){if(n.throwOnError||!(e instanceof d))throw e;var r=V([`katex-error`],[new Ke(t)]);return r.setAttribute(`title`,e.toString()),r.setAttribute(`style`,`color:`+n.errorColor),r},Ra=function(e,t){var n=new w(t);try{return nr(Fa(e,n),e,n)}catch(t){return La(t,e,n)}},za=e=>e?.replace(/([a-z0-9])([A-Z])/g,`$1-$2`).toLowerCase();function Ba(e,t,n=[]){if(t==null)throw Error(`[lucide]: iconNode is required when icon name is used`);return{name:za(e),size:24,node:t,...n.length>0?{aliases:n}:{}}}var Va=e=>{let t=``,n=!1;for(let r of e)r===`-`||r===`_`||r<=` `?n=t.length>0:(t.length===0?t+=r.toLowerCase():t+=n?r.toUpperCase():r,n=!1);return t},Ha=e=>{let t=Va(e);return t.charAt(0).toUpperCase()+t.slice(1)},Ua=(...e)=>e.filter((e,t,n)=>!!e&&e.trim()!==``&&n.indexOf(e)===t).join(` `).trim(),Wa={xmlns:`http://www.w3.org/2000/svg`,width:24,height:24,viewBox:`0 0 24 24`,fill:`none`,stroke:`currentColor`,"stroke-width":2,"stroke-linecap":`round`,"stroke-linejoin":`round`};function Ga(e){return e!=null}function Ka(e,t={}){let n=t.attributeNames??{},r=e=>n[e]??e,i=e.size??e.width??Wa.width,a=e.size??e.height??Wa.height,o=e.aliases?.filter(e=>typeof e==`string`&&e.trim()!==``).map(e=>`lucide-${e}`)??[],s=[...e.name?[`lucide-${e.name}`]:[],...o],c=t.className?.split(` `).filter(Boolean)??[],l=t.includeDefaultClasses===!1?Ua(...c):Ua(`lucide`,...s,...c),u=t.absoluteStrokeWidth?Number(t.strokeWidth??Wa[`stroke-width`])*Number(e.size??e.width??Wa.width)/Number(t.size??t.width??Wa.width):t.strokeWidth??Wa[`stroke-width`];return[`svg`,{...Object.entries(Wa).reduce((e,[t,n])=>(e[r(t)]=n,e),{}),...`color`in t&&t.color&&{[r(`stroke`)]:t.color},...`size`in t&&Ga(t.size)&&{[r(`width`)]:t.size,[r(`height`)]:t.size},...`width`in t&&Ga(t.width)&&{[r(`width`)]:t.width},...`height`in t&&Ga(t.height)&&{[r(`height`)]:t.height},[r(`stroke-width`)]:u,...l&&{[r(`class`)]:l},[r(`viewBox`)]:`0 0 ${i} ${a}`,...t.hasA11yProp===!1?{[r(`aria-hidden`)]:`true`}:{},...`attributes`in t&&t.attributes},e.node.map(e=>{let[n,i,a]=e,o=t.nonScalingStroke?{[r(`vector-effect`)]:`non-scaling-stroke`,...i}:i;return a?[n,o,a]:[n,o]})]}function qa(e,t={}){return Ka(e,{...t,attributeNames:{...t.attributeNames,class:`className`,"stroke-width":`strokeWidth`,"stroke-linecap":`strokeLinecap`,"stroke-linejoin":`strokeLinejoin`,"vector-effect":`vectorEffect`}})}var Ja=e=>{for(let t in e)if(t.startsWith(`aria-`)||t===`role`||t===`title`)return!0;return!1},Ya=(0,l.createContext)({}),Xa=()=>(0,l.useContext)(Ya),Za=(0,l.forwardRef)(({color:e,size:t,width:n,height:r,strokeWidth:i,absoluteStrokeWidth:a,nonScalingStroke:o,className:s=``,children:c,iconNode:u=[],icon:d={node:u,aliases:[],size:24},...f},p)=>{let{size:m=24,strokeWidth:h=2,absoluteStrokeWidth:g=!1,nonScalingStroke:_=!1,color:v=`currentColor`,className:y=``}=Xa()??{},b=!!c||Ja(f),[x,S,C=[]]=qa(d,{color:e??v,width:n??t??m,height:r??t??m,strokeWidth:i??h,absoluteStrokeWidth:a??g,nonScalingStroke:o??_,className:Ua(y,s),hasA11yProp:b,attributes:f});return(0,l.createElement)(x,{ref:p,...S},[...C.map(([e,t])=>(0,l.createElement)(e,t)),...Array.isArray(c)?c:[c]])});function J(e,t=[],n=[]){let r=typeof e==`string`?Ba(e,t,n):e,i=(0,l.forwardRef)(({className:e,...t},n)=>(0,l.createElement)(Za,{ref:n,icon:r,className:e,...t}));return r.name&&(i.displayName=Ha(r.name)),i}var Qa={name:`arrow-left`,size:24,node:[[`path`,{d:`m12 19-7-7 7-7`,key:`1l729n`}],[`path`,{d:`M19 12H5`,key:`x3x0zl`}]]};Qa.node;var $a=J(Qa),eo={name:`arrow-right`,size:24,node:[[`path`,{d:`M5 12h14`,key:`1ays0h`}],[`path`,{d:`m12 5 7 7-7 7`,key:`xquz4c`}]]};eo.node;var to=J(eo),no={name:`award`,size:24,node:[[`path`,{d:`m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526`,key:`1yiouv`}],[`circle`,{cx:`12`,cy:`8`,r:`6`,key:`1vp47v`}]]};no.node;var ro=J(no),io={name:`bell`,size:24,node:[[`path`,{d:`M10.268 21a2 2 0 0 0 3.464 0`,key:`vwvbt9`}],[`path`,{d:`M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326`,key:`11g9vi`}]]};io.node;var ao=J(io),oo={name:`book-open`,size:24,node:[[`path`,{d:`M12 5v16`,key:`1f6ucr`}],[`path`,{d:`M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z`,key:`1fyvmf`}]]};oo.node;var so=J(oo),co={name:`bookmark-check`,size:24,node:[[`path`,{d:`M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z`,key:`oz39mx`}],[`path`,{d:`m9 10 2 2 4-4`,key:`1gnqz4`}]]};co.node;var lo=J(co),uo={name:`bookmark`,size:24,node:[[`path`,{d:`M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z`,key:`oz39mx`}]]};uo.node;var fo=J(uo),po={name:`bot`,size:24,node:[[`path`,{d:`M12 8V4H8`,key:`hb8ula`}],[`rect`,{width:`16`,height:`12`,x:`4`,y:`8`,rx:`2`,key:`enze0r`}],[`path`,{d:`M2 14h2`,key:`vft8re`}],[`path`,{d:`M20 14h2`,key:`4cs60a`}],[`path`,{d:`M15 13v2`,key:`1xurst`}],[`path`,{d:`M9 13v2`,key:`rq6x2g`}]]};po.node;var mo=J(po),ho={name:`check`,size:24,node:[[`path`,{d:`M20 6 9 17l-5-5`,key:`1gmf2c`}]]};ho.node;var go=J(ho),_o={name:`chevron-down`,size:24,node:[[`path`,{d:`m6 9 6 6 6-6`,key:`qrunsl`}]]};_o.node;var vo=J(_o),yo={name:`chevron-right`,size:24,node:[[`path`,{d:`m9 18 6-6-6-6`,key:`mthhwq`}]]};yo.node;var bo=J(yo),xo={name:`circle-question-mark`,size:24,node:[[`circle`,{cx:`12`,cy:`12`,r:`10`,key:`1mglay`}],[`path`,{d:`M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3`,key:`1u773s`}],[`path`,{d:`M12 17h.01`,key:`p32p05`}]],aliases:[`help-circle`,`circle-help`]};xo.node;var So=J(xo),Co={name:`clock-3`,size:24,node:[[`circle`,{cx:`12`,cy:`12`,r:`10`,key:`1mglay`}],[`path`,{d:`M12 6v6h4`,key:`135r8i`}]]};Co.node;var wo=J(Co),To={name:`ellipsis`,size:24,node:[[`circle`,{cx:`12`,cy:`12`,r:`1`,key:`41hilf`}],[`circle`,{cx:`19`,cy:`12`,r:`1`,key:`1wjl8i`}],[`circle`,{cx:`5`,cy:`12`,r:`1`,key:`1pcz8c`}]],aliases:[`more-horizontal`]};To.node;var Eo=J(To),Do={name:`flame`,size:24,node:[[`path`,{d:`M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4`,key:`1slcih`}]]};Do.node;var Oo=J(Do),ko={name:`graduation-cap`,size:24,node:[[`path`,{d:`M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z`,key:`j76jl0`}],[`path`,{d:`M22 10v6`,key:`1lu8f3`}],[`path`,{d:`M6 12.5V16a6 3 0 0 0 12 0v-3.5`,key:`1r8lef`}]]};ko.node;var Ao=J(ko),jo={name:`house`,size:24,node:[[`path`,{d:`M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8`,key:`5wwlr5`}],[`path`,{d:`M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z`,key:`r6nss1`}]],aliases:[`home`]};jo.node;var Mo=J(jo),No={name:`image-plus`,size:24,node:[[`path`,{d:`M16 5h6`,key:`1vod17`}],[`path`,{d:`M19 2v6`,key:`4bpg5p`}],[`path`,{d:`M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5`,key:`1ue2ih`}],[`path`,{d:`m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21`,key:`1xmnt7`}],[`circle`,{cx:`9`,cy:`9`,r:`2`,key:`af1f0g`}]]};No.node;var Po=J(No),Y={name:`info`,size:24,node:[[`circle`,{cx:`12`,cy:`12`,r:`10`,key:`1mglay`}],[`path`,{d:`M12 16v-4`,key:`1dtifu`}],[`path`,{d:`M12 8h.01`,key:`e9boi3`}]]};Y.node;var Fo=J(Y),Io={name:`lightbulb`,size:24,node:[[`path`,{d:`M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5`,key:`1gvzjb`}],[`path`,{d:`M9 18h6`,key:`x1upvd`}],[`path`,{d:`M10 22h4`,key:`ceow96`}]]};Io.node;var Lo=J(Io),Ro={name:`list-checks`,size:24,node:[[`path`,{d:`M13 5h8`,key:`a7qcls`}],[`path`,{d:`M13 12h8`,key:`h98zly`}],[`path`,{d:`M13 19h8`,key:`c3s6r1`}],[`path`,{d:`m3 17 2 2 4-4`,key:`1jhpwq`}],[`path`,{d:`m3 7 2 2 4-4`,key:`1obspn`}]]};Ro.node;var zo=J(Ro),Bo={name:`menu`,size:24,node:[[`path`,{d:`M4 5h16`,key:`1tepv9`}],[`path`,{d:`M4 12h16`,key:`1lakjw`}],[`path`,{d:`M4 19h16`,key:`1djgab`}]]};Bo.node;var Vo=J(Bo),Ho={name:`message-circle`,size:24,node:[[`path`,{d:`M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719`,key:`1sd12s`}]]};Ho.node;var Uo=J(Ho),Wo={name:`palette`,size:24,node:[[`path`,{d:`M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z`,key:`e79jfc`}],[`circle`,{cx:`13.5`,cy:`6.5`,r:`.5`,fill:`currentColor`,key:`1okk4w`}],[`circle`,{cx:`17.5`,cy:`10.5`,r:`.5`,fill:`currentColor`,key:`f64h9f`}],[`circle`,{cx:`6.5`,cy:`12.5`,r:`.5`,fill:`currentColor`,key:`qy21gx`}],[`circle`,{cx:`8.5`,cy:`7.5`,r:`.5`,fill:`currentColor`,key:`fotxhn`}]]};Wo.node;var Go=J(Wo),Ko={name:`paperclip`,size:24,node:[[`path`,{d:`m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551`,key:`1miecu`}]]};Ko.node;var qo=J(Ko),Jo={name:`pen-line`,size:24,node:[[`path`,{d:`M13 21h8`,key:`1jsn5i`}],[`path`,{d:`M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z`,key:`1a8usu`}]],aliases:[`edit-3`]};Jo.node;var Yo=J(Jo),Xo={name:`plus`,size:24,node:[[`path`,{d:`M5 12h14`,key:`1ays0h`}],[`path`,{d:`M12 5v14`,key:`s699le`}]]};Xo.node;var Zo=J(Xo),Qo={name:`rotate-ccw`,size:24,node:[[`path`,{d:`M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8`,key:`1357e3`}],[`path`,{d:`M3 3v5h5`,key:`1xhq8a`}]]};Qo.node;var $o=J(Qo),es={name:`save`,size:24,node:[[`path`,{d:`M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z`,key:`1c8476`}],[`path`,{d:`M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7`,key:`1ydtos`}],[`path`,{d:`M7 3v4a1 1 0 0 0 1 1h7`,key:`t51u73`}]]};es.node;var ts=J(es),ns={name:`search`,size:24,node:[[`path`,{d:`m21 21-4.34-4.34`,key:`14j7rj`}],[`circle`,{cx:`11`,cy:`11`,r:`8`,key:`4ej97u`}]]};ns.node;var rs=J(ns),is={name:`send`,size:24,node:[[`path`,{d:`M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z`,key:`1ffxy3`}],[`path`,{d:`m21.854 2.147-10.94 10.939`,key:`12cjpa`}]]};is.node;var as=J(is),os={name:`settings`,size:24,node:[[`path`,{d:`M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915`,key:`1i5ecw`}],[`circle`,{cx:`12`,cy:`12`,r:`3`,key:`1v7zrd`}]]};os.node;var ss=J(os),cs={name:`shuffle`,size:24,node:[[`path`,{d:`m18 14 4 4-4 4`,key:`10pe0f`}],[`path`,{d:`m18 2 4 4-4 4`,key:`pucp1d`}],[`path`,{d:`M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-8.6a4 4 0 0 1 3.3-1.7H22`,key:`1ailkh`}],[`path`,{d:`M2 6h1.972a4 4 0 0 1 3.6 2.2`,key:`km57vx`}],[`path`,{d:`M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45`,key:`os18l9`}]]};cs.node;var ls=J(cs),us={name:`sparkles`,size:24,node:[[`path`,{d:`M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z`,key:`1s2grr`}],[`path`,{d:`M20 2v4`,key:`1rf3ol`}],[`path`,{d:`M22 4h-4`,key:`gwowj6`}],[`circle`,{cx:`4`,cy:`20`,r:`2`,key:`6kqj1y`}]],aliases:[`stars`]};us.node;var ds=J(us),fs={name:`target`,size:24,node:[[`circle`,{cx:`12`,cy:`12`,r:`10`,key:`1mglay`}],[`circle`,{cx:`12`,cy:`12`,r:`6`,key:`1vlfrh`}],[`circle`,{cx:`12`,cy:`12`,r:`2`,key:`1c9p78`}]]};fs.node;var ps=J(fs),ms={name:`thumbs-up`,size:24,node:[[`path`,{d:`M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z`,key:`emmmcr`}],[`path`,{d:`M7 10v12`,key:`1qc93n`}]]};ms.node;var hs=J(ms),gs={name:`trophy`,size:24,node:[[`path`,{d:`M10 14.66V17a1 1 0 0 1-1 1 2 2 0 0 0-2 2v2`,key:`pwuv1l`}],[`path`,{d:`M14 14.66V17a1 1 0 0 0 1 1 2 2 0 0 1 2 2v2`,key:`1y54w1`}],[`path`,{d:`M17.916 10H19.5A2.5 2.5 0 0 0 22 7.5V5a1 1 0 0 0-1-1h-3`,key:`e30mpu`}],[`path`,{d:`M4 22h16`,key:`57wxv0`}],[`path`,{d:`M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z`,key:`1mhfuq`}],[`path`,{d:`M6.084 10H4.5A2.5 2.5 0 0 1 2 7.5V5a1 1 0 0 1 1-1h3`,key:`i0yafy`}]]};gs.node;var _s=J(gs),vs={name:`upload`,size:24,node:[[`path`,{d:`M12 3v12`,key:`1x0j5s`}],[`path`,{d:`m17 8-5-5-5 5`,key:`7q97r8`}],[`path`,{d:`M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4`,key:`ih7n3h`}]]};vs.node;var ys=J(vs),bs={name:`user-round`,size:24,node:[[`circle`,{cx:`12`,cy:`8`,r:`5`,key:`1hypcn`}],[`path`,{d:`M20 21a8 8 0 0 0-16 0`,key:`rfgkzh`}]],aliases:[`user-2`]};bs.node;var xs=J(bs),Ss={name:`users`,size:24,node:[[`path`,{d:`M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2`,key:`1yyitq`}],[`path`,{d:`M16 3.128a4 4 0 0 1 0 7.744`,key:`16gr8j`}],[`path`,{d:`M22 21v-2a4 4 0 0 0-3-3.87`,key:`kshegd`}],[`circle`,{cx:`9`,cy:`7`,r:`4`,key:`nufk8`}]]};Ss.node;var Cs=J(Ss),ws={name:`x`,size:24,node:[[`path`,{d:`M18 6 6 18`,key:`1bl5f8`}],[`path`,{d:`m6 6 12 12`,key:`d8bk6v`}]]};ws.node;var Ts=J(ws),Es={name:`zap`,size:24,node:[[`path`,{d:`M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z`,key:`1v7up4`}]]};Es.node;var Ds=J(Es),Os=[{id:`linear-equation`,title:`สมการเชิงเส้นตัวแปรเดียว`,subtitle:`แกะสมการทีละขั้น เข้าใจที่มาของคำตอบ`,grade:`ม.1`,subject:`พีชคณิต`,level:`พื้นฐาน`,duration:`25 นาที`,progress:68,color:`indigo`,icon:`x=`,objectives:[`แก้สมการเชิงเส้นตัวแปรเดียวได้อย่างเป็นขั้นตอน`,`อธิบายเหตุผลของการย้ายข้างและตรวจคำตอบได้`],prerequisite:`การคำนวณจำนวนเต็มและสมบัติการเท่ากัน`,sections:[`รู้จักสมการ`,`หลักการรักษาสมดุล`,`ตัวอย่างการแก้สมการ`,`ข้อผิดพลาดที่พบบ่อย`,`ลองทำด้วยตัวเอง`],formula:`2x + 3 = 11 \\Rightarrow 2x = 8 \\Rightarrow x = 4`,description:`สมการคือประโยคสัญลักษณ์ที่บอกว่าปริมาณสองข้างเท่ากัน เราจะแก้สมการโดยรักษาความสมดุลของทั้งสองข้างไว้เสมอ`},{id:`pythagorean`,title:`ทฤษฎีบทพีทาโกรัส`,subtitle:`มองเห็นความสัมพันธ์ของด้านในสามเหลี่ยมมุมฉาก`,grade:`ม.2`,subject:`เรขาคณิต`,level:`กำลังดี`,duration:`32 นาที`,progress:0,color:`teal`,icon:`△`,objectives:[`ใช้ทฤษฎีบทพีทาโกรัสหาความยาวด้านที่ไม่ทราบค่า`,`ตรวจสอบว่าสามเหลี่ยมเป็นสามเหลี่ยมมุมฉากได้`],prerequisite:`การยกกำลังสองและการหารากที่สอง`,sections:[`สามเหลี่ยมมุมฉาก`,`ที่มาของสูตร`,`การหาด้านที่ไม่รู้จัก`,`โจทย์ประยุกต์`],formula:`a^2 + b^2 = c^2`,description:`ในสามเหลี่ยมมุมฉาก กำลังสองของด้านประกอบมุมฉากรวมกันเท่ากับกำลังสองของด้านตรงข้ามมุมฉาก`},{id:`linear-function`,title:`ฟังก์ชันเชิงเส้นและกราฟ`,subtitle:`เปลี่ยนสมการให้เป็นภาพ และอ่านความหมายจากกราฟ`,grade:`ม.3`,subject:`ฟังก์ชัน`,level:`กำลังดี`,duration:`40 นาที`,progress:0,color:`amber`,icon:`↗`,objectives:[`อธิบายความหมายของความชันและจุดตัดแกน`,`เขียนกราฟจากสมการเชิงเส้นได้`],prerequisite:`คู่อันดับและการอ่านกราฟบนระนาบพิกัด`,sections:[`ความสัมพันธ์และฟังก์ชัน`,`ความชัน`,`จุดตัดแกน`,`การอ่านกราฟจากสถานการณ์`],formula:`y = mx + b`,description:`ฟังก์ชันเชิงเส้นแสดงความสัมพันธ์ที่เปลี่ยนแปลงในอัตราคงที่ ความชันบอกว่า y เปลี่ยนไปมากน้อยเพียงใดเมื่อ x เพิ่มขึ้นหนึ่งหน่วย`},{id:`probability`,title:`ความน่าจะเป็นเบื้องต้น`,subtitle:`คาดการณ์เหตุการณ์ด้วยพื้นที่ของผลลัพธ์`,grade:`ม.3`,subject:`สถิติและความน่าจะเป็น`,level:`พื้นฐาน`,duration:`28 นาที`,progress:0,color:`rose`,icon:`½`,objectives:[`ระบุแซมเปิลสเปซและเหตุการณ์ได้`,`คำนวณความน่าจะเป็นของเหตุการณ์อย่างง่าย`],prerequisite:`การนับจำนวนและเศษส่วน`,sections:[`ผลลัพธ์ที่เป็นไปได้`,`เหตุการณ์`,`สูตรความน่าจะเป็น`,`ฝึกคิดจากสถานการณ์จริง`],formula:`P(A) = \\frac{n(A)}{n(S)}`,description:`ความน่าจะเป็นเป็นตัวเลขระหว่าง 0 ถึง 1 ที่บอกว่าเหตุการณ์หนึ่งมีโอกาสเกิดขึ้นมากน้อยเพียงใด`}],ks=[{id:`ex-1`,topic:`สมการเชิงเส้น`,prompt:`ถ้า 3x - 5 = 16 แล้ว x มีค่าเท่าใด?`,choices:[`5`,`7`,`11`,`63`],correct:1,explanation:`บวก 5 ทั้งสองข้างได้ 3x = 21 จากนั้นหารด้วย 3 จึงได้ x = 7`,hint:`ทำให้พจน์ที่ไม่มี x หายไปก่อน โดยบวก 5 ทั้งสองข้าง`},{id:`ex-2`,topic:`สมการเชิงเส้น`,prompt:`ข้อใดอธิบายการเปลี่ยนจาก 2x + 4 = 14 เป็น 2x = 10 ได้ถูกต้องที่สุด?`,choices:[`ย้าย 4 ไปอีกข้างแล้วเปลี่ยนเครื่องหมาย`,`ลบ 4 จากทั้งสองข้างของสมการ`,`หารทั้งสองข้างด้วย 4`,`ตัด 4 ออกจากสมการ`],correct:1,explanation:`การลบ 4 จากทั้งสองข้างรักษาความเท่ากันไว้ จึงได้ 2x = 10 อย่างถูกต้อง`,hint:`สมการเหมือนตาชั่ง ถ้าลบด้านหนึ่ง ต้องลบอีกด้านด้วย`},{id:`ex-3`,topic:`การคิดเชิงเหตุผล`,prompt:`ถ้า a = 4 และ b = -2 ค่าของ a² + b คือเท่าใด?`,choices:[`6`,`10`,`14`,`18`],correct:2,explanation:`แทนค่าได้ 4² + (-2) = 16 - 2 = 14 ระวังว่า b เป็นจำนวนลบ`,hint:`คำนวณเลขยกกำลังก่อน แล้วจึงบวกจำนวนลบ`}],As=[{id:`post-1`,title:`ทำไมเวลาย้ายข้างต้องเปลี่ยนเครื่องหมาย?`,body:`หนูจำได้ว่าต้องเปลี่ยนเครื่องหมาย แต่ยังไม่เข้าใจว่าจริง ๆ แล้วเกิดอะไรขึ้น ใครช่วยอธิบายแบบเห็นภาพได้บ้างคะ`,author:`น้องพิม`,initials:`พพ`,tag:`พีชคณิต`,time:`12 นาทีที่แล้ว`,likes:18,comments:6,replies:[`ลองคิดว่าการลบจำนวนเดียวกันออกจากทั้งสองข้าง เหมือนการย้ายข้างเลยครับ ที่เปลี่ยนคือรูปแบบการเขียน ไม่ใช่กฎใหม่`,`ชอบคำอธิบายเรื่องตาชั่งในบทเรียนมากค่ะ`]},{id:`post-2`,title:`มีวิธีจำสูตรพีทาโกรัสให้ไม่สับสนไหม`,body:`เวลาโจทย์ให้ด้านมา 3 ด้าน หนูไม่แน่ใจว่าด้านไหนคือ c ใครมีวิธีสังเกตง่าย ๆ ช่วยแชร์หน่อยค่ะ`,author:`ต้นน้ำ`,initials:`ตน`,tag:`เรขาคณิต`,time:`1 ชั่วโมงที่แล้ว`,likes:12,comments:4,replies:[`ด้านตรงข้ามมุมฉากจะยาวที่สุดเสมอ และเป็นด้าน c ครับ`]},{id:`post-3`,title:`แชร์วิธีอ่านกราฟเส้นตรงแบบไม่ต้องท่อง`,body:`ถ้าเราเห็น y = mx + b ให้มอง m เป็น “ความเร็วในการขึ้นลง” และ b เป็น “จุดเริ่มต้น” จะเชื่อมกับโจทย์ได้ง่ายขึ้นมาก`,author:`ครูเมย์`,initials:`คม`,tag:`ฟังก์ชัน`,time:`เมื่อวาน`,likes:31,comments:9,replies:[`ขอบคุณสำหรับภาพจำดี ๆ ค่ะ`]}],js=[{rank:1,name:`น้องข้าวหอม`,xp:`1,240 XP`,initials:`ขห`,color:`gold`},{rank:2,name:`ต้นน้ำ`,xp:`1,080 XP`,initials:`ตน`,color:`silver`},{rank:3,name:`พิมพ์ชนก`,xp:`840 XP`,initials:`พช`,color:`bronze`},{rank:4,name:`น้องฟ้า`,xp:`760 XP`,initials:`นฟ`,color:`plain`}],Ms=`https://proj14.ipst.ac.th/m4-6-math-adv/m4-math-adv-book1/`,Ns=`https://proj14.ipst.ac.th/m4-6-math-adv/m4-math-adv-book2/`,Ps=`https://proj14.ipst.ac.th/m4-6-math-adv/m5-math-adv-book1/`,Fs=`https://proj14.ipst.ac.th/m4-6-math-adv/m5-math-adv-book2/`,Is=`https://proj14.ipst.ac.th/m4-6-math-adv/m6-math-adv-book1/`,Ls=`https://proj14.ipst.ac.th/m4-6-math-adv/m6-math-adv-book2/`,Rs=`https://uatscimath.ipst.ac.th/ebook-mathematics/item/8379-2560-2551-8379`;function zs(e,t,n,r,i,a,o,s,c,l,u,d,f,p,m=[`จำนวนและการคำนวณพื้นฐาน`]){return{id:e,title:t,englishTitle:n,educationLevel:`มัธยมศึกษาตอนต้น`,category:r,offerings:[{grade:i,semester:a,course:`คณิตศาสตร์พื้นฐาน`,depth:`แกนกลางสำหรับชั้นเรียนทั่วไป`,verified:!0}],subtopics:o,objectives:[`อธิบายแนวคิดเรื่อง${t}ด้วยภาษาของตนเอง`,`เลือกวิธีทำและตรวจสอบคำตอบของ${t}ได้`,`เชื่อมโยง${t}กับสถานการณ์หรือบทเรียนอื่น`],intro:`${t}ช่วยให้ผู้เรียนมองเห็นความสัมพันธ์ของจำนวน รูป หรือข้อมูลอย่างเป็นระบบ ก่อนนำไปใช้แก้ปัญหาในชีวิตจริงและบทเรียนขั้นต่อไป`,prerequisites:m,estimatedMinutes:55,icon:c.slice(0,2),color:e.includes(`geometry`)||e.includes(`circle`)||e.includes(`prism`)||e.includes(`similar`)?`teal`:e.includes(`statistics`)||e.includes(`probability`)?`rose`:`indigo`,formula:c,focus:s,condition:l,exampleProblem:u,exampleSteps:d,exampleAnswer:f,alternative:`ลองอธิบายด้วยภาพ ตาราง เส้นจำนวน หรือการแทนค่ากลับ แทนการใช้สูตรทันที เพื่อให้เห็นว่าเหตุผลของวิธีทำยังคงเดิม`,commonMistake:`สับสนระหว่างขั้นตอนการคำนวณกับเงื่อนไขที่ทำให้วิธีนั้นใช้ได้ จึงควรเขียนสิ่งที่โจทย์กำหนดและตรวจคำตอบทุกครั้ง`,application:p,summary:`${t}มีแก่นสำคัญคือ ${s} เมื่อทำโจทย์ให้ตรวจ ${l} แล้วอธิบายเหตุผลประกอบคำตอบ`,prerequisiteChapterIds:[],sourceStatus:`รายการตามโจทย์ผู้ใช้`,sourceReferences:[]}}function Bs(e,t,n,r,i,a,o,s,c,l,u,d,f,p,m){return{id:e,title:t,englishTitle:n,educationLevel:`มัธยมศึกษาตอนปลาย`,category:r,offerings:i,subtopics:a,objectives:[`อธิบาย${t}และสัญลักษณ์ที่ใช้ได้อย่างถูกต้อง`,`เลือกแบบจำลองหรือวิธีพิสูจน์ที่เหมาะกับโจทย์${t}`,`วิเคราะห์ข้อจำกัดและสื่อสารคำตอบโดยมีเหตุผล`],intro:`${t}เป็นแนวคิดสำคัญของคณิตศาสตร์ระดับมัธยมศึกษาตอนปลาย ช่วยให้ผู้เรียนสร้างแบบจำลอง วิเคราะห์ความสัมพันธ์ และเตรียมพื้นฐานสำหรับการเรียนต่อ`,prerequisites:p,estimatedMinutes:75,progress:0,icon:s.slice(0,2),color:e.includes(`statistics`)||e.includes(`probability`)||e.includes(`random`)?`rose`:e.includes(`trigonometric`)||e.includes(`vector`)?`teal`:e.includes(`counting`)||e.includes(`sequence`)?`amber`:`indigo`,formula:s,focus:o,condition:c,exampleProblem:l,exampleSteps:u,exampleAnswer:d,alternative:`เปรียบเทียบวิธีเชิงสัญลักษณ์กับการแทนค่าหรือการแสดงภาพ แล้วอธิบายว่าแต่ละวิธีมีเงื่อนไขและข้อจำกัดอย่างไร`,commonMistake:`ใช้สูตรโดยไม่ตรวจโดเมน เงื่อนไข หรือความหมายของสัญลักษณ์ ทำให้ได้คำตอบที่คำนวณได้แต่ไม่สอดคล้องกับโจทย์`,application:f,summary:`${t}ควรเรียนจากความหมายไปสู่วิธีทำ โดยย้ำว่า ${o} และต้องตรวจ ${c}`,prerequisiteChapterIds:[],sourceStatus:`อ้างอิงสารบัญ สสวท. และจัดชั้น/ภาคเรียนแบบปรับได้`,sourceReferences:[{label:`คู่มือการใช้หลักสูตรคณิตศาสตร์ ม.ปลาย (สสวท.)`,url:Rs},{label:`สารบัญสื่อ Project 14 (สสวท.)`,url:m}]}}var Vs=[zs(`m1-integers`,`จำนวนเต็ม`,`Integers`,`จำนวนและพีชคณิต`,`ม.1`,`ภาคเรียนที่ 1`,[`เส้นจำนวนและการเปรียบเทียบ`,`การดำเนินการของจำนวนเต็ม`,`สมบัติและการแก้โจทย์`],`ใช้เส้นจำนวนและสมบัติการดำเนินการเพื่ออธิบายจำนวนเต็ม`,`a-b=a+(-b)`,`ต้องรักษาลำดับการดำเนินการและเครื่องหมายของจำนวนลบ`,`รถอยู่ชั้นใต้ดินชั้น -2 แล้วขึ้น 7 ชั้น จะอยู่ชั้นใด`,[`แทนสถานการณ์ด้วย -2+7`,`เดินไปทางขวา 7 หน่วยบนเส้นจำนวน`,`ตำแหน่งสุดท้ายคือ 5`],`ชั้น 5`,`อุณหภูมิ ระดับความสูง คะแนนได้-เสีย และการเงินที่มีหนี้สิน`,[`การนับจำนวนและเส้นจำนวน`]),zs(`m1-geometric-construction`,`การสร้างทางเรขาคณิต`,`Geometric Constructions`,`เรขาคณิต`,`ม.1`,`ภาคเรียนที่ 1`,[`การแบ่งครึ่งส่วนของเส้นตรง`,`การสร้างมุมและเส้นตั้งฉาก`,`การตรวจความถูกต้องของรูปสร้าง`],`ใช้วงเวียนและสันตรงสร้างรูปโดยอาศัยระยะเท่ากันและมุมเท่ากัน`,`AB=AC`,`ต้องใช้เครื่องมือสร้างโดยไม่กะระยะด้วยสายตาและรักษาจุดศูนย์กลางของวงเวียน`,`สร้างเส้นตั้งฉากแบ่งครึ่งส่วนของเส้นตรง AB`,[`กางวงเวียนมากกว่าครึ่งหนึ่งของ AB`,`วาดส่วนโค้งจาก A และ B ให้ตัดกันสองจุด`,`ลากเส้นผ่านจุดตัด จะตั้งฉากและแบ่งครึ่ง AB`],`เส้นที่ลากผ่านจุดตัดของส่วนโค้ง`,`การออกแบบ ลายเส้น งานช่าง และการสร้างรูปที่มีสมมาตร`,[`จุด เส้นตรง มุม และความยาว`]),zs(`m1-exponents`,`เลขยกกำลัง`,`Exponents`,`จำนวนและพีชคณิต`,`ม.1`,`ภาคเรียนที่ 1`,[`ความหมายของเลขยกกำลัง`,`การคูณและหารเลขยกกำลัง`,`การเขียนจำนวนในรูปสัญกรณ์วิทยาศาสตร์`],`มองเลขยกกำลังเป็นการคูณซ้ำและใช้สมบัติอย่างมีเงื่อนไข`,`a^m\\cdot a^n=a^{m+n}`,`ฐานต้องเหมือนกันเมื่อนำเลขชี้กำลังมาบวกกัน`,`จงหาค่า 2^3\\cdot2^4`,[`ฐานเหมือนกัน จึงรวมเลขชี้กำลังได้`,`2^3\\cdot2^4=2^{3+4}`,`2^7=128`],`128`,`การเขียนระยะทาง ข้อมูลดิจิทัล และการเปรียบเทียบการเติบโต`,[`การคูณจำนวนธรรมชาติ`]),zs(`m1-decimals-fractions`,`ทศนิยมและเศษส่วน`,`Decimals and Fractions`,`จำนวนและพีชคณิต`,`ม.1`,`ภาคเรียนที่ 1`,[`ความสัมพันธ์ระหว่างเศษส่วนกับทศนิยม`,`การบวก ลบ คูณ หาร`,`โจทย์ปัญหาและการประมาณค่า`],`เปลี่ยนรูปและคำนวณเศษส่วนหรือทศนิยมโดยคงความหมายของปริมาณเดิม`,`0.75=\\frac{3}{4}`,`ตัวส่วนต้องไม่เป็นศูนย์และควรทำหน่วยหรือส่วนให้สอดคล้องก่อนคำนวณ`,`จงเขียน 0.75 ในรูปเศษส่วนอย่างต่ำ`,[`0.75=75/100`,`หารทั้งเศษและส่วนด้วย 25`,`ได้ 3/4`],`3/4`,`ส่วนลด สูตรอาหาร เวลา และการวัดความยาว`,[`จำนวนเต็มและค่าประจำหลัก`]),zs(`m1-2d-3d-figures`,`รูปเรขาคณิตสองมิติและสามมิติ`,`Two- and Three-Dimensional Geometric Figures`,`เรขาคณิต`,`ม.1`,`ภาคเรียนที่ 1`,[`รูปหลายเหลี่ยมและวงกลม`,`ทรงปริซึมและทรงกระบอก`,`พื้นที่ผิวและปริมาตรเบื้องต้น`],`อ่านสมบัติของรูปและเลือกสูตรพื้นที่หรือปริมาตรให้ตรงกับมิติของรูป`,`V=Bh`,`ต้องแยกหน่วยความยาว พื้นที่ และปริมาตร และระบุฐานกับความสูงให้ถูกต้อง`,`ปริซึมมีพื้นที่ฐาน 12 ตารางเซนติเมตร สูง 5 เซนติเมตร จงหาปริมาตร`,[`ใช้ V=Bh`,`แทน B=12 และ h=5`,`V=60 ลูกบาศก์เซนติเมตร`],`60 ลูกบาศก์เซนติเมตร`,`การออกแบบบรรจุภัณฑ์ การคำนวณพื้นที่ห้อง และการวัดวัสดุ`,[`ความยาว พื้นที่ และหน่วยวัด`]),zs(`m1-linear-equation`,`สมการเชิงเส้นตัวแปรเดียว`,`Linear Equations in One Variable`,`จำนวนและพีชคณิต`,`ม.1`,`ภาคเรียนที่ 2`,[`สมบัติการเท่ากัน`,`การแก้สมการทีละขั้น`,`โจทย์ปัญหาด้วยสมการ`],`รักษาความสมดุลของสองข้างสมการเพื่อหาค่าตัวแปรอย่างมีเหตุผล`,`ax+b=c`,`ต้องทำการดำเนินการเดียวกันกับทั้งสองข้างและตรวจคำตอบด้วยการแทนค่า`,`ถ้า 3x-5=16 แล้ว x เท่ากับเท่าใด`,[`บวก 5 ทั้งสองข้าง ได้ 3x=21`,`หารด้วย 3 ทั้งสองข้าง`,`x=7`],`7`,`การแบ่งเงิน ระยะทาง เวลา และการหาค่าที่ไม่ทราบจากเงื่อนไข`,[`จำนวนเต็มและสมบัติการเท่ากัน`]),zs(`m1-ratio-proportion-percent`,`อัตราส่วน สัดส่วน และร้อยละ`,`Ratios, Proportions, and Percentages`,`จำนวนและพีชคณิต`,`ม.1`,`ภาคเรียนที่ 2`,[`อัตราส่วนและอัตราส่วนเทียบเท่า`,`สัดส่วน`,`ร้อยละและการเปลี่ยนแปลง`],`เปรียบเทียบปริมาณที่มีหน่วยเดียวกันหรือสัมพันธ์กันด้วยอัตราส่วนและร้อยละ`,`a:b=c:d\\Rightarrow ad=bc`,`ต้องจัดหน่วยให้เหมือนกันและระบุว่าร้อยละคิดจากฐานใด`,`เสื้อราคา 800 บาทลด 15% ต้องจ่ายกี่บาท`,[`ส่วนลดคือ 0.15(800)=120`,`ราคาที่จ่ายคือ 800-120`,`จ่าย 680 บาท`],`680 บาท`,`ส่วนลด ภาษี แผนที่ อัตราเร็ว และสูตรผสม`,[`เศษส่วนและทศนิยม`]),zs(`m1-graphs-linear`,`กราฟและความสัมพันธ์เชิงเส้น`,`Graphs and Linear Relationships`,`ฟังก์ชันและกราฟ`,`ม.1`,`ภาคเรียนที่ 2`,[`คู่อันดับและตารางค่า`,`กราฟเส้นตรง`,`การแปลความหมายความชันอย่างง่าย`],`ใช้ตารางและกราฟแสดงความสัมพันธ์ที่เปลี่ยนแปลงอย่างเป็นแบบแผน`,`y=mx+b`,`แกน x และ y ต้องมีสเกลกับหน่วยชัดเจน และจุดต้องสอดคล้องกับคู่ลำดับ`,`กราฟ y=2x+1 เมื่อ x=3 ให้ค่า y เท่าใด`,[`แทน x=3 ในสมการ`,`y=2(3)+1`,`y=7`],`7`,`ค่าใช้จ่ายคงที่กับค่าใช้จ่ายต่อหน่วย และระยะทาง-เวลา`,[`คู่อันดับและสมการเชิงเส้น`]),zs(`m1-statistics-1`,`สถิติ (1)`,`Statistics 1`,`สถิติ`,`ม.1`,`ภาคเรียนที่ 2`,[`ประชากรและกลุ่มตัวอย่าง`,`การเก็บและจัดข้อมูล`,`ตารางและแผนภูมิพื้นฐาน`],`แยกประชากรกับกลุ่มตัวอย่างและนำเสนอข้อมูลให้ตอบคำถามได้ตรงประเด็น`,`\\bar{x}=\\frac{\\sum x}{n}`,`การเลือกตัวอย่างต้องคำนึงถึงความเป็นตัวแทน ไม่สรุปเกินข้อมูลที่เก็บ`,`หาค่าเฉลี่ยของ 4, 6, 7, 7, 11`,[`บวกข้อมูลได้ 35`,`มีข้อมูล 5 ค่า`,`ค่าเฉลี่ย=35/5=7`],`7`,`การสำรวจความชอบ เวลาเดินทาง หรือการอ่านข้อมูลข่าวสาร`,[`การอ่านตารางและการบวกหาร`]),zs(`m2-pythagorean`,`ทฤษฎีบทพีทาโกรัส`,`Pythagorean Theorem`,`เรขาคณิต`,`ม.2`,`ภาคเรียนที่ 1`,[`สามเหลี่ยมมุมฉาก`,`การหาด้านที่ไม่รู้จัก`,`บทกลับของทฤษฎีบท`],`เชื่อมโยงกำลังสองของด้านในสามเหลี่ยมมุมฉากกับระยะทางและการตรวจรูป`,`a^2+b^2=c^2`,`c ต้องเป็นด้านตรงข้ามมุมฉากและยาวที่สุด`,`สามเหลี่ยมมุมฉากมีด้านประกอบมุมฉาก 6 และ 8 หน่วย จงหาด้านตรงข้ามมุมฉาก`,[`c^2=6^2+8^2=36+64`,`c^2=100`,`c=10 เพราะความยาวเป็นบวก`],`10 หน่วย`,`ระยะทางบนแผนที่ ความสูงบันได และงานออกแบบ`,[`การยกกำลังสองและรากที่สอง`]),zs(`m2-real-numbers-intro`,`ความรู้เบื้องต้นเกี่ยวกับจำนวนจริง`,`Introduction to Real Numbers`,`จำนวนและพีชคณิต`,`ม.2`,`ภาคเรียนที่ 1`,[`จำนวนตรรกยะและอตรรกยะ`,`รากที่สอง`,`การประมาณและเปรียบเทียบจำนวนจริง`],`เห็นระบบจำนวนจริงเป็นเส้นต่อเนื่องและแยกจำนวนตรรกยะออกจากอตรรกยะ`,`\\sqrt{2}\\notin\\mathbb{Q}`,`ห้ามตัดรากหรือประมาณค่าจนทำให้ความเท่ากันเปลี่ยนไปโดยไม่ระบุว่าเป็นค่าประมาณ`,`จำนวนใดอยู่ระหว่าง 1.4 และ 1.5 และใกล้ \\sqrt{2} ที่สุด`,[`\\sqrt{2}ประมาณ 1.414`,`1.414 อยู่ระหว่าง 1.4 กับ 1.5`,`จึงเป็นตัวเลือกที่เหมาะที่สุด`],`\\sqrt{2}`,`การวัดที่ไม่ลงตัว เส้นทแยงมุม และการประมาณค่า`,[`เศษส่วน ทศนิยม และเลขยกกำลัง`]),zs(`m2-prisms-cylinders`,`ปริซึมและทรงกระบอก`,`Prisms and Cylinders`,`เรขาคณิต`,`ม.2`,`ภาคเรียนที่ 1`,[`พื้นที่ผิวปริซึม`,`ปริมาตรปริซึม`,`พื้นที่ผิวและปริมาตรทรงกระบอก`],`แยกพื้นที่ฐาน ความสูง และพื้นที่ผิวเพื่อสร้างแบบจำลองปริมาตรของทรง`,`V=Bh\\quad V_{cyl}=\\pi r^2h`,`ความสูงต้องตั้งฉากกับฐาน และพื้นที่ผิวรวมต้องนับทุกหน้า`,`ทรงกระบอก r=3, h=10 ใช้ \\pi=3.14 จงหาปริมาตร`,[`V=\\pi r^2h`,`แทนค่า 3.14(3^2)(10)`,`V=282.6 ลูกบาศก์หน่วย`],`282.6 ลูกบาศก์หน่วย`,`การออกแบบกระป๋อง ถังน้ำ และการคำนวณวัสดุหุ้มผิว`,[`พื้นที่วงกลมและหน่วยวัด`]),zs(`m2-transformations`,`การแปลงทางเรขาคณิต`,`Geometric Transformations`,`เรขาคณิต`,`ม.2`,`ภาคเรียนที่ 1`,[`การเลื่อนขนาน`,`การสะท้อน`,`การหมุนและการย่อขยาย`],`ติดตามตำแหน่งของจุดและสมบัติที่คงเดิมเมื่อรูปถูกแปลง`,`(x,y)\\mapsto(x+a,y+b)`,`ต้องระบุศูนย์หมุน ทิศทาง มุม และอัตราส่วนให้ครบเมื่อโจทย์กำหนด`,`เลื่อนจุด (2,-1) ไปทางซ้าย 3 และขึ้น 4 จะได้จุดใด`,[`x ใหม่=2-3=-1`,`y ใหม่=-1+4=3`,`จุดใหม่คือ (-1,3)`],`(-1,3)`,`การออกแบบลวดลาย แผนที่ และภาพจากพิกัด`,[`ระนาบพิกัดและคู่อันดับ`]),zs(`m2-exponent-properties`,`สมบัติของเลขยกกำลัง`,`Properties of Exponents`,`จำนวนและพีชคณิต`,`ม.2`,`ภาคเรียนที่ 1`,[`เลขชี้กำลังศูนย์และลบ`,`การคูณหารเลขยกกำลัง`,`การแก้ปัญหาด้วยเลขยกกำลัง`],`ใช้กฎเลขยกกำลังโดยตรวจฐานและค่าที่ห้ามเป็นศูนย์`,`a^{-n}=\\frac{1}{a^n}`,`ฐานเดียวกันจึงรวมเลขชี้กำลังได้ แต่ห้ามใช้กฎเดียวกันกับฐานต่างกันโดยไม่แปลงรูป`,`จงทำให้ 3^5/3^2 อยู่ในรูปอย่างง่าย`,[`ฐานเหมือนกันจึงลบเลขชี้กำลัง`,`3^{5-2}=3^3`,`ได้ 27`],`27`,`การเขียนหน่วยขนาดเล็ก การคำนวณเชิงวิทยาศาสตร์ และการเติบโต`,[`เลขยกกำลังเบื้องต้น`]),zs(`m2-polynomials`,`พหุนาม`,`Polynomials`,`จำนวนและพีชคณิต`,`ม.2`,`ภาคเรียนที่ 1`,[`เอกนามและดีกรี`,`การบวกและลบพหุนาม`,`การคูณพหุนาม`],`มองพหุนามเป็นผลรวมของพจน์และจัดรูปโดยรวมพจน์ที่คล้ายกัน`,`P(x)=2x^2-3x+1`,`รวมได้เฉพาะพจน์ที่มีตัวแปรและเลขชี้กำลังเหมือนกัน`,`จงหาผลบวก (2x^2+3x)+(x^2-5x+1)`,[`รวม 2x^2 กับ x^2 ได้ 3x^2`,`รวม 3x กับ -5x ได้ -2x`,`คำตอบคือ 3x^2-2x+1`],`3x^2-2x+1`,`การสร้างสูตรต้นทุน พื้นที่ และแบบจำลองที่มีตัวแปร`,[`เลขยกกำลังและการแจกแจง`]),zs(`m2-statistics-2`,`สถิติ (2)`,`Statistics 2`,`สถิติ`,`ม.2`,`ภาคเรียนที่ 2`,[`แผนภาพจุดและแผนภาพต้น-ใบ`,`ค่ากลางของข้อมูล`,`การเปรียบเทียบการกระจาย`],`เลือกค่ากลางและรูปแบบการนำเสนอให้เหมาะกับชนิดและการกระจายของข้อมูล`,`พิสัย=ค่าสูงสุด-ค่าต่ำสุด`,`ค่าเฉลี่ยอาจถูกค่าผิดปกติดึงให้เปลี่ยนมากกว่ามัธยฐาน`,`ข้อมูล 3, 4, 4, 5, 14 มีค่ามัธยฐานเท่าใด`,[`เรียงข้อมูลแล้ว`,`ค่าตรงกลางของข้อมูล 5 ค่าอยู่ตำแหน่งที่ 3`,`มัธยฐานคือ 4`],`4`,`การเปรียบเทียบคะแนน เวลา หรือราคาโดยไม่มองแค่ค่าเฉลี่ย`,[`สถิติ (1) และการเรียงข้อมูล`]),zs(`m2-congruence`,`ความเท่ากันทุกประการ`,`Congruence`,`เรขาคณิต`,`ม.2`,`ภาคเรียนที่ 2`,[`ความหมายของรูปเท่ากันทุกประการ`,`เกณฑ์ ด้าน-มุม-ด้าน และ ด้าน-ด้าน-ด้าน`,`การใช้ความเท่ากันหาความยาวหรือมุม`],`ใช้การจับคู่จุดและเกณฑ์ความเท่ากันทุกประการเพื่อพิสูจน์สมบัติของรูป`,`SSS\\;SAS\\;ASA`,`ต้องจับคู่ด้านและมุมที่สมนัยกันให้ถูก ไม่สรุปจากภาพเพียงอย่างเดียว`,`สามเหลี่ยมสองรูปมีด้านเท่ากันคู่ต่อคู่ ควรใช้เกณฑ์ใด`,[`ตรวจว่าด้านทั้งสามคู่เท่ากัน`,`เป็นเกณฑ์ด้าน-ด้าน-ด้าน`,`สรุปว่าสามเหลี่ยมเท่ากันทุกประการได้`],`SSS`,`การพิสูจน์ความแข็งแรงของโครงสร้างและการออกแบบชิ้นส่วน`,[`มุม เส้น และสมบัติสามเหลี่ยม`]),zs(`m2-parallel-lines`,`เส้นขนาน`,`Parallel Lines`,`เรขาคณิต`,`ม.2`,`ภาคเรียนที่ 2`,[`มุมแย้งและมุมสมนัย`,`มุมภายในด้านเดียว`,`การพิสูจน์เส้นขนาน`],`ใช้ความสัมพันธ์ของมุมเมื่อเส้นตัดตัดเส้นขนานเพื่อหามุมและให้เหตุผล`,`\\angle_{alternate}=\\angle_{alternate}`,`ต้องระบุเส้นตัดและคู่มุมก่อนใช้สมบัติ และจำว่ามุมภายในด้านเดียวรวม 180 องศา`,`ถ้ามุมแย้งภายในมุมหนึ่ง 65 องศา อีกมุมหนึ่งเท่าใด`,[`เส้นขนานทำให้มุมแย้งภายในเท่ากัน`,`จึงมีขนาดเท่ากับ 65 องศา`,`ไม่ต้องใช้ 180 องศากับคู่นี้`],`65 องศา`,`การอ่านแบบแปลน ถนน รางรถไฟ และการออกแบบโครงสร้าง`,[`การวัดมุมและเส้นตัด`]),zs(`m2-geometric-reasoning`,`การใช้เหตุผลทางเรขาคณิต`,`Geometric Reasoning`,`เรขาคณิต`,`ม.2`,`ภาคเรียนที่ 2`,[`ข้อความคาดการณ์และบทนิยาม`,`เหตุผลแบบนิรนัย`,`การเขียนพิสูจน์เป็นลำดับ`],`แยกข้อเท็จจริง ข้อสรุป และเหตุผลเพื่อสื่อสารการพิสูจน์อย่างเป็นขั้นตอน`,`p\\Rightarrow q`,`ภาพช่วยตั้งข้อสังเกตได้แต่ไม่เพียงพอแทนการพิสูจน์ทั่วไป`,`ถ้า AB=AC และ D เป็นจุดกึ่งกลางของ BC เหตุใด AD จึงเป็นเส้นแบ่งครึ่งมุม`,[`พิจารณา \\triangle ABD และ \\triangle ACD`,`มี AB=AC, BD=DC และ AD ร่วมกัน จึงเท่ากันแบบ SSS`,`มุม BAD และ DAC เท่ากัน`],`เพราะสามเหลี่ยมสองรูปเท่ากันทุกประการ`,`การตรวจแบบก่อสร้าง การแก้โจทย์พิสูจน์ และการอธิบายเหตุผล`,[`ความเท่ากันทุกประการและสมบัติมุม`]),zs(`m2-quadratic-factoring`,`การแยกตัวประกอบของพหุนามดีกรีสอง`,`Factoring Quadratic Polynomials`,`จำนวนและพีชคณิต`,`ม.2`,`ภาคเรียนที่ 2`,[`การดึงตัวร่วม`,`ผลต่างกำลังสอง`,`พหุนามดีกรีสองรูป ax²+bx+c`],`ย้อนกระจายพหุนามเพื่อหาตัวประกอบและใช้ตัวประกอบตรวจคำตอบ`,`x^2+(p+q)x+pq=(x+p)(x+q)`,`ตรวจด้วยการคูณกลับและระวังเครื่องหมายของผลคูณกับผลบวก`,`จงแยกตัวประกอบ x^2+5x+6`,[`หา p,q ที่คูณได้ 6 และบวกได้ 5 คือ 2,3`,`เขียนเป็น (x+2)(x+3)`,`คูณกลับได้ x^2+5x+6`],`(x+2)(x+3)`,`การแก้สมการกำลังสองและการหาขนาดพื้นที่จากแบบจำลอง`,[`การคูณพหุนามและพจน์คล้าย`]),zs(`m3-linear-inequality`,`อสมการเชิงเส้นตัวแปรเดียว`,`Linear Inequalities in One Variable`,`จำนวนและพีชคณิต`,`ม.3`,`ภาคเรียนที่ 1`,[`สัญลักษณ์อสมการ`,`การแก้อสมการ`,`การเขียนคำตอบบนเส้นจำนวน`],`แก้อสมการโดยรักษาทิศทางเครื่องหมายและกลับเครื่องหมายเมื่อคูณหรือหารด้วยจำนวนลบ`,`a<b\\Rightarrow -a>-b`,`เมื่อคูณหรือหารทั้งสองข้างด้วยจำนวนลบ เครื่องหมายต้องกลับทิศ`,`แก้ 2x-3>5`,[`บวก 3 ได้ 2x>8`,`หารด้วย 2 ซึ่งเป็นบวก`,`x>4`],`x>4`,`ข้อจำกัดงบประมาณ ระยะทาง และเกณฑ์ความปลอดภัย`,[`สมการเชิงเส้นและจำนวนลบ`]),zs(`m3-higher-degree-factoring`,`การแยกตัวประกอบของพหุนามที่มีดีกรีสูงกว่าสอง`,`Factoring Polynomials of Degree Higher Than Two`,`จำนวนและพีชคณิต`,`ม.3`,`ภาคเรียนที่ 1`,[`การดึงตัวร่วมและจัดกลุ่ม`,`ผลบวก/ผลต่างกำลังสาม`,`การใช้ตัวประกอบแก้สมการ`],`มองโครงสร้างของพหุนามดีกรีสูงและเลือกวิธีแยกตัวประกอบที่ลดความซับซ้อน`,`x^3-a^3=(x-a)(x^2+ax+a^2)`,`ต้องตรวจว่าทุกพจน์ถูกนำออกมาครบและห้ามตัดตัวประกอบโดยไม่พิจารณาค่าที่ทำให้เป็นศูนย์`,`จงแยกตัวประกอบ x^3-8`,[`มอง 8 เป็น 2^3`,`ใช้ผลต่างกำลังสาม`,`ได้ (x-2)(x^2+2x+4)`],`(x-2)(x^2+2x+4)`,`การแก้สมการและการสร้างแบบจำลองปริมาตร`,[`พหุนามดีกรีสองและเลขยกกำลัง`]),zs(`m3-quadratic-equation`,`สมการกำลังสองตัวแปรเดียว`,`Quadratic Equations in One Variable`,`จำนวนและพีชคณิต`,`ม.3`,`ภาคเรียนที่ 1`,[`การแยกตัวประกอบ`,`การทำกำลังสองสมบูรณ์`,`สูตรกำลังสองและการตรวจราก`],`เลือกวิธีแก้สมการกำลังสองและตรวจว่ารากสอดคล้องกับสมการเดิม`,`x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}`,`ต้องมี a ไม่เท่ากับศูนย์และพิจารณาค่าภายใต้รากที่สอง`,`แก้ x^2-5x+6=0`,[`แยกตัวประกอบเป็น (x-2)(x-3)=0`,`ใช้สมบัติผลคูณเป็นศูนย์`,`x=2 หรือ x=3`],`x=2,3`,`การหาจุดตัดกราฟและปัญหาพื้นที่`,[`การแยกตัวประกอบพหุนามดีกรีสอง`]),zs(`m3-similarity`,`ความคล้าย`,`Similarity`,`เรขาคณิต`,`ม.3`,`ภาคเรียนที่ 1`,[`รูปคล้ายและอัตราส่วนสเกล`,`เกณฑ์มุม-มุม`,`การใช้รูปคล้ายแก้ปัญหา`],`ใช้ความสัมพันธ์ของมุมและอัตราส่วนด้านที่สมนัยกันเพื่อหาความยาวที่ไม่รู้จัก`,`\\frac{AB}{DE}=\\frac{BC}{EF}`,`ต้องจับคู่ด้านสมนัยกันตามมุมที่เท่ากันและใช้สเกลเดียวกันทั้งรูป`,`รูปสามเหลี่ยมคล้ายกันมีอัตราส่วนเล็กต่อใหญ่ 2:3 ถ้าด้านใหญ่ 12 ด้านเล็กเท่าใด`,[`ตั้งสัดส่วนเล็ก/ใหญ่=2/3`,`ด้านเล็ก=12(2/3)`,`ได้ 8 หน่วย`],`8 หน่วย`,`แผนที่ เงา การถ่ายภาพ และการวัดความสูงที่เข้าถึงไม่ได้`,[`อัตราส่วนและมุมในสามเหลี่ยม`]),zs(`m3-quadratic-graphs`,`กราฟของฟังก์ชันกำลังสอง`,`Graphs of Quadratic Functions`,`ฟังก์ชันและกราฟ`,`ม.3`,`ภาคเรียนที่ 1`,[`พาราโบลาและจุดยอด`,`แกนสมมาตร`,`การแปลความหมายจุดตัดแกน`],`อ่านรูปร่างและตำแหน่งของพาราโบลาจากสมการและเชื่อมโยงกับรากของสมการ`,`y=a(x-h)^2+k`,`เครื่องหมายของ a บอกทิศเปิด และ h,k บอกพิกัดจุดยอดในรูปจุดยอด`,`จุดยอดของ y=(x-2)^2-3 คือจุดใด`,[`เทียบกับ y=a(x-h)^2+k`,`ได้ h=2 และ k=-3`,`จุดยอดคือ (2,-3)`],`(2,-3)`,`การหาค่าสูงสุด-ต่ำสุดและวิถีของวัตถุแบบจำลอง`,[`พิกัดและสมการกำลังสอง`]),zs(`m3-statistics-3`,`สถิติ (3)`,`Statistics 3`,`สถิติ`,`ม.3`,`ภาคเรียนที่ 1`,[`ควอไทล์และแผนภาพกล่อง`,`การกระจายและค่าผิดปกติ`,`การเปรียบเทียบชุดข้อมูล`],`อธิบายการกระจายของข้อมูลด้วยพิสัย ควอไทล์ และแผนภาพกล่องโดยไม่สรุปเกินข้อมูล`,`IQR=Q_3-Q_1`,`ต้องเรียงข้อมูลและใช้เกณฑ์ควอไทล์เดียวกันก่อนเปรียบเทียบชุดข้อมูล`,`ถ้า Q1=12 และ Q3=20 พิสัยระหว่างควอไทล์เป็นเท่าใด`,[`ใช้ IQR=Q3-Q1`,`แทนค่า 20-12`,`ได้ 8`],`8`,`การอ่านผลสอบ รายได้ หรือข้อมูลที่มีค่าผิดปกติ`,[`สถิติ (1)-(2) และการเรียงข้อมูล`]),zs(`m3-linear-systems`,`ระบบสมการเชิงเส้นสองตัวแปร`,`Systems of Linear Equations in Two Variables`,`จำนวนและพีชคณิต`,`ม.3`,`ภาคเรียนที่ 2`,[`กราฟและจุดตัด`,`วิธีแทนค่า`,`วิธีกำจัดตัวแปรและการตีความคำตอบ`],`หาคู่ลำดับที่ทำให้สมการสองสมการเป็นจริงพร้อมกันและอธิบายความหมายของจุดตัด`,`\\begin{cases}x+y=7\\2x-y=2\\end{cases}`,`ต้องตรวจคู่ลำดับที่ได้กับสมการทั้งสอง ไม่ใช่เพียงสมการเดียว`,`แก้ระบบ x+y=7 และ 2x-y=2`,[`บวกสมการได้ 3x=9`,`x=3 แล้วแทนใน x+y=7`,`y=4 จึงได้ (3,4)`],`(3,4)`,`โจทย์จำนวนสินค้า ราคา และการเคลื่อนที่ที่มีสองเงื่อนไข`,[`สมการเชิงเส้นตัวแปรเดียวและกราฟ`]),zs(`m3-circles`,`วงกลม`,`Circles`,`เรขาคณิต`,`ม.3`,`ภาคเรียนที่ 2`,[`คอร์ด เส้นสัมผัส และมุมในวงกลม`,`ความยาวส่วนโค้งและพื้นที่`,`สมการวงกลมบนระนาบพิกัด`],`เชื่อมโยงรัศมี เส้นผ่านศูนย์กลาง มุม และสมบัติของเส้นในวงกลม`,`(x-h)^2+(y-k)^2=r^2`,`รัศมีตั้งฉากกับเส้นสัมผัสที่จุดสัมผัสและมุมในครึ่งวงกลมเป็น 90 องศา`,`วงกลมศูนย์กลาง (2,-1) รัศมี 3 มีสมการอย่างไร`,[`ใช้รูป (x-h)^2+(y-k)^2=r^2`,`แทน h=2,k=-1,r=3`,`ได้ (x-2)^2+(y+1)^2=9`],`(x-2)^2+(y+1)^2=9`,`การออกแบบล้อ วงเวียน สถาปัตยกรรม และตำแหน่งบนแผนที่`,[`มุม พิกัด และรัศมี`]),zs(`m3-pyramids-cones-spheres`,`พีระมิด กรวย และทรงกลม`,`Pyramids, Cones, and Spheres`,`เรขาคณิต`,`ม.3`,`ภาคเรียนที่ 2`,[`พื้นที่ผิวพีระมิดและกรวย`,`ปริมาตรพีระมิดและกรวย`,`พื้นที่ผิวและปริมาตรทรงกลม`],`เลือกแบบจำลองและสูตรให้สัมพันธ์กับฐาน ความสูงเอียง และรัศมีของทรงสามมิติ`,`V_{cone}=\\frac13\\pi r^2h`,`ความสูงเอียงไม่ใช่ความสูงตั้งฉาก และต้องเลือกหน่วยเดียวกันตลอดการคำนวณ`,`กรวยรัศมี 3 สูง 4 ใช้ \\pi=3.14 มีปริมาตรเท่าใด`,[`V=1/3(3.14)(3^2)(4)`,`ตัด 4 กับ 3 ได้ 4(3.14)(3)`,`ได้ 37.68 ลูกบาศก์หน่วย`],`37.68 ลูกบาศก์หน่วย`,`การออกแบบหลังคา ภาชนะ และวัตถุทรงกลม`,[`พื้นที่วงกลมและปริซึม`]),zs(`m3-probability`,`ความน่าจะเป็น`,`Probability`,`สถิติและความน่าจะเป็น`,`ม.3`,`ภาคเรียนที่ 2`,[`แซมเปิลสเปซและเหตุการณ์`,`ความน่าจะเป็นของเหตุการณ์`,`เหตุการณ์ตรงข้ามและการทดลองซ้ำ`],`นับผลลัพธ์อย่างเป็นระบบและตีความความน่าจะเป็นเป็นสัดส่วนของเหตุการณ์ที่สนใจ`,`P(A)=\\frac{n(A)}{n(S)}`,`ผลลัพธ์ต้องมีโอกาสเกิดที่กำหนดชัดและค่าความน่าจะเป็นอยู่ระหว่าง 0 ถึง 1`,`ทอยลูกเต๋า 1 ลูก โอกาสได้จำนวนคู่เป็นเท่าใด`,[`ผลลัพธ์ทั้งหมด 6 แบบ`,`จำนวนคู่คือ 2,4,6 มี 3 แบบ`,`P=3/6=1/2`],`1/2`,`การประเมินความเสี่ยง เกม และการตัดสินใจจากข้อมูล`,[`เศษส่วนและการนับเบื้องต้น`]),zs(`m3-trig-ratios`,`อัตราส่วนตรีโกณมิติ`,`Trigonometric Ratios`,`เรขาคณิต`,`ม.3`,`ภาคเรียนที่ 2`,[`ไซน์ โคไซน์ และแทนเจนต์`,`การหาด้านและมุม`,`โจทย์ความสูงและระยะทาง`],`เลือกอัตราส่วนตรีโกณมิติจากด้านที่รู้และด้านที่ต้องการในสามเหลี่ยมมุมฉาก`,`\\sin\\theta=\\frac{opposite}{hypotenuse}`,`ต้องระบุด้านตรงข้าม ประชิด และด้านตรงข้ามมุมฉากจากมุมอ้างอิงเดียวกัน`,`สามเหลี่ยมมุมฉากมีด้านตรงข้ามมุม 6 และด้านตรงข้ามมุมฉาก 10 จงหา sin θ`,[`ใช้ sin θ=ด้านตรงข้าม/ด้านตรงข้ามมุมฉาก`,`แทนค่า 6/10`,`ลดรูปเป็น 3/5`],`3/5`,`การวัดความสูงอาคาร ความลาดเอียง และงานสำรวจ`,[`ทฤษฎีบทพีทาโกรัสและมุม`])],Hs=[Bs(`upper-sets`,`เซต`,`Sets`,`จำนวนและพีชคณิต`,[{grade:`ม.4`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์พื้นฐาน`,depth:`ภาษาและการดำเนินการของเซต`,verified:!0,sourceId:`ipst-basic-m4`},{grade:`ม.4`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`การดำเนินการ เซตจำกัด และการประยุกต์`,verified:!0,sourceId:`ipst-adv-m4-1`}],[`สมาชิกและการเขียนเซต`,`สับเซตและเพาเวอร์เซต`,`ยูเนียน อินเตอร์เซกชัน และแผนภาพเวนน์`],`แปลความสัมพันธ์ของสมาชิกเป็นภาษาเซตและใช้การดำเนินการแก้ปัญหา`,`n(A\\cup B)=n(A)+n(B)-n(A\\cap B)`,`ต้องกำหนดเอกภพสัมพัทธ์และไม่สับสนสมาชิกกับสับเซต`,`ให้ A={1,2,3}, B={3,4} จงหา A\\cup B`,[`รวบรวมสมาชิกของทั้งสองเซต`,`ตัดสมาชิกซ้ำคือ 3 ออกหนึ่งครั้ง`,`ได้ {1,2,3,4}`],`{1,2,3,4}`,`การจัดกลุ่มข้อมูล การค้นหา และการนับสมาชิกที่ซ้ำกัน`,[`ตรรกะเบื้องต้นและการนับ`],Ms),Bs(`upper-logic`,`ตรรกศาสตร์`,`Logic`,`ตรรกศาสตร์`,[{grade:`ม.4`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์พื้นฐาน`,depth:`ประพจน์และการเชื่อมประพจน์`,verified:!0,sourceId:`ipst-basic-m4`},{grade:`ม.4`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`ประพจน์ ตัวบ่งปริมาณ และการอ้างเหตุผล`,verified:!0,sourceId:`ipst-adv-m4-1`}],[`ประพจน์และค่าความจริง`,`ตัวเชื่อมและตารางค่าความจริง`,`เงื่อนไขจำเป็น เพียงพอ และการอ้างเหตุผล`],`ตรวจความถูกต้องของการให้เหตุผลด้วยค่าความจริงและโครงสร้างของประพจน์`,`p\\Rightarrow q\\equiv\\neg p\\lor q`,`ต้องแยก “ถ้า...แล้ว...” ออกจากบทกลับและไม่ใช้ตัวอย่างเดียวพิสูจน์ข้อความทั่วไป`,`ถ้า p เป็นเท็จ และ q เป็นจริง ค่าความจริงของ p⇒q คืออะไร`,[`พิจารณาประพจน์แบบเงื่อนไข`,`กรณี p เท็จไม่ทำให้เงื่อนไขผิด`,`จึงเป็นจริง`],`จริง`,`การตรวจข่าว การเขียนเงื่อนไขโปรแกรม และการพิสูจน์`,[`เซตและภาษาไทยเชิงตรรกะ`],Ms),Bs(`upper-real-numbers`,`จำนวนจริง`,`Real Numbers`,`จำนวนและพีชคณิต`,[{grade:`ม.4`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`สมบัติของจำนวนจริง อสมการ และค่าสัมบูรณ์`,verified:!0,sourceId:`ipst-adv-m4-1`}],[`สมบัติของจำนวนจริง`,`ค่าสัมบูรณ์และช่วง`,`รากที่ n และการแก้อสมการ`],`ใช้สมบัติของจำนวนจริงเพื่อแปลงรูปและวิเคราะห์ช่วงคำตอบโดยไม่ละเมิดเงื่อนไข`,`|x-a|<r\\Longleftrightarrow a-r<x<a+r`,`ต้องพิจารณาเครื่องหมาย ตัวส่วน และโดเมนเมื่อยกกำลังหรือถอดราก`,`แก้ |x-2|<3`,[`แปลเป็น -3<x-2<3`,`บวก 2 ทุกส่วน`,`-1<x<5`],`(-1,5)`,`การกำหนดช่วงความคลาดเคลื่อนและการวิเคราะห์เงื่อนไขของแบบจำลอง`,[`จำนวนเต็ม เศษส่วน เลขยกกำลัง`],Ms),Bs(`upper-relations-functions`,`ความสัมพันธ์และฟังก์ชัน`,`Relations and Functions`,`ฟังก์ชันและกราฟ`,[{grade:`ม.4`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์พื้นฐาน`,depth:`กราฟ โดเมน เรนจ์ และการตีความฟังก์ชัน`,verified:!0,sourceId:`ipst-basic-m5`},{grade:`ม.4`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`ความสัมพันธ์ ฟังก์ชัน ฟังก์ชันประกอบ และฟังก์ชันผกผัน`,verified:!0,sourceId:`ipst-adv-m4-2`}],[`คู่อันดับและความสัมพันธ์`,`โดเมน เรนจ์ และฟังก์ชัน`,`ฟังก์ชันประกอบและผกผัน`],`มองฟังก์ชันเป็นกฎที่จับคู่สมาชิกแต่ละตัวในโดเมนกับผลลัพธ์เดียว`,`f:A\\to B`,`ต้องตรวจว่าทุกสมาชิกในโดเมนมีภาพเพียงหนึ่งค่าและระบุโดเมนก่อนคำนวณ`,`ให้ f(x)=2x+1 จงหา f(3)`,[`แทน x=3 ในกฎของฟังก์ชัน`,`f(3)=2(3)+1`,`ได้ 7`],`7`,`แบบจำลองค่าใช้จ่าย อุณหภูมิ และความสัมพันธ์ระหว่างตัวแปร`,[`กราฟและสมการเชิงเส้น`],Ns),Bs(`upper-exponential-log`,`ฟังก์ชันเอกซ์โพเนนเชียลและฟังก์ชันลอการิทึม`,`Exponential and Logarithmic Functions`,`ฟังก์ชันและกราฟ`,[{grade:`ม.4`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`ฟังก์ชัน กราฟ สมบัติ และสมการเอกซ์โพเนนเชียล/ลอการิทึม`,verified:!0,sourceId:`ipst-adv-m4-2`}],[`ฟังก์ชันเอกซ์โพเนนเชียล`,`ลอการิทึมและสมบัติ`,`สมการและการประยุกต์การเติบโต`],`เชื่อมความหมายของลอการิทึมกับเลขชี้กำลังและวิเคราะห์การเติบโตที่เปลี่ยนแปลงตามเวลา`,`log_a x=y\\Longleftrightarrow a^y=x`,`ฐานต้องมากกว่า 0 และไม่เท่ากับ 1 ส่วนจำนวนที่อยู่ใน log ต้องมากกว่า 0`,`จงแก้ log_2 x=3`,[`เขียนเป็นเลขยกกำลัง 2^3=x`,`คำนวณ 2^3`,`x=8 ซึ่งอยู่ในโดเมน`],`8`,`ดอกเบี้ยทบต้น การแพร่กระจาย และการวัดระดับเสียง`,[`เลขยกกำลังและฟังก์ชัน`],Ns),Bs(`upper-analytic-geometry`,`เรขาคณิตวิเคราะห์`,`Analytic Geometry`,`เรขาคณิต`,[{grade:`ม.4`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`จุด เส้นตรง วงกลม และระยะทางในพิกัด`,verified:!0,sourceId:`ipst-adv-m4-2`}],[`ระยะทางและจุดกึ่งกลาง`,`ความชันและสมการเส้นตรง`,`วงกลมและการประยุกต์พิกัด`],`ใช้พิกัดและสมการแทนรูปเรขาคณิตเพื่อคำนวณและพิสูจน์ความสัมพันธ์`,`m=\\frac{y_2-y_1}{x_2-x_1}`,`ต้องแยกกรณีเส้นตั้งฉากที่ความชันไม่กำหนดและระบุหน่วยของระยะทาง`,`จงหาจุดกึ่งกลางของ A(2,4) และ B(6,8)`,[`ใช้ M=((x1+x2)/2,(y1+y2)/2)`,`แทนค่าได้ ((2+6)/2,(4+8)/2)`,`M=(4,6)`],`(4,6)`,`แผนที่ ระบบพิกัด และการตรวจรูปทรงจากจุดข้อมูล`,[`ระนาบพิกัดและพีชคณิต`],Ns),Bs(`upper-trig-functions`,`ฟังก์ชันตรีโกณมิติ`,`Trigonometric Functions`,`ฟังก์ชันและกราฟ`,[{grade:`ม.5`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`ฟังก์ชัน วงกลมหนึ่งหน่วย กราฟ และเอกลักษณ์`,verified:!0,sourceId:`ipst-adv-m5-1`}],[`วงกลมหนึ่งหน่วยและเรเดียน`,`กราฟไซน์ โคไซน์ และแทนเจนต์`,`เอกลักษณ์และสมการตรีโกณมิติ`],`มองค่าตรีโกณมิติเป็นฟังก์ชันของมุมและใช้กราฟหรือเอกลักษณ์อธิบายการเปลี่ยนแปลง`,`sin^2x+cos^2x=1`,`ต้องแปลงหน่วยองศา-เรเดียนให้ถูกและตรวจคาบของฟังก์ชัน`,`จงหาค่า sin(π/6)`,[`จากวงกลมหนึ่งหน่วยหรือค่ามุมมาตรฐาน`,`มุม π/6 เท่ากับ 30 องศา`,`sin(π/6)=1/2`],`1/2`,`คลื่น เสียง การหมุน และแบบจำลองคาบเวลา`,[`อัตราส่วนตรีโกณมิติและฟังก์ชัน`],Ps),Bs(`upper-matrices`,`เมทริกซ์`,`Matrices`,`พีชคณิต`,[{grade:`ม.5`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`การดำเนินการ ดีเทอร์มิแนนต์ และเมทริกซ์ผกผัน`,verified:!0,sourceId:`ipst-adv-m5-1`}],[`ชนิดและการเท่ากันของเมทริกซ์`,`การบวก คูณ และดีเทอร์มิแนนต์`,`เมทริกซ์ผกผันกับระบบสมการ`],`ใช้เมทริกซ์จัดข้อมูลและแก้ระบบสมการ โดยคงลำดับแถว-หลักให้ถูกต้อง`,`A^{-1}A=I`,`เมทริกซ์ผกผันมีได้เมื่อดีเทอร์มิแนนต์ไม่เป็นศูนย์และขนาดเมทริกซ์คูณกันได้`,`A=[[1,2],[3,4]] จงหาดีเทอร์มิแนนต์`,[`det(A)=1(4)-2(3)`,`ลบผลคูณแนวทแยง`,`ได้ -2`],`-2`,`ตารางข้อมูล การเข้ารหัส และการแก้ระบบสมการ`,[`ระบบสมการเชิงเส้น`],Ps),Bs(`upper-vectors`,`เวกเตอร์`,`Vectors`,`เรขาคณิตและพีชคณิต`,[{grade:`ม.5`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`เวกเตอร์ในระนาบ การบวก และผลคูณสเกลาร์`,verified:!0,sourceId:`ipst-adv-m5-1`}],[`เวกเตอร์และขนาด`,`การบวกและการคูณด้วยสเกลาร์`,`ผลคูณสเกลาร์และมุมระหว่างเวกเตอร์`],`ใช้เวกเตอร์แทนการกระจัดและความสัมพันธ์เชิงทิศทาง พร้อมเชื่อมกับพิกัด`,`||\\vec{v}||=\\sqrt{x^2+y^2}`,`ผลคูณสเกลาร์เป็นจำนวนและใช้ตรวจตั้งฉากได้เมื่อผลคูณเป็นศูนย์`,`จงหาขนาดของเวกเตอร์ (3,4)`,[`ใช้สูตรขนาด`,`sqrt(3^2+4^2)=sqrt(25)`,`ได้ 5`],`5`,`แรง การเคลื่อนที่ พิกัด และกราฟิกคอมพิวเตอร์`,[`เรขาคณิตวิเคราะห์และพีชคณิต`],Ps),Bs(`upper-complex`,`จำนวนเชิงซ้อน`,`Complex Numbers`,`จำนวนและพีชคณิต`,[{grade:`ม.5`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`รูป a+bi การคำนวณ และรากของสมการ`,verified:!0,sourceId:`ipst-adv-m5-2`}],[`หน่วยจินตภาพและรูปเชิงขั้ว`,`การบวก คูณ หารจำนวนเชิงซ้อน`,`รากของสมการและระนาบเชิงซ้อน`],`ขยายระบบจำนวนเพื่อแก้สมการที่ไม่มีคำตอบในจำนวนจริงและตีความบนระนาบเชิงซ้อน`,`i^2=-1`,`ต้องใช้สังยุคเมื่อหารและลดเลขชี้กำลังของ i ตามคาบ 4`,`จงหาค่า (2+3i)+(1-5i)`,[`รวมส่วนจริงและส่วนจินตภาพแยกกัน`,`2+1=3 และ 3i-5i=-2i`,`ได้ 3-2i`],`3-2i`,`สัญญาณ ไฟฟ้า การหมุน และการแก้สมการพหุนาม`,[`จำนวนจริงและพหุนาม`],Fs),Bs(`upper-counting`,`หลักการนับเบื้องต้น`,`Fundamental Counting Principles`,`สถิติและความน่าจะเป็น`,[{grade:`ม.4`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์พื้นฐาน`,depth:`หลักการคูณและการนับกรณีง่าย`,verified:!0,sourceId:`ipst-basic-m4`},{grade:`ม.5`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`การเรียงสับเปลี่ยนและการจัดหมู่`,verified:!0,sourceId:`ipst-adv-m5-2`}],[`หลักการบวกและหลักการคูณ`,`แฟกทอเรียลและการเรียงสับเปลี่ยน`,`การจัดหมู่และการนับแบบมีเงื่อนไข`],`แบ่งปัญหาเป็นกรณีที่ไม่ซ้ำกันหรือเป็นขั้นตอนต่อเนื่อง แล้วเลือกหลักการนับให้เหมาะ`,`n!=n(n-1)\\cdots1`,`หลักการคูณใช้เมื่อทำขั้นตอนต่อเนื่อง ส่วนหลักการบวกใช้กรณีแยกกันและไม่ซ้ำ`,`มีเสื้อ 3 ตัวและกางเกง 2 ตัว แต่งชุดได้กี่แบบ`,[`เลือกเสื้อได้ 3 วิธี`,`แต่ละวิธีเลือกกางเกงได้ 2 วิธี`,`3×2=6 แบบ`],`6 แบบ`,`การจัดตาราง การสร้างรหัส และการนับผลลัพธ์ในความน่าจะเป็น`,[`การคูณและการแยกกรณี`],Fs),Bs(`upper-probability`,`ความน่าจะเป็น`,`Probability`,`สถิติและความน่าจะเป็น`,[{grade:`ม.4`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์พื้นฐาน`,depth:`เหตุการณ์และความน่าจะเป็นเบื้องต้น`,verified:!0,sourceId:`ipst-basic-m4`},{grade:`ม.5`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`ความน่าจะเป็นแบบมีเงื่อนไข กฎบวก และกฎคูณ`,verified:!0,sourceId:`ipst-adv-m5-2`}],[`แซมเปิลสเปซและเหตุการณ์`,`กฎบวก กฎคูณ และความน่าจะเป็นมีเงื่อนไข`,`เหตุการณ์อิสระและการประยุกต์`],`วิเคราะห์ความไม่แน่นอนด้วยการนับผลลัพธ์และเงื่อนไขของเหตุการณ์`,`P(A|B)=\\frac{P(A\\cap B)}{P(B)}`,`ต้องระบุเหตุการณ์และเงื่อนไขให้ชัด และตัวส่วนของความน่าจะเป็นมีเงื่อนไขต้องไม่เป็นศูนย์`,`ถ้า P(A∩B)=0.2 และ P(B)=0.5 จงหา P(A|B)`,[`ใช้สูตร P(A|B)=P(A∩B)/P(B)`,`แทนค่า 0.2/0.5`,`ได้ 0.4`],`0.4`,`การประเมินความเสี่ยง การตรวจคัดกรอง และการตัดสินใจ`,[`หลักการนับและเศษส่วน`],Fs),Bs(`upper-sequences-series`,`ลำดับและอนุกรม`,`Sequences and Series`,`จำนวนและพีชคณิต`,[{grade:`ม.5`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์พื้นฐาน`,depth:`ลำดับเลขคณิต ลำดับเรขาคณิต และผลบวก`,verified:!0,sourceId:`ipst-basic-m5`},{grade:`ม.6`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`ลำดับ อนุกรม อนุกรมอนันต์ และการประยุกต์`,verified:!0,sourceId:`ipst-adv-m6-1`}],[`ลำดับเลขคณิต`,`ลำดับเรขาคณิต`,`อนุกรมและการหาผลบวก`],`มองลำดับเป็นฟังก์ชันบนจำนวนธรรมชาติและเลือกสูตรจากรูปแบบการเปลี่ยนแปลง`,`a_n=a_1+(n-1)d`,`ต้องระบุพจน์แรก ดัชนี และผลต่างหรืออัตราส่วนร่วมให้ตรงกับโจทย์`,`ลำดับ 3,7,11,... พจน์ที่ 10 เท่ากับเท่าใด`,[`a1=3 และ d=4`,`a10=3+(10-1)4`,`ได้ 39`],`39`,`เงินออม การผ่อนชำระ การเติบโต และการประมาณค่า`,[`เลขยกกำลังและฟังก์ชัน`],Is),Bs(`upper-calculus`,`แคลคูลัสเบื้องต้น`,`Introduction to Calculus`,`แคลคูลัส`,[{grade:`ม.6`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`ลิมิต อนุพันธ์เบื้องต้น และปริพันธ์อย่างง่าย`,verified:!0,sourceId:`ipst-adv-m6-1`}],[`ลิมิตและความต่อเนื่อง`,`อนุพันธ์ในฐานะอัตราการเปลี่ยนแปลง`,`ปริพันธ์และพื้นที่ใต้กราฟ`],`ใช้ลิมิตอธิบายการเปลี่ยนแปลง ณ จุดหนึ่งและเชื่อมอนุพันธ์กับปัญหาสูงสุด-ต่ำสุด`,`\\lim_{x\\to a}f(x)`,`ต้องตรวจโดเมนและความต่อเนื่องก่อนใช้กฎลิมิตหรือแปลความหมายอนุพันธ์`,`ถ้า f(x)=x^2 จงหาค่า lim เมื่อ x เข้าใกล้ 2`,[`ฟังก์ชันเป็นพหุนามจึงต่อเนื่อง`,`แทน x=2 ได้โดยตรง`,`ลิมิตเท่ากับ 4`],`4`,`อัตราเร็ว การเติบโต ต้นทุนต่ำสุด และพื้นที่สะสม`,[`ฟังก์ชันและพีชคณิต`],Is),Bs(`upper-statistics-meaning`,`ความหมายของสถิติศาสตร์และข้อมูล`,`Meaning of Statistics and Data`,`สถิติ`,[{grade:`ม.6`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์พื้นฐาน`,depth:`ประชากร ตัวอย่าง ตัวแปร และการเก็บข้อมูล`,verified:!0,sourceId:`ipst-basic-m6`},{grade:`ม.6`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`การออกแบบการสำรวจและคุณภาพข้อมูล`,verified:!0,sourceId:`ipst-adv-m6-2`}],[`ประชากรและกลุ่มตัวอย่าง`,`ประเภทของตัวแปรและแหล่งข้อมูล`,`การออกแบบการเก็บข้อมูล`],`อ่านที่มาของข้อมูลและประเมินว่าข้อมูลตอบคำถามวิจัยได้ดีเพียงใดก่อนคำนวณสถิติ`,`sample\\subseteq population`,`ตัวอย่างที่ไม่เป็นตัวแทนทำให้ข้อสรุปมีอคติ แม้คำนวณค่าได้ถูกต้อง`,`หากต้องการรู้เวลานอนของนักเรียนทั้งโรงเรียน ควรเริ่มจากอะไร`,[`กำหนดประชากรคือ นักเรียนทั้งโรงเรียน`,`ออกแบบตัวอย่างที่เป็นตัวแทน`,`กำหนดวิธีเก็บข้อมูลก่อนสรุป`],`กำหนดประชากรและแผนการสุ่มตัวอย่าง`,`การสำรวจสุขภาพ ความคิดเห็น และข้อมูลในข่าว`,[`สถิติพื้นฐานและการอ่านตาราง`],Ls),Bs(`upper-qualitative-data`,`การวิเคราะห์และนำเสนอข้อมูลเชิงคุณภาพ`,`Analysis and Presentation of Qualitative Data`,`สถิติ`,[{grade:`ม.6`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์พื้นฐาน`,depth:`ตารางความถี่ แผนภูมิแท่ง วงกลม และการตีความ`,verified:!0,sourceId:`ipst-basic-m6`},{grade:`ม.6`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`เลือกภาพแทนข้อมูลและวิจารณ์การนำเสนอ`,verified:!0,sourceId:`ipstAdvM6Book2`}],[`ข้อมูลเชิงคุณภาพและความถี่`,`แผนภูมิแท่งและแผนภูมิวงกลม`,`การอ่านและวิจารณ์กราฟ`],`สรุปข้อมูลที่เป็นกลุ่มหรือประเภทด้วยตารางและกราฟที่ไม่ทำให้ผู้ดูเข้าใจผิด`,`ร้อยละ=\\frac{ความถี่}{จำนวนทั้งหมด}\\times100`,`ความสูงของแท่งและขนาดมุมต้องสอดคล้องกับความถี่และต้องระบุฐานของร้อยละ`,`นักเรียน 40 คนชอบกีฬา 10 คน คิดเป็นกี่เปอร์เซ็นต์`,[`คำนวณ 10/40×100`,`ได้ 25`,`คิดเป็น 25%`],`25%`,`การอ่านผลสำรวจ การสื่อสารข้อมูล และการตรวจกราฟข่าว`,[`การนับและร้อยละ`],Ls),Bs(`upper-quantitative-data`,`การวิเคราะห์และนำเสนอข้อมูลเชิงปริมาณ`,`Analysis and Presentation of Quantitative Data`,`สถิติ`,[{grade:`ม.6`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์พื้นฐาน`,depth:`ค่ากลาง การกระจาย และการนำเสนอข้อมูลเชิงปริมาณ`,verified:!0,sourceId:`ipst-basic-m6`},{grade:`ม.6`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`ควอร์ไทล์ เปอร์เซ็นไทล์ แผนภาพกล่อง และการแปลผล`,verified:!0,sourceId:`ipstAdvM6Book2`}],[`ค่าเฉลี่ย มัธยฐาน และฐานนิยม`,`พิสัย ส่วนเบี่ยงเบนมาตรฐาน และควอร์ไทล์`,`แผนภาพกล่องและการเปรียบเทียบ`],`เลือกค่าวัดที่เหมาะกับคำถามและอธิบายการกระจาย ไม่สรุปจากค่ากลางเพียงค่าเดียว`,`\\bar{x}=\\frac{\\sum x_i}{n}`,`ต้องระบุหน่วยและพิจารณาค่าผิดปกติก่อนเลือกค่าเฉลี่ยหรือมัธยฐาน`,`ข้อมูล 2,4,4,6,9 มีค่าเฉลี่ยเท่าใด`,[`บวกข้อมูลได้ 25`,`มี 5 ค่า`,`ค่าเฉลี่ยคือ 5`],`5`,`การวิเคราะห์คะแนน รายได้ เวลา และความเหลื่อมล้ำของข้อมูล`,[`สถิติ (3) และการอ่านกราฟ`],Ls),Bs(`upper-random-variables`,`ตัวแปรสุ่มและการแจกแจงความน่าจะเป็น`,`Random Variables and Probability Distributions`,`สถิติและความน่าจะเป็น`,[{grade:`ม.6`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`ตัวแปรสุ่มไม่ต่อเนื่อง การแจกแจง และค่าคาดหมาย`,verified:!0,sourceId:`ipst-adv-m6-2`}],[`ตัวแปรสุ่มและการแจกแจง`,`ค่าคาดหมายและความแปรปรวน`,`การแจกแจงทวินามและการประยุกต์`],`เปลี่ยนผลลัพธ์สุ่มเป็นค่าตัวเลขและสรุปการแจกแจงด้วยค่าคาดหมายอย่างมีความหมาย`,`E(X)=\\sum xP(X=x)`,`ความน่าจะเป็นของทุกค่าต้องรวมกันเป็น 1 และต้องแยกค่าคาดหมายออกจากผลลัพธ์ที่เกิดจริง`,`ตัวแปรสุ่ม X มีค่า 0,1 โดย P(X=1)=0.3 จงหา E(X)`,[`E(X)=0P(0)+1P(1)`,`แทนค่าได้ 0+0.3`,`E(X)=0.3`],`0.3`,`การประเมินจำนวนเหตุการณ์เฉลี่ย ความเสี่ยง และคุณภาพการผลิต`,[`ความน่าจะเป็นและผลรวม`],Ls)];function Us(e){return e.subtopics.map((t,n)=>({id:`${e.id}-lesson-${n+1}`,chapterId:e.id,title:t,order:n+1,duration:`${18+n*5} นาที`,objective:n===0?`อธิบาย${t}โดยใช้คำศัพท์และตัวแทนที่ถูกต้อง`:n===1?`เลือกวิธีทำ${t}และตรวจเงื่อนไขของคำตอบ`:`ประยุกต์${t}กับโจทย์หลายขั้นและสื่อสารเหตุผล`,summary:n===0?`เริ่มจากความหมายของ${t}และสร้างภาพรวมก่อนใช้สัญลักษณ์`:n===1?`เชื่อมคำจำกัดความกับขั้นตอนคำนวณ โดยตรวจ ${e.condition}`:`ใช้ความรู้เรื่อง${t}แก้ปัญหาและอธิบายว่าทำไมคำตอบจึงสมเหตุสมผล`,definitions:`${e.title}ในส่วนนี้หมายถึง ${e.focus} คำสำคัญที่ควรรู้คือ “${t}” และต้องอ่านสัญลักษณ์ตามบริบท ไม่เดาความหมายจากรูปเพียงอย่างเดียว`,foundation:`เหตุผลสำคัญคือ ${e.focus} เมื่อเปลี่ยนรูปหรือแทนค่า ต้องรักษาความสัมพันธ์เดิมและตรวจ ${e.condition}`,workedExample:{problem:e.exampleProblem,steps:e.exampleSteps,answer:e.exampleAnswer,formula:e.formula},alternative:e.alternative,commonMistake:e.commonMistake,application:e.application,furtherLearning:n<e.subtopics.length-1?`ถัดไป: ${e.subtopics[n+1]}`:`เชื่อมต่อกับบทถัดไปที่ใช้${e.title}เป็นพื้นฐาน`}))}function Ws(e){let t=e.offerings[0],n=(n,r,i,a,o,s,c)=>({id:`${e.id}-q-${n}`,chapterId:e.id,grade:t.grade,course:t.course,topic:e.title,subtopic:e.subtopics[(n-1)%e.subtopics.length],difficulty:c,format:`multiple-choice`,prompt:r,choices:i,correct:a,explanation:o,hint:`กลับไปดูคำจำกัดความของ${e.title} แล้วตรวจ ${e.condition}`,misconception:s});return[n(1,`ข้อใดสรุปแก่นของ “${e.title}” ได้ถูกต้องที่สุด`,[e.focus,`จำสูตรโดยไม่สนใจเงื่อนไข`,`ใช้ตัวเลขแทนทุกอย่างทันที`,`สรุปจากภาพตัวอย่างเพียงรูปเดียว`],0,`แก่นของบทนี้คือ ${e.focus} จึงต้องอธิบายความหมายก่อนเลือกวิธีทำ`,`เลือกกฎจากชื่อบทโดยไม่แปลความหมาย`,`พื้นฐาน`),n(2,e.exampleProblem,[e.exampleAnswer,`ไม่สามารถหาคำตอบได้`,`ต้องใช้ข้อมูลเพิ่มเสมอ`,`คำตอบเป็นศูนย์ทุกกรณี`],0,`จากตัวอย่าง เริ่มด้วย ${e.exampleSteps[0]} แล้วได้คำตอบ ${e.exampleAnswer}`,`ข้ามการตรวจเงื่อนไขหรือคำนวณผิดขั้น`,`พื้นฐาน`),n(3,`ก่อนเริ่มโจทย์เรื่อง${e.title} ควรทบทวนสิ่งใด`,[e.prerequisites[0],`ท่องคำตอบของเพื่อน`,`ตัดหน่วยออกจากโจทย์`,`วาดกราฟโดยไม่อ่านโจทย์`],0,`ความรู้พื้นฐานที่เกี่ยวข้องคือ ${e.prerequisites.join(` และ `)}`,`เริ่มทำโดยไม่ตรวจพื้นฐานที่โจทย์ใช้`,`พื้นฐาน`),n(4,`นิพจน์ใดเกี่ยวข้องกับแนวคิดหลักของ${e.title}`,[e.formula,`a+b=a-b`,`P(A)>1 เสมอ`,`x=x+1 ทุกค่า`],0,`นิพจน์ ${e.formula} ใช้ได้เมื่อ ${e.condition}`,`ใช้สูตรถูกบทแต่ผิดเงื่อนไข`,`กำลังดี`),n(5,`สถานการณ์ใดเป็นการประยุกต์${e.title}ได้เหมาะสมที่สุด`,[e.application,`หาคำตอบโดยไม่กำหนดตัวแปร`,`ใช้หน่วยต่างกันในสมการเดียว`,`เปลี่ยนข้อมูลหลังคำนวณเพื่อให้ได้คำตอบ`],0,`บทนี้เชื่อมกับ ${e.application} เพราะสามารถกำหนดปริมาณและตรวจความหมายของคำตอบได้`,`ไม่แปลคำตอบกลับเป็นบริบท`,`กำลังดี`),n(6,`ข้อควรระวังสำคัญเมื่อทำโจทย์${e.title}คือข้อใด`,[e.condition,`คำตอบทุกข้อเป็นบวก`,`ไม่ต้องตรวจโดเมนหรือหน่วย`,`สูตรใช้ได้เหมือนกันทุกสถานการณ์`],0,`ต้องตรวจว่า ${e.condition} ก่อนยอมรับคำตอบ`,`ละเลยโดเมน เครื่องหมาย หน่วย หรือข้อสมมติ`,`กำลังดี`),n(7,`วิธีตรวจคำตอบของโจทย์${e.title}ที่ดีคือข้อใด`,[`แทนคำตอบกลับในเงื่อนไขเดิมและอธิบายความหมาย`,`ดูว่าตัวเลขมีขนาดใหญ่หรือไม่`,`เปลี่ยนเครื่องหมายคำตอบให้เป็นบวก`,`เลือกคำตอบที่เขียนสั้นที่สุด`],0,`การแทนกลับและตรวจบริบทช่วยพบทั้งความผิดพลาดเชิงพีชคณิตและความผิดพลาดเชิงความหมาย`,`ตรวจเฉพาะรูปคำตอบไม่ตรวจโจทย์เดิม`,`กำลังดี`),n(8,`ลำดับการเรียนรู้ที่เหมาะกับ${e.title}คือข้อใด`,[e.subtopics.join(` → `),`${e.subtopics[2]} → ข้ามคำจำกัดความ → ${e.subtopics[0]}`,`ทำโจทย์ท้าทายก่อนรู้ศัพท์`,`จำสูตรก่อนรู้ว่าหาปริมาณใด`],0,`เริ่มจาก ${e.subtopics[0]} แล้วค่อยเชื่อมไป ${e.subtopics[1]} และ ${e.subtopics[2]}`,`เริ่มจากขั้นตอนโดยไม่สร้างความหมาย`,`กำลังดี`),n(9,`ข้อความใดอธิบายเหตุผลทางคณิตศาสตร์ของ${e.title}ได้ดีที่สุด`,[e.summary,`เพราะสูตรนี้ใช้ในหนังสือเท่านั้น`,`เพราะคำตอบที่ยาวกว่าถูกเสมอ`,`เพราะภาพดูเหมือนจะเป็นเช่นนั้น`],0,e.summary,`อ้างแหล่งที่มาหรือภาพแทนเหตุผล`,`ท้าทาย`),n(10,`โจทย์ท้าทายเรื่อง${e.title}ควรเริ่มด้วยการทำสิ่งใด`,[`กำหนดข้อมูล สิ่งที่ต้องหา และเงื่อนไขก่อนเลือกวิธี`,`ลองสูตรทุกสูตรพร้อมกัน`,`ตัดข้อมูลที่ดูยากออก`,`เดาคำตอบแล้วปรับโจทย์ให้เข้ากัน`],0,`การกำหนดข้อมูลและ ${e.condition} ทำให้เลือกวิธีที่ตรวจสอบได้`,`แก้เชิงสัญลักษณ์โดยไม่รู้ความหมายของตัวแปร`,`ท้าทาย`)]}var Gs=[...Vs,...Hs].map(e=>({...e,progress:0,lessons:Us(e),exercises:Ws(e)})),Ks=Gs.flatMap(e=>e.exercises),qs=Gs.filter(e=>e.educationLevel===`มัธยมศึกษาตอนต้น`),Js=Gs.filter(e=>e.educationLevel===`มัธยมศึกษาตอนปลาย`);Gs.length,qs.length,Js.length,Gs.reduce((e,t)=>e+t.lessons.length,0),Ks.length;function Ys(e,t,n,r){return e.offerings.filter(e=>(t===`ทั้งหมด`||e.grade===t)&&(n===`ทั้งหมด`||e.semester===n)&&(r===`ทั้งหมด`||e.course===r))}function Xs(e){return`${e.grade} • ${e.semester.replace(`ภาคเรียนที่ `,`ภาค `)} • ${e.course.replace(`คณิตศาสตร์`,``)}`}var Zs=`question-bank-v1`,Qs=`commumathy-exercise-session-v2`,$s=`commumathy-exercise-sessions-v2`,ec=`commumathy-exercise-recent-v2`,tc=`commumathy-exercise-performance-v2`,nc=`2026-10-14T00:00:00.000Z`;function rc(e){let t=2166136261;for(let n=0;n<e.length;n+=1)t^=e.charCodeAt(n),t=Math.imul(t,16777619);return t>>>0}function ic(e){let t=e>>>0;return()=>{t+=1831565813;let e=Math.imul(t^t>>>15,1|t);return e^=e+Math.imul(e^e>>>7,61|e),((e^e>>>14)>>>0)/4294967296}}function ac(e,t,n){return Math.floor(e()*(n-t+1))+t}function oc(e,t){let n=Math.abs(e),r=Math.abs(t);for(;r;)[n,r]=[r,n%r];return n||1}function sc(e,t){if(t===0)return`undefined`;let n=oc(e,t),r=e/n,i=t/n;return i===1?String(r):`${r}/${i}`}function cc(e){return Number.isInteger(e)?String(e):e.toFixed(2).replace(/0+$/,``).replace(/\.$/,``)}function lc(e,t,n){let r=[];for(let n of[e,...t])n&&!r.includes(n)&&r.push(n);for(;r.length<4;)r.push(`ตัวเลือก ${r.length+1}`);let i=r.slice(0,4).map((e,t)=>t),a=ic(n);for(let e=i.length-1;e>0;--e){let t=Math.floor(a()*(e+1));[i[e],i[t]]=[i[t],i[e]]}let o=i.map(e=>r[e]);return{choices:o,correctChoice:o.indexOf(e)}}function uc(e){let t=e.toLowerCase();return t.includes(`probability`)||t.includes(`counting`)||t.includes(`random`)?`probability`:t.includes(`statistics`)||t.includes(`qualitative`)||t.includes(`quantitative`)?`statistics`:t.includes(`pythagorean`)||t.includes(`geometric`)||t.includes(`figure`)||t.includes(`prism`)||t.includes(`cylinder`)||t.includes(`transformation`)||t.includes(`congruence`)||t.includes(`parallel`)||t.includes(`similar`)||t.includes(`circle`)||t.includes(`pyramid`)||t.includes(`cone`)||t.includes(`sphere`)?`geometry`:t.includes(`trig`)?`trigonometry`:t.includes(`calculus`)?`calculus`:t.includes(`sequence`)||t.includes(`series`)?`sequence`:t.includes(`function`)||t.includes(`graph`)||t.includes(`relation`)||t.includes(`analytic`)?`function`:t.includes(`exponent`)?`exponents`:t.includes(`logic`)||t.includes(`sets`)?`logic`:t.includes(`equation`)||t.includes(`inequality`)||t.includes(`integer`)||t.includes(`fraction`)||t.includes(`ratio`)||t.includes(`polynomial`)||t.includes(`factoring`)||t.includes(`real-numbers`)||t.includes(`complex`)||t.includes(`matrix`)||t.includes(`vector`)?`algebra`:`concept`}function dc(e){return e<30?`easy`:e<75?`intermediate`:e<105?`advanced`:`challenge`}function fc(e){return[`concept`,`procedure`,`application`,`interpretation`,`error-analysis`,`reasoning`][e%6]}function pc(e,t,n,r){let i=ic(n),a=ac(i,2,9),o=ac(i,-8,12),s=ac(i,-12,12),c=a*o+s,l=t%6,u=`ข้อ ${t+1}: `;if(l===0||l===3){let e=String(o),t=lc(e,[String(o+1),String(o-1),String(c)],n+1);return{prompt:`${u}จงแก้สมการ ${a}x ${s>=0?`+`:`-`} ${Math.abs(s)} = ${c} แล้วหาค่า x`,...t,correctAnswer:e,hint:`กำจัดค่าคงที่ออกก่อน แล้วจึงหารด้วย ${a} ทั้งสองข้าง`,solution:`${a}x ${s>=0?`+`:`-`} ${Math.abs(s)} = ${c} → ${a}x = ${c-s} → x = ${o}`,parameters:{a,b:s,c,x:o}}}if(l===1){let e=`ลบ ${s} ออกจากทั้งสองข้าง`,t=lc(e,[`หารด้วย ${a} ก่อน`,`เปลี่ยน ${s} เป็น ${-s} เฉพาะข้างเดียว`,`คูณทั้งสองข้างด้วย ${s}`],n+2);return{prompt:`${u}สำหรับสมการ ${a}x ${s>=0?`+`:`-`} ${Math.abs(s)} = ${c} ขั้นตอนแรกที่ถูกต้องที่สุดคือข้อใด?`,...t,correctAnswer:e,hint:`กำจัดพจน์ที่ไม่มีตัวแปร x ออกก่อน`,solution:`ลบ ${s} ออกจากทั้งสองข้าง จะได้ ${a}x = ${c-s}`,parameters:{a,b:s,c}}}if(l===2){let e=ac(i,20,80),t=ac(i,4,12),r=ac(i,3,9),a=e+t*r,o=String(r),s=lc(o,[String(r+1),String(r-1),String(a-e)],n+3);return{prompt:`${u}บริการหนึ่งคิดค่าบริการเริ่มต้น ${e} บาท และคิดเพิ่มชิ้นละ ${t} บาท ถ้าจ่ายทั้งหมด ${a} บาท แสดงว่าซื้อสินค้ากี่ชิ้น?`,...s,correctAnswer:o,hint:`ตั้งสมการ ${e} + ${t}n = ${a}`,solution:`${e} + ${t}n = ${a} → ${t}n = ${a-e} → n = ${r}`,parameters:{base:e,rate:t,units:r,total:a}}}if(l===4){let e=`${a}x ${s>=0?`+`:`-`} ${Math.abs(s)} = ${c}`,t=lc(e,[`${a}x = ${c}`,`x ${s>=0?`+`:`-`} ${Math.abs(s)} = ${c}`,`${a}x ${s>=0?`-`:`+`} ${Math.abs(s)} = ${c}`],n+4);return{prompt:`${u}สมการใดแทน “จำนวน x จำนวนหนึ่ง เมื่อคูณด้วย ${a} แล้วบวกด้วย ${s} จะเท่ากับ ${c}”?`,...t,correctAnswer:e,hint:`ถอดความการดำเนินการตามลำดับที่เกิดขึ้น`,solution:`คูณ x ด้วย ${a} แล้วบวกด้วย ${s} จึงได้สมการ ${e}`,parameters:{a,b:s,c}}}let d=`ใช้การดำเนินการเดียวกันกับทั้งสองข้าง`,f=lc(d,[`ย้ายพจน์โดยไม่เปลี่ยนเครื่องหมาย`,`หารด้วยศูนย์`,`ละเลยสัมประสิทธิ์ของ x`],n+5);return{prompt:`${u}นักเรียนคนหนึ่งเปลี่ยนสมการ ${a}x ${s>=0?`+`:`-`} ${Math.abs(s)} = ${c} โดยเปลี่ยนเฉพาะข้างซ้ายเพียงข้างเดียว หลักการใดที่ถูกละเลย?`,...f,correctAnswer:d,hint:`สมการเปรียบเสมือนตาชั่งที่สมดุล`,solution:`ความเท่ากันจะยังคงเป็นจริงก็ต่อเมื่อใช้การดำเนินการที่สมมูลกับทั้งสองข้างของสมการ`,parameters:{a,b:s,c,subtopic:r}}}function mc(e,t,n){ic(n);let r=[[3,4,5],[5,12,13],[6,8,10],[8,15,17]],i=r[t%r.length],a=t+1,[o,s,c]=i.map(e=>e*a),l=t%5;if(e.id.includes(`pythagorean`)||l<2){let e=l%2==0?String(c):String(o);return{prompt:l%2==0?`สามเหลี่ยมมุมฉากมีด้านประกอบมุมฉากยาว ${o} และ ${s} หน่วย จงหาความยาวด้านตรงข้ามมุมฉาก`:`สามเหลี่ยมมุมฉากมีด้านตรงข้ามมุมฉากยาว ${c} หน่วย และด้านประกอบมุมฉากด้านหนึ่งยาว ${s} หน่วย จงหาความยาวด้านประกอบมุมฉากอีกด้าน`,...lc(e,l%2==0?[String(c+1),String(c-1),String(o+s)]:[String(o+1),String(s-1),String(c-s)],n+10),correctAnswer:e,hint:`ใช้ทฤษฎีบทพีทาโกรัส a² + b² = c²`,solution:l%2==0?`${o}² + ${s}² = ${o*o+s*s} = ${c}² ดังนั้น c = ${c}`:`${c}² - ${s}² = ${c*c-s*s} = ${o}² ดังนั้นด้านที่เหลือยาว ${o}`,parameters:{a:o,b:s,c}}}let u=4+t%19,d=3+Math.floor(t/19)%12,f=String(u*d),p=lc(f,[String(2*(u+d)),String(u+d),String(u*d+d)],n+11);return{prompt:`รูปสี่เหลี่ยมผืนผ้ามีความยาว ${u} ซม. และความกว้าง ${d} ซม. มีพื้นที่เท่าใด?`,...p,correctAnswer:f,hint:`พื้นที่รูปสี่เหลี่ยมผืนผ้า = ความยาว × ความกว้าง`,solution:`พื้นที่ = ${u} × ${d} = ${f} ตร.ซม.`,parameters:{length:u,width:d}}}function hc(e,t){let n=2+e%12,r=2+e*3%13,i=1+e*5%8,a=n+r+i,o=e%3==0?n:e%3==1?r:i,s=e%3==0?`สีแดง`:e%3==1?`สีน้ำเงิน`:`สีเขียว`,c=sc(o,a),l=lc(c,[sc(o+1,a),sc(a-o,a),sc(o,a+1)],t+20);return{prompt:`ในถุงมีลูกแก้วสีแดง ${n} ลูก สีน้ำเงิน ${r} ลูก และสีเขียว ${i} ลูก ความน่าจะเป็นที่จะสุ่มหยิบได้ลูกแก้ว${s}เป็นเท่าใด?`,...l,correctAnswer:c,hint:`จำนวนผลลัพธ์ที่สนใจ ÷ จำนวนผลลัพธ์ทั้งหมด`,solution:`มีลูกแก้วที่สนใจ ${o} ลูก จากทั้งหมด ${a} ลูก ดังนั้น P(${s}) = ${o}/${a} = ${c}`,parameters:{red:n,blue:r,green:i,total:a,target:o}}}function gc(e,t){let n=ic(t),r=2+e%30,i=[r,r+ac(n,1,7),r+ac(n,5,12),r+ac(n,13,22),r+ac(n,23,35)].sort((e,t)=>e-t),a=i.reduce((e,t)=>e+t,0)/i.length,o=e%3,s=o===0?cc(a):String(o===1?i[2]:i[4]-i[0]),c=o===0?`ค่าเฉลี่ย`:o===1?`มัธยฐาน`:`พิสัย`,l=lc(s,[String(i[0]),String(i[1]),String(i[4])],t+30);return{prompt:`จงหา${c}ของข้อมูลชุด {${i.join(`, `)}}`,...l,correctAnswer:s,hint:o===0?`นำค่าทั้งหมดมารวมกันแล้วหารด้วย 5`:o===1?`ใช้ค่าที่อยู่ตรงกลางหลังจากเรียงข้อมูลแล้ว`:`ค่าสูงสุด − ค่าต่ำสุด`,solution:o===0?`ค่าเฉลี่ย = (${i.join(` + `)}) ÷ 5 = ${s}`:o===1?`ค่าที่อยู่ตรงกลางหลังเรียงข้อมูลคือ ${s}`:`พิสัย = ${i[4]} − ${i[0]} = ${s}`,parameters:{values:i}}}function _c(e,t){let n=[2,3,5][Math.floor(e/64)%3],r=2+e%8,i=1+Math.floor(e/8)%8,a=String(n**(r+i)),o=lc(a,[String(n**r+n**i),String(n**(r*i)),String(n**(r+i-1))],t+40);return{prompt:`จงเขียน ${n}^${r} × ${n}^${i} ให้อยู่ในรูปเลขยกกำลังอย่างง่าย`,...o,correctAnswer:a,hint:`เมื่อฐานเท่ากัน ให้นำเลขชี้กำลังมาบวกกัน`,solution:`${n}^${r} × ${n}^${i} = ${n}^(${r}+${i}) = ${a}`,parameters:{base:n,exponentA:r,exponentB:i}}}function vc(e,t){let n=ic(t),r=ac(n,-5,7)||2,i=ac(n,-8,8),a=ac(n,-4,8),o=r*a+i,s=e%3,c=`ข้อ ${e+1}: `,l=String(s===0?o:s===1?r:i);return{prompt:s===0?`${c}กำหนด f(x) = ${r}x ${i>=0?`+`:`-`} ${Math.abs(i)} จงหา f(${a})`:s===1?`${c}ความชันของสมการ y = ${r}x ${i>=0?`+`:`-`} ${Math.abs(i)} มีค่าเท่าใด?`:`${c}จุดตัดแกน y ของสมการ y = ${r}x ${i>=0?`+`:`-`} ${Math.abs(i)} มีค่าเท่าใด?`,...lc(l,[String(o+1),String(r+1),String(i+1)],t+50),correctAnswer:l,hint:s===0?`แทนค่า x ที่กำหนดลงในฟังก์ชัน`:`เทียบกับรูปทั่วไป y = mx + b`,solution:s===0?`f(${a}) = ${r}(${a}) ${i>=0?`+`:`-`} ${Math.abs(i)} = ${o}`:s===1?`ในรูป y = mx + b ค่า m คือความชัน ดังนั้น m = ${r}`:`ในรูป y = mx + b ค่า b คือจุดตัดแกน y ดังนั้น b = ${i}`,parameters:{m:r,b:i,x:a,y:o}}}function yc(e,t){let n=ic(t),r=ac(n,-8,12),i=ac(n,2,9),a=ac(n,5,12),o=String(r+(a-1)*i),s=lc(o,[String(r+a*i),String(r+(a-2)*i),String(r*a+i)],t+60);return{prompt:`ลำดับที่ ${e+1}: ${r}, ${r+i}, ${r+2*i}, … พจน์ที่ ${a} มีค่าเท่าใด?`,...s,correctAnswer:o,hint:`ใช้สูตร aₙ = a₁ + (n − 1)d`,solution:`aₙ = ${r} + (${a}−1)(${i}) = ${o}`,parameters:{first:r,difference:i,n:a}}}function bc(e,t){let n=e%3==0?{angle:30,value:`1/2`}:e%3==1?{angle:45,value:`√2/2`}:{angle:60,value:`√3/2`},r=Math.floor(e/3)+1,i=n.value,a=lc(i,[`0`,`1`,`√3`,`2`],t+70);return{prompt:`สามเหลี่ยมมุมฉากมีด้านตรงข้ามมุมฉากยาว ${2*r} หน่วย และมีมุม ${n.angle}° จงหาค่า sin(${n.angle}°)`,...a,correctAnswer:i,hint:`ใช้ตารางค่าไซน์ของมุมพิเศษ`,solution:`อัตราส่วนของด้านไม่เปลี่ยนเมื่อขยายสเกล ดังนั้น sin(${n.angle}°) = ${i}`,parameters:{angle:n.angle,scale:r}}}function xc(e,t){let n=2+e%4,r=1+Math.floor(e/4)%10,i=1+Math.floor(e/40)%5,a=String(i*n*r**(n-1)),o=lc(a,[String(i*r**n),String((n-1)*r),String(i*n+r)],t+80);return{prompt:`กำหนด f(x) = ${i}x^${n} จงหาค่า f'(${r})`,...o,correctAnswer:a,hint:`หาอนุพันธ์ axⁿ จะได้ an·xⁿ⁻¹ แล้วแทนค่า x`,solution:`f'(x) = ${i*n}x^${n-1} ดังนั้น f'(${r}) = ${i*n}(${r})^${n-1} = ${a}`,parameters:{coefficient:i,power:n,x:r}}}function Sc(e,t){let n=e%2==0,r=n?`จริง`:`เท็จ`,i=2+2*(Math.floor(e/2)%20),a=n?`ถ้า n เป็นจำนวนคู่ แล้ว n² เป็นจำนวนคู่ (เช่น n = ${i})`:`ถ้า n² เป็นจำนวนคู่ แล้ว n เป็นจำนวนคี่ (ลอง n = ${i})`,o=lc(r,[`จริง`,`เท็จ`,`ไม่สามารถสรุปได้`],t+90);return{prompt:`กรณีที่ ${e+1}: จงประเมินประพจน์ “${a}” ว่าเป็นจริงหรือเท็จ`,...o,correctAnswer:r,hint:n?`เขียน n = 2k แล้วแทนค่า`:`ลองใช้ตัวอย่างจำนวนคู่ที่ให้ไว้เพื่อหักล้าง`,solution:n?`ถ้า n = 2k แล้ว n² = 4k² = 2(2k²) ซึ่งเป็นจำนวนคู่`:`ประพจน์นี้เป็นเท็จ: n = ${i} ให้กำลังสองเป็นจำนวนคู่ แต่ n ไม่ใช่จำนวนคี่`,parameters:{truth:n,witness:i}}}function Cc(e,t,n){let r=ic(n),i=e.subtopics[t%e.subtopics.length]??e.title,a=[`ตัวอย่างที่ทำไว้แล้ว`,`แผนภาพ`,`ตารางค่า`,`โจทย์ปัญหาเชิงบริบท`,`โครงร่างการพิสูจน์`,`ผลจากเครื่องคิดเลข`,`กราฟ`,`กรณีขอบเขต`,`คำอธิบายของเพื่อน`,`นิพจน์เชิงสัญลักษณ์`,`ชุดข้อมูล`,`แบบจำลอง`][t%12],o=t%2==0?`ใช้บทนิยามของ ${i} และตรวจ ${e.condition}`:`แปลข้อมูลที่โจทย์กำหนดให้เป็น ${e.focus}`,s=lc(o,[`เลือกสูตรโดยไม่ตรวจเงื่อนไข`,`เปลี่ยนโจทย์ให้คำนวณง่ายขึ้น`,`สมมติว่าค่าทุกค่าถูกต้อง`],n+100);return{prompt:`ใน${a}ที่ ${t+1} เมื่อต้องแก้ปัญหาเกี่ยวกับ ${i} วิธีใดน่าเชื่อถือทางคณิตศาสตร์ที่สุด?`,...s,correctAnswer:o,hint:`เริ่มจากบทนิยามของ ${i}`,solution:`${o} เพราะเงื่อนไขสำคัญคือ ${e.condition}`,parameters:{blueprint:t,subtopic:i,chapterId:e.id,token:ac(r,10,99)}}}function wc(e,t,n,r,i){switch(r){case`algebra`:return pc(e,t,n,i);case`geometry`:return mc(e,t,n);case`probability`:return hc(t,n);case`statistics`:return gc(t,n);case`exponents`:return _c(t,n);case`function`:return vc(t,n);case`sequence`:return yc(t,n);case`trigonometry`:return bc(t,n);case`calculus`:return xc(t,n);case`logic`:return Sc(t,n);default:return Cc(e,t,n)}}function Tc(e,t){return`${e.id}|${t.grade}|${t.semester}|${t.course}`}var Ec=Gs.flatMap((e,t)=>e.offerings.map((n,r)=>({unitKey:Tc(e,n),unitId:`unit-${t+1}-${r+1}`,chapter:e,offering:n})));function Dc(e,t){let n=e.chapter.subtopics[t%e.chapter.subtopics.length]??e.chapter.title,r=dc(t),i=fc(t),a=uc(e.chapter.id),o=`qb-${e.unitId}-${String(t+1).padStart(3,`0`)}`,s=wc(e.chapter,t,rc(`${o}:prepared`),a,n);return{id:o,unitKey:e.unitKey,chapterId:e.chapter.id,subtopicId:n,gradeLevel:e.offering.grade,semester:e.offering.semester,courseType:e.offering.course,difficulty:r,questionType:i,...s,parametersSchema:Object.keys(s.parameters),parameterConstraints:[`ตัวส่วนทุกตัวไม่เป็นศูนย์`,`ค่าที่สุ่มได้ถูกตรวจสอบก่อนนำไปใช้`,`ตัวเลือกไม่ซ้ำกันและมีคำตอบที่ถูกต้องเพียงข้อเดียว`],generationStrategy:`ชุดคำสั่ง ${a} กับพิมพ์เขียวที่ออกแบบไว้ชุดที่ ${t%12+1}`,answerStrategy:`คำนวณคำตอบจากค่าพารามิเตอร์ที่บันทึกไว้ แล้วเทียบกับดัชนีตัวเลือกที่ผู้เรียนเลือก`,solutionStrategy:`แสดงวิธีทำแบบกำหนดได้จากพารามิเตอร์ชุดเดียวกับที่ใช้สร้างโจทย์`,answerFormat:`multiple-choice`,tags:[e.chapter.id,n,a,r,i],verificationStatus:`deterministically-validated`,createdAt:nc,updatedAt:nc,generator:a,baseIndex:t,provenance:`prepared-seed`}}var Oc=Ec.flatMap(e=>Array.from({length:120},(t,n)=>Dc(e,n)));function kc(e,t=rc(`${e.id}:variant`)){let n=wc(Ec.find(t=>t.unitKey===e.unitKey)?.chapter??Gs.find(t=>t.id===e.chapterId)??Gs[0],e.baseIndex+t%17,t,e.generator,e.subtopicId);return{instanceId:`${e.id}:instance:${t}`,preparedQuestionId:e.id,variantId:`${e.generator}-${t}`,seed:t,params:n.parameters,...n,difficulty:e.difficulty,questionType:e.questionType,chapterId:e.chapterId,subtopicId:e.subtopicId}}function Ac(e,t){if(typeof window>`u`)return t;try{return JSON.parse(window.localStorage.getItem(e)??``)}catch{return t}}function jc(e,t){typeof window<`u`&&window.localStorage.setItem(e,JSON.stringify(t))}function Mc(e,t){let n=e.slice(),r=ic(t);for(let e=n.length-1;e>0;--e){let t=Math.floor(r()*(e+1));[n[e],n[t]]=[n[t],n[e]]}return n}function Nc(e){return Oc.filter(t=>t.chapterId===e.chapterId&&t.gradeLevel===e.grade&&t.semester===e.semester&&(e.course===`all`||t.courseType===e.course)&&(e.subtopic===`all`||t.subtopicId===e.subtopic)&&(e.difficulty===`all`||t.difficulty===e.difficulty))}function Pc(e){return Ac(ec,{})[e]??[]}function Fc(e,t){let n=Ac(ec,{});n[e]=[...t,...n[e]??[]].filter((e,t,n)=>n.indexOf(e)===t).slice(0,240),jc(ec,n)}function Ic(e){return[e.chapterId,e.grade,e.semester,e.course,e.subtopic,e.difficulty].join(`|`)}function Lc(e,t){let n=Nc(e),r=new Set(Pc(Ic(e))),i=Mc(n.filter(e=>!r.has(e.id)),t),a=Mc(n,t+1),o=[];for(let t of i){if(o.length>=e.count)break;o.push(t)}let s=!1;if(o.length<e.count){s=i.length<e.count;let t=0;for(;o.length<e.count&&a.length>0;)o.push(a[t%a.length]),t+=1}return Fc(Ic(e),o.map(e=>e.id)),{selected:o,poolRestarted:s}}function Rc(){return rc(`${Date.now()}-${Math.random()}-${performance.now()}`)}function zc(e,t=`local-demo-user`){let n=Rc(),{selected:r,poolRestarted:i}=Lc(e,n),a=r.map((e,t)=>kc(e,rc(`${n}:${e.id}:${t}`))),o=new Date().toISOString(),s={id:`session-${Date.now()}-${n}`,userId:t,filters:e,questions:a,responses:a.map(()=>({selectedChoice:null,submitted:!1,correct:null})),currentIndex:0,score:0,startedAt:o,updatedAt:o,seed:n,engineVersion:Zs,poolRestarted:i};return Vc(s),s}function Bc(e=`local-demo-user`){let t=Ac(Qs,null);return t?.userId===e&&t.engineVersion===Zs?t:null}function Vc(e){let t={...e,updatedAt:new Date().toISOString()};jc(Qs,t),jc($s,[...Ac($s,[]).filter(e=>e.id!==t.id),t].slice(-20))}function Hc(e,t){return t!==null&&t===e.correctChoice}function Uc(e,t){let n=e.responses.flatMap((e,t)=>e.submitted&&!e.correct?[t]:[]);if(n.length===0)return null;if(t===`new`)return zc({...e.filters,count:[10,20,30,50].find(e=>e>=n.length)??10},e.userId);let r=n.map(t=>e.questions[t]),i={...e,id:`session-retry-${Date.now()}`,questions:r,responses:r.map(()=>({selectedChoice:null,submitted:!1,correct:null})),currentIndex:0,score:0,startedAt:new Date().toISOString(),completedAt:void 0};return Vc(i),i}function Wc(e){jc(tc,[...Ac(tc,[]),e].slice(-500))}function Gc(e,t=`local-demo-user`){let n=Ac(tc,[]).filter(n=>n.userId===t&&n.chapterId===e),r=n.filter(e=>e.correct).length;return{attempts:n.length,correct:r,accuracy:n.length?Math.round(r/n.length*100):0}}function Kc(e){return Ec.map(t=>{let n=e.filter(e=>e.unitKey===t.unitKey),r={easy:0,intermediate:0,advanced:0,challenge:0},i=new Set,a=0,o=0;for(let e of n){r[e.difficulty]+=1;let t=e.prompt.trim().toLowerCase();i.has(t)&&(a+=1),i.add(t),e.prompt&&e.solution&&e.choices.length===4&&e.correctChoice>=0&&e.correctChoice<e.choices.length&&e.choices[e.correctChoice]===e.correctAnswer&&(o+=1)}return{unitKey:t.unitKey,chapterId:t.chapter.id,chapterTitle:t.chapter.title,grade:t.offering.grade,semester:t.offering.semester,course:t.offering.course,preparedCount:n.length,validCount:o,duplicatePrompts:a,difficultyCounts:r,complete:n.length>=120&&o===n.length&&a===0}})}function qc(e=Oc){let t=Kc(e),n=[],r=[],i=new Set;for(let t of e)i.has(t.id)&&r.push(t.id),i.add(t.id),(!t.chapterId||!t.subtopicId||!t.prompt||t.choices.length!==4||t.choices.some(e=>!e)||t.choices[t.correctChoice]!==t.correctAnswer||t.verificationStatus!==`deterministically-validated`)&&n.push(t.id);for(let e of t)e.complete||n.push(`coverage:${e.unitKey}`);return{ok:n.length===0&&r.length===0,totalPrepared:e.length,totalUnits:t.length,completeUnits:t.filter(e=>e.complete).length,invalidRecords:n,duplicateRecords:r,coverage:t}}Kc(Oc);var Jc=qc(Oc),Yc=e((e=>{var t=Symbol.for(`react.transitional.element`),n=Symbol.for(`react.fragment`);function r(e,n,r){var i=null;if(r!==void 0&&(i=``+r),n.key!==void 0&&(i=``+n.key),`key`in n)for(var a in r={},n)a!==`key`&&(r[a]=n[a]);else r=n;return n=r.ref,{$$typeof:t,type:e,key:i,ref:n===void 0?null:n,props:r}}e.Fragment=n,e.jsx=r,e.jsxs=r})),X=e(((e,t)=>{t.exports=Yc()}))(),Xc={all:`ทุกระดับ`,easy:`พื้นฐาน`,intermediate:`กำลังดี`,advanced:`ท้าทาย`,challenge:`โจทย์คิดวิเคราะห์`};function Zc(e){let t=e??Gs[0],n=t.offerings[0];return{chapterId:t.id,grade:n?.grade??`ทั้งหมด`,semester:n?.semester??`ทั้งหมด`,course:n?.course??`all`,subtopic:`all`,difficulty:`all`,count:10}}function Qc(e){let t=e.offerings[0];return{chapterId:e.id,grade:t?.grade??`ทั้งหมด`,semester:t?.semester??`ทั้งหมด`,course:t?.course??`all`,subtopic:`all`,difficulty:`all`,count:10}}function $c({progress:e,setProgress:t,onLesson:n,activeChapter:r}){let[i,a]=(0,l.useState)(()=>Zc(r)),[o,s]=(0,l.useState)(()=>{let e=Bc();return e&&(!r||e.filters.chapterId===r.id)?e:null}),[c,u]=(0,l.useState)(!1),[d,f]=(0,l.useState)(!1);(0,l.useEffect)(()=>{r&&(a(e=>e.chapterId===r.id?e:Qc(r)),s(e=>e?.filters.chapterId===r.id?e:null))},[r]);let p=Gs.find(e=>e.id===i.chapterId)??Gs[0],m=(0,l.useMemo)(()=>Array.from(new Set(p.offerings.map(e=>e.grade))),[p]),h=(0,l.useMemo)(()=>Array.from(new Set(p.offerings.filter(e=>i.grade===`ทั้งหมด`||e.grade===i.grade).map(e=>e.semester))),[p,i.grade]),g=(0,l.useMemo)(()=>Array.from(new Set(p.offerings.filter(e=>(i.grade===`ทั้งหมด`||e.grade===i.grade)&&(i.semester===`ทั้งหมด`||e.semester===i.semester)).map(e=>e.course))),[p,i.grade,i.semester]),_=(0,l.useMemo)(()=>Nc(i).length,[i]),v=o?.questions[o.currentIndex],y=o?.responses[o.currentIndex],b=Gc(i.chapterId),x=o?.responses.filter(e=>e.submitted).length??0,S=o?.responses.filter(e=>e.submitted&&!e.correct).length??0,C=e=>{a(t=>({...t,...e})),s(null),u(!1),f(!1)},ee=()=>{let e=zc(i);s(e),u(!1),f(!1)},w=()=>{if(!o||!v||!y||y.selectedChoice===null||y.submitted)return;let e=Hc(v,y.selectedChoice),n=o.responses.slice();n[o.currentIndex]={...y,submitted:!0,correct:e,answeredAt:new Date().toISOString()};let r={...o,responses:n,score:o.score+ +!!e,updatedAt:new Date().toISOString()};Vc(r),s(r),Wc({userId:r.userId,sessionId:r.id,questionId:v.preparedQuestionId,chapterId:v.chapterId,subtopicId:v.subtopicId,difficulty:v.difficulty,questionType:v.questionType,correct:e,answeredAt:new Date().toISOString()}),t(t=>({...t,exerciseCorrect:t.exerciseCorrect+ +!!e,exerciseTotal:t.exerciseTotal+1,xp:t.xp+(e?15:5)}))},T=e=>{if(!o||!y||y.submitted)return;let t=o.responses.slice();t[o.currentIndex]={...y,selectedChoice:e};let n={...o,responses:t,updatedAt:new Date().toISOString()};Vc(n),s(n)},E=e=>{if(!o||e<0||e>=o.questions.length)return;let t={...o,currentIndex:e,updatedAt:new Date().toISOString()};Vc(t),s(t),u(!!t.responses[e]?.hintShown),f(!1)},D=()=>{if(!o||!y)return;u(!0);let e=o.responses.slice();e[o.currentIndex]={...y,hintShown:!0};let t={...o,responses:e,updatedAt:new Date().toISOString()};Vc(t),s(t)},te=()=>{if(o){if(o.currentIndex===o.questions.length-1){let e={...o,completedAt:new Date().toISOString(),updatedAt:new Date().toISOString()};Vc(e),s(e)}else E(o.currentIndex+1)}},ne=e=>{if(!o)return;let t=Uc(o,e);t&&(s(t),u(!1),f(!1))};if(o?.completedAt){let e=o.questions.length?Math.round(o.score/o.questions.length*100):0;return(0,X.jsxs)(`div`,{className:`question-bank-page`,children:[(0,X.jsxs)(`div`,{className:`qb-page-heading`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`span`,{className:`qb-eyebrow`,children:[(0,X.jsx)(ds,{size:13}),` สรุปการฝึก`]}),(0,X.jsx)(`h1`,{children:`ทำได้ดีมาก คุณฝึกครบแล้ว`}),(0,X.jsx)(`p`,{children:`คำถามและคำตอบของเซสชันนี้ถูกบันทึกไว้แล้ว สามารถทบทวนหรือสร้างชุดใหม่ได้ทันที`})]}),(0,X.jsxs)(`button`,{className:`outline-button`,onClick:()=>s(null),children:[(0,X.jsx)($a,{size:16}),` กลับไปตั้งค่า`]})]}),(0,X.jsxs)(`div`,{className:`qb-summary-card`,children:[(0,X.jsxs)(`div`,{className:`qb-summary-score`,children:[(0,X.jsxs)(`div`,{className:`qb-score-ring`,children:[(0,X.jsxs)(`strong`,{children:[e,`%`]}),(0,X.jsx)(`span`,{children:`ความถูกต้อง`})]}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{className:`qb-kicker`,children:p.title}),(0,X.jsxs)(`h2`,{children:[o.score,` / `,o.questions.length,` ข้อถูก`]}),(0,X.jsx)(`p`,{children:o.poolRestarted?`ชุดนี้ใช้คำถามจากพูลซ้ำหลังจากคำถามที่เข้าเงื่อนไขหมดแล้ว`:`ระบบหลีกเลี่ยงคำถามฐานที่เพิ่งทำไปแล้วให้เรียบร้อย`})]})]}),(0,X.jsxs)(`div`,{className:`qb-summary-stats`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:x}),(0,X.jsx)(`span`,{children:`ตอบแล้ว`})]}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:S}),(0,X.jsx)(`span`,{children:`ควรทบทวน`})]}),(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`strong`,{children:[`+`,o.score*15+(o.questions.length-o.score)*5]}),(0,X.jsx)(`span`,{children:`XP ที่ได้`})]})]})]}),(0,X.jsxs)(`div`,{className:`qb-summary-actions`,children:[(0,X.jsxs)(`button`,{className:`primary-button`,onClick:ee,children:[(0,X.jsx)(ls,{size:16}),` สร้างชุดใหม่`]}),S>0&&(0,X.jsxs)(X.Fragment,{children:[(0,X.jsxs)(`button`,{className:`outline-button`,onClick:()=>ne(`same`),children:[(0,X.jsx)($o,{size:16}),` ทำข้อที่ผิดซ้ำ`]}),(0,X.jsxs)(`button`,{className:`outline-button`,onClick:()=>ne(`new`),children:[(0,X.jsx)(ds,{size:16}),` สุ่มโจทย์ใหม่จากทักษะเดิม`]})]})]})]})}return(0,X.jsxs)(`div`,{className:`question-bank-page`,children:[(0,X.jsxs)(`div`,{className:`qb-page-heading`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`span`,{className:`qb-eyebrow`,children:[(0,X.jsx)(ds,{size:13}),` คลังโจทย์คณิตศาสตร์`]}),(0,X.jsx)(`h1`,{children:r?`แบบฝึกหัด: ${p.title}`:`แบบฝึกหัดแบบสุ่มและคงที่`}),(0,X.jsx)(`p`,{children:`เลือกบท ระดับ และจำนวนข้อ ระบบจะสุ่มโจทย์จากคลังที่ตรวจสอบคำตอบแล้ว และบันทึกเซสชันไว้เมื่อรีเฟรชหน้า`})]}),(0,X.jsxs)(`div`,{className:`qb-heading-actions`,children:[(0,X.jsxs)(`span`,{className:`qb-engine-badge`,children:[(0,X.jsx)(`span`,{className:`status-dot`}),` Engine v1`]}),o&&(0,X.jsxs)(`button`,{className:`outline-button`,onClick:()=>s(null),children:[(0,X.jsx)(ls,{size:15}),` ตั้งค่าใหม่`]})]})]}),(0,X.jsxs)(`div`,{className:`qb-layout`,children:[(0,X.jsxs)(`aside`,{className:`qb-sidebar`,children:[(0,X.jsxs)(`div`,{className:`qb-filter-card`,children:[(0,X.jsxs)(`div`,{className:`qb-card-title`,children:[(0,X.jsx)(ps,{size:17}),(0,X.jsx)(`strong`,{children:`ตั้งค่าการฝึก`})]}),(0,X.jsx)(`label`,{children:`บทเรียน`}),(0,X.jsxs)(`div`,{className:`qb-select-wrap`,children:[(0,X.jsxs)(`select`,{value:i.chapterId,onChange:e=>C(Qc(Gs.find(t=>t.id===e.target.value)??Gs[0])),children:[(0,X.jsx)(`option`,{value:``,children:`เลือกบท`}),Gs.map(e=>(0,X.jsx)(`option`,{value:e.id,children:e.title},e.id))]}),(0,X.jsx)(vo,{size:15})]}),(0,X.jsx)(`label`,{children:`ระดับชั้น`}),(0,X.jsx)(`div`,{className:`qb-pill-row`,children:m.map(e=>(0,X.jsx)(`button`,{className:i.grade===e?`active`:``,onClick:()=>C({grade:e,semester:`ทั้งหมด`,course:`all`}),children:e},e))}),(0,X.jsx)(`label`,{children:`ภาคเรียน`}),(0,X.jsx)(`div`,{className:`qb-pill-row`,children:[`ทั้งหมด`,...h].filter((e,t,n)=>n.indexOf(e)===t).map(e=>(0,X.jsx)(`button`,{className:i.semester===e?`active`:``,onClick:()=>C({semester:e}),children:e.replace(`ภาคเรียนที่ `,`ภาค `)},e))}),g.length>1&&(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(`label`,{children:`ประเภทวิชา`}),(0,X.jsxs)(`div`,{className:`qb-pill-row`,children:[(0,X.jsx)(`button`,{className:i.course===`all`?`active`:``,onClick:()=>C({course:`all`}),children:`ทั้งหมด`}),g.map(e=>(0,X.jsx)(`button`,{className:i.course===e?`active`:``,onClick:()=>C({course:e}),children:e.replace(`คณิตศาสตร์`,``)},e))]})]}),(0,X.jsx)(`label`,{children:`หัวข้อย่อย`}),(0,X.jsxs)(`div`,{className:`qb-select-wrap`,children:[(0,X.jsxs)(`select`,{value:i.subtopic,onChange:e=>C({subtopic:e.target.value}),children:[(0,X.jsx)(`option`,{value:`all`,children:`ทุกหัวข้อย่อย`}),p.subtopics.map(e=>(0,X.jsx)(`option`,{value:e,children:e},e))]}),(0,X.jsx)(vo,{size:15})]}),(0,X.jsx)(`label`,{children:`ระดับความยาก`}),(0,X.jsx)(`div`,{className:`qb-difficulty-grid`,children:[`all`,`easy`,`intermediate`,`advanced`,`challenge`].map(e=>(0,X.jsx)(`button`,{className:i.difficulty===e?`active`:``,onClick:()=>C({difficulty:e}),children:Xc[e]},e))}),(0,X.jsx)(`label`,{children:`จำนวนข้อ`}),(0,X.jsx)(`div`,{className:`qb-count-row`,children:[10,20,30,50].map(e=>(0,X.jsx)(`button`,{className:i.count===e?`active`:``,onClick:()=>C({count:e}),children:e},e))}),(0,X.jsxs)(`div`,{className:`qb-availability`,children:[(0,X.jsx)(`strong`,{children:_}),(0,X.jsx)(`span`,{children:`ข้อพร้อมใช้ตามตัวกรอง`})]}),(0,X.jsxs)(`button`,{className:`primary-button qb-start-button`,onClick:ee,children:[(0,X.jsx)(ds,{size:16}),` เริ่มฝึกแบบสุ่ม`]})]}),(0,X.jsxs)(`div`,{className:`qb-session-note`,children:[(0,X.jsx)(wo,{size:17}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`เซสชันคงที่`}),(0,X.jsx)(`p`,{children:`คำถามที่สร้างแล้วจะไม่เปลี่ยนเมื่อรีเฟรช และตอบต่อได้จากอุปกรณ์นี้`})]})]}),(0,X.jsxs)(`div`,{className:`qb-progress-note`,children:[(0,X.jsx)(Ds,{size:16}),(0,X.jsxs)(`span`,{children:[`บทนี้: `,b.attempts?`${b.accuracy}% จาก ${b.attempts} ครั้ง`:`ยังไม่มีประวัติการตอบ`]})]})]}),o?(0,X.jsxs)(`section`,{className:`qb-workspace`,children:[(0,X.jsxs)(`div`,{className:`qb-workspace-top`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`span`,{children:[`ข้อที่ `,o.currentIndex+1,` จาก `,o.questions.length]}),(0,X.jsx)(`div`,{className:`workspace-progress`,children:(0,X.jsx)(`span`,{style:{width:`${x/o.questions.length*100}%`}})})]}),(0,X.jsxs)(`span`,{className:`score-pill`,children:[(0,X.jsx)(Ds,{size:14}),` `,o.score,` ถูก`]})]}),o.poolRestarted&&(0,X.jsxs)(`div`,{className:`qb-restart-notice`,children:[(0,X.jsx)($o,{size:15}),` ตัวกรองนี้มีคำถามพร้อมใช้น้อยกว่าจำนวนที่เลือก ระบบจึงอนุญาตให้คำถามฐานกลับมาได้หลังพูลหมด`]}),v&&y&&(0,X.jsxs)(`div`,{className:`qb-question-card`,children:[(0,X.jsxs)(`div`,{className:`qb-question-meta`,children:[(0,X.jsx)(`span`,{className:`chip chip-indigo`,children:v.subtopicId}),(0,X.jsx)(`span`,{className:`qb-difficulty difficulty-${v.difficulty}`,children:Xc[v.difficulty]}),(0,X.jsx)(`span`,{className:`qb-question-type`,children:v.questionType})]}),(0,X.jsx)(`h2`,{children:v.prompt}),(0,X.jsx)(`div`,{className:`qb-answer-options`,children:v.choices.map((e,t)=>(0,X.jsxs)(`button`,{className:`qb-answer-option ${y.selectedChoice===t?`selected`:``} ${y.submitted&&t===v.correctChoice?`correct`:``} ${y.submitted&&y.selectedChoice===t&&t!==v.correctChoice?`incorrect`:``}`,onClick:()=>T(t),children:[(0,X.jsx)(`span`,{children:String.fromCharCode(65+t)}),(0,X.jsx)(`strong`,{children:e}),y.submitted&&t===v.correctChoice&&(0,X.jsx)(go,{size:17}),y.submitted&&y.selectedChoice===t&&t!==v.correctChoice&&(0,X.jsx)(Ts,{size:17})]},`${e}-${t}`))}),y.submitted&&(0,X.jsxs)(`div`,{className:`qb-feedback ${y.correct?`correct`:`incorrect`}`,children:[(0,X.jsx)(`div`,{className:`qb-feedback-icon`,children:y.correct?(0,X.jsx)(go,{size:18}):(0,X.jsx)(Ts,{size:18})}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:y.correct?`คำตอบถูกต้อง`:`คำตอบที่ถูกคือ ${v.correctAnswer}`}),(0,X.jsx)(`p`,{children:v.solution})]})]}),(0,X.jsxs)(`div`,{className:`qb-question-controls`,children:[(0,X.jsxs)(`button`,{className:`outline-button`,onClick:D,children:[(0,X.jsx)(Lo,{size:16}),` `,c?v.hint:`ดูคำใบ้`]}),y.submitted&&(0,X.jsxs)(`button`,{className:`outline-button`,onClick:()=>f(e=>!e),children:[(0,X.jsx)(so,{size:16}),` `,d?`ซ่อนวิธีทำ`:`ดูวิธีทำเต็ม`]}),(0,X.jsx)(`div`,{className:`qb-control-spacer`}),o.currentIndex>0&&(0,X.jsxs)(`button`,{className:`outline-button`,onClick:()=>E(o.currentIndex-1),children:[(0,X.jsx)($a,{size:16}),` ก่อนหน้า`]}),y.submitted?(0,X.jsxs)(`button`,{className:`primary-button`,onClick:te,children:[o.currentIndex===o.questions.length-1?`ดูสรุป`:`ข้อถัดไป`,` `,(0,X.jsx)(to,{size:16})]}):(0,X.jsxs)(`button`,{className:`primary-button`,disabled:y.selectedChoice===null,onClick:w,children:[`ตรวจคำตอบ `,(0,X.jsx)(go,{size:16})]})]}),d&&(0,X.jsxs)(`div`,{className:`qb-solution-panel`,children:[(0,X.jsx)(`strong`,{children:`คำอธิบาย`}),(0,X.jsx)(`p`,{children:v.solution})]})]}),(0,X.jsxs)(`div`,{className:`qb-questions-nav`,children:[(0,X.jsxs)(`div`,{className:`qb-nav-heading`,children:[(0,X.jsx)(`strong`,{children:`ทบทวนข้อในเซสชัน`}),(0,X.jsxs)(`span`,{children:[x,`/`,o.questions.length,` ตอบแล้ว`]})]}),(0,X.jsx)(`div`,{children:o.responses.map((e,t)=>(0,X.jsx)(`button`,{className:`${t===o.currentIndex?`current`:``} ${e.submitted?e.correct?`correct`:`incorrect`:``}`,onClick:()=>E(t),children:t+1},t))})]}),(0,X.jsxs)(`button`,{className:`related-lesson`,onClick:n,children:[(0,X.jsx)(`div`,{className:`related-icon`,children:(0,X.jsx)(so,{size:17})}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{children:`ทบทวนเนื้อหาที่เกี่ยวข้อง`}),(0,X.jsx)(`strong`,{children:p.title})]}),(0,X.jsx)(to,{size:17})]})]}):(0,X.jsxs)(`section`,{className:`qb-empty-workspace`,children:[(0,X.jsx)(`div`,{className:`qb-empty-icon`,children:(0,X.jsx)(ds,{size:27})}),(0,X.jsx)(`h2`,{children:`พร้อมเริ่มชุดฝึกของคุณแล้ว`}),(0,X.jsx)(`p`,{children:`ระบบจะแยกคำถามฐานออกจากตัวแปรสุ่ม และเก็บคำตอบ/วิธีทำของชุดนี้ไว้ให้กลับมาทบทวนได้`}),(0,X.jsxs)(`div`,{className:`qb-empty-facts`,children:[(0,X.jsxs)(`span`,{children:[(0,X.jsx)(`strong`,{children:Jc.completeUnits}),` / `,Jc.totalUnits,` หน่วยครบ 120 ข้อ`]}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(`strong`,{children:`4`}),` ระดับความยาก`]}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(`strong`,{children:Jc.ok?`ผ่าน`:`ตรวจสอบ`}),` QA คำตอบ`]})]}),(0,X.jsxs)(`button`,{className:`primary-button large-button`,onClick:ee,children:[`เริ่มฝึก `,i.count,` ข้อ `,(0,X.jsx)(to,{size:17})]})]})]})]})}var el={displayName:`พิมพ์ชนก`,grade:`ม.3`,bio:`กำลังฝึกทำความเข้าใจคณิตศาสตร์ให้มากขึ้น`,email:`pimchanok@example.com`,dailyReminder:!0,communityReplies:!0,weeklySummary:!1,showHints:!0,fullScreenMath:!1,difficulty:`กำลังดี`,theme:`ตามระบบ`,fontSize:`มาตรฐาน`},tl={completedLessons:[],bookmarks:[`linear-equation`],xp:840,streak:5,exerciseCorrect:7,exerciseTotal:9},nl=[{role:`tutor`,text:`สวัสดีค่ะ พิมพ์ชนก 👋 วันนี้อยากทำความเข้าใจคณิตศาสตร์เรื่องไหนเป็นพิเศษคะ? ฉันจะช่วยไล่เหตุผลไปทีละขั้น โดยยังไม่เฉลยทันทีถ้าคุณอยากลองคิดเองก่อน`,time:`09:41`},{role:`user`,text:`ช่วยอธิบายว่าทำไมการย้ายข้างในสมการถึงต้องเปลี่ยนเครื่องหมายหน่อยค่ะ`,time:`09:42`},{role:`tutor`,text:`ได้เลยค่ะ ลองนึกถึงสมการเหมือนตาชั่งที่สมดุลนะคะ
+                    please report what input caused this bug`);return n=n.slice(1,-1),{type:`verb`,mode:`text`,body:n,star:r}}Object.prototype.hasOwnProperty.call(Na,t[0])&&!at[this.mode][t[0]]&&(this.settings.strict&&this.mode===`math`&&Gt({strict:this.settings.strict,errorCode:`unicodeTextInMathMode`,errorMsg:`Accented Unicode text character "`+t[0]+`" used in math mode`,report:!0,token:e}),t=Na[t[0]]+t.slice(1));var i=ga.exec(t);i&&(t=t.substring(0,i.index),t===`i`?t=`ı`:t===`j`&&(t=`ȷ`));var a;if(at[this.mode][t]){this.settings.strict&&this.mode===`math`&&Dt.includes(t)&&Gt({strict:this.settings.strict,errorCode:`unicodeTextInMathMode`,errorMsg:`Latin-1/Unicode text character "`+t[0]+`" used in math mode`,report:!0,token:e});var o=at[this.mode][t].group,s=vi.range(e);a=pr(o)?{type:`atom`,mode:this.mode,family:o,loc:s,text:t}:{type:o,mode:this.mode,loc:s,text:t}}else if(t.charCodeAt(0)>=128)this.settings.strict&&(_e(t.charCodeAt(0))?this.mode===`math`&&Gt({strict:this.settings.strict,errorCode:`unicodeTextInMathMode`,errorMsg:`Unicode text character "`+t[0]+`" used in math mode`,report:!0,token:e}):Gt({strict:this.settings.strict,errorCode:`unknownSymbol`,errorMsg:`Unrecognized Unicode character "`+t[0]+`"`+(` (`+t.charCodeAt(0)+`)`),report:!0,token:e})),a={type:`textord`,mode:`text`,loc:vi.range(e),text:t};else return null;if(this.consume(),i)for(var c=0;c<i[0].length;c++){var l=i[0][c];if(!Ma[l])throw new d(`Unknown accent ' `+l+`'`,e);var u=Ma[l][this.mode]||Ma[l].text;if(!u)throw new d(`Accent `+l+` unsupported in `+this.mode+` mode`,e);a={type:`accent`,mode:this.mode,loc:vi.range(e),label:u,isStretchy:!1,isShifty:!0,base:a}}return a}};Pa.endOfExpression=new Set([`}`,`\\endgroup`,`\\end`,`\\right`,`&`]);var Fa=function(e,t){if(!(typeof e==`string`||e instanceof String))throw TypeError(`KaTeX can only parse string typed expression`);var n=new Pa(e,t);delete n.gullet.macros.current[`\\df@tag`];var r=n.parse();if(delete n.gullet.macros.current[`\\current@color`],delete n.gullet.macros.current[`\\color`],n.gullet.macros.get(`\\df@tag`)){if(!t.displayMode)throw new d(`\\tag works only in display equations`);r=[{type:`tag`,mode:`text`,body:r,tag:n.subparse([new yi(`\\df@tag`)])}]}return r};typeof document<`u`&&document.compatMode!==`CSS1Compat`&&typeof console<`u`&&console.warn(`Warning: KaTeX doesn't work in quirks mode. Make sure your website has a suitable doctype.`);var Ia=function(e,t){return Ra(e,t).toMarkup()},La=function(e,t,n){if(n.throwOnError||!(e instanceof d))throw e;var r=V([`katex-error`],[new Ke(t)]);return r.setAttribute(`title`,e.toString()),r.setAttribute(`style`,`color:`+n.errorColor),r},Ra=function(e,t){var n=new w(t);try{return nr(Fa(e,n),e,n)}catch(t){return La(t,e,n)}},za=e=>e?.replace(/([a-z0-9])([A-Z])/g,`$1-$2`).toLowerCase();function Ba(e,t,n=[]){if(t==null)throw Error(`[lucide]: iconNode is required when icon name is used`);return{name:za(e),size:24,node:t,...n.length>0?{aliases:n}:{}}}var Va=e=>{let t=``,n=!1;for(let r of e)r===`-`||r===`_`||r<=` `?n=t.length>0:(t.length===0?t+=r.toLowerCase():t+=n?r.toUpperCase():r,n=!1);return t},Ha=e=>{let t=Va(e);return t.charAt(0).toUpperCase()+t.slice(1)},Ua=(...e)=>e.filter((e,t,n)=>!!e&&e.trim()!==``&&n.indexOf(e)===t).join(` `).trim(),Wa={xmlns:`http://www.w3.org/2000/svg`,width:24,height:24,viewBox:`0 0 24 24`,fill:`none`,stroke:`currentColor`,"stroke-width":2,"stroke-linecap":`round`,"stroke-linejoin":`round`};function Ga(e){return e!=null}function Ka(e,t={}){let n=t.attributeNames??{},r=e=>n[e]??e,i=e.size??e.width??Wa.width,a=e.size??e.height??Wa.height,o=e.aliases?.filter(e=>typeof e==`string`&&e.trim()!==``).map(e=>`lucide-${e}`)??[],s=[...e.name?[`lucide-${e.name}`]:[],...o],c=t.className?.split(` `).filter(Boolean)??[],l=t.includeDefaultClasses===!1?Ua(...c):Ua(`lucide`,...s,...c),u=t.absoluteStrokeWidth?Number(t.strokeWidth??Wa[`stroke-width`])*Number(e.size??e.width??Wa.width)/Number(t.size??t.width??Wa.width):t.strokeWidth??Wa[`stroke-width`];return[`svg`,{...Object.entries(Wa).reduce((e,[t,n])=>(e[r(t)]=n,e),{}),...`color`in t&&t.color&&{[r(`stroke`)]:t.color},...`size`in t&&Ga(t.size)&&{[r(`width`)]:t.size,[r(`height`)]:t.size},...`width`in t&&Ga(t.width)&&{[r(`width`)]:t.width},...`height`in t&&Ga(t.height)&&{[r(`height`)]:t.height},[r(`stroke-width`)]:u,...l&&{[r(`class`)]:l},[r(`viewBox`)]:`0 0 ${i} ${a}`,...t.hasA11yProp===!1?{[r(`aria-hidden`)]:`true`}:{},...`attributes`in t&&t.attributes},e.node.map(e=>{let[n,i,a]=e,o=t.nonScalingStroke?{[r(`vector-effect`)]:`non-scaling-stroke`,...i}:i;return a?[n,o,a]:[n,o]})]}function qa(e,t={}){return Ka(e,{...t,attributeNames:{...t.attributeNames,class:`className`,"stroke-width":`strokeWidth`,"stroke-linecap":`strokeLinecap`,"stroke-linejoin":`strokeLinejoin`,"vector-effect":`vectorEffect`}})}var Ja=e=>{for(let t in e)if(t.startsWith(`aria-`)||t===`role`||t===`title`)return!0;return!1},Ya=(0,l.createContext)({}),Xa=()=>(0,l.useContext)(Ya),Za=(0,l.forwardRef)(({color:e,size:t,width:n,height:r,strokeWidth:i,absoluteStrokeWidth:a,nonScalingStroke:o,className:s=``,children:c,iconNode:u=[],icon:d={node:u,aliases:[],size:24},...f},p)=>{let{size:m=24,strokeWidth:h=2,absoluteStrokeWidth:g=!1,nonScalingStroke:_=!1,color:v=`currentColor`,className:y=``}=Xa()??{},b=!!c||Ja(f),[x,S,C=[]]=qa(d,{color:e??v,width:n??t??m,height:r??t??m,strokeWidth:i??h,absoluteStrokeWidth:a??g,nonScalingStroke:o??_,className:Ua(y,s),hasA11yProp:b,attributes:f});return(0,l.createElement)(x,{ref:p,...S},[...C.map(([e,t])=>(0,l.createElement)(e,t)),...Array.isArray(c)?c:[c]])});function J(e,t=[],n=[]){let r=typeof e==`string`?Ba(e,t,n):e,i=(0,l.forwardRef)(({className:e,...t},n)=>(0,l.createElement)(Za,{ref:n,icon:r,className:e,...t}));return r.name&&(i.displayName=Ha(r.name)),i}var Qa={name:`arrow-left`,size:24,node:[[`path`,{d:`m12 19-7-7 7-7`,key:`1l729n`}],[`path`,{d:`M19 12H5`,key:`x3x0zl`}]]};Qa.node;var $a=J(Qa),eo={name:`arrow-right`,size:24,node:[[`path`,{d:`M5 12h14`,key:`1ays0h`}],[`path`,{d:`m12 5 7 7-7 7`,key:`xquz4c`}]]};eo.node;var to=J(eo),no={name:`award`,size:24,node:[[`path`,{d:`m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526`,key:`1yiouv`}],[`circle`,{cx:`12`,cy:`8`,r:`6`,key:`1vp47v`}]]};no.node;var ro=J(no),io={name:`bell`,size:24,node:[[`path`,{d:`M10.268 21a2 2 0 0 0 3.464 0`,key:`vwvbt9`}],[`path`,{d:`M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326`,key:`11g9vi`}]]};io.node;var ao=J(io),oo={name:`book-open`,size:24,node:[[`path`,{d:`M12 5v16`,key:`1f6ucr`}],[`path`,{d:`M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z`,key:`1fyvmf`}]]};oo.node;var so=J(oo),co={name:`bookmark-check`,size:24,node:[[`path`,{d:`M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z`,key:`oz39mx`}],[`path`,{d:`m9 10 2 2 4-4`,key:`1gnqz4`}]]};co.node;var lo=J(co),uo={name:`bookmark`,size:24,node:[[`path`,{d:`M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z`,key:`oz39mx`}]]};uo.node;var fo=J(uo),po={name:`bot`,size:24,node:[[`path`,{d:`M12 8V4H8`,key:`hb8ula`}],[`rect`,{width:`16`,height:`12`,x:`4`,y:`8`,rx:`2`,key:`enze0r`}],[`path`,{d:`M2 14h2`,key:`vft8re`}],[`path`,{d:`M20 14h2`,key:`4cs60a`}],[`path`,{d:`M15 13v2`,key:`1xurst`}],[`path`,{d:`M9 13v2`,key:`rq6x2g`}]]};po.node;var mo=J(po),ho={name:`check`,size:24,node:[[`path`,{d:`M20 6 9 17l-5-5`,key:`1gmf2c`}]]};ho.node;var go=J(ho),_o={name:`chevron-down`,size:24,node:[[`path`,{d:`m6 9 6 6 6-6`,key:`qrunsl`}]]};_o.node;var vo=J(_o),yo={name:`chevron-right`,size:24,node:[[`path`,{d:`m9 18 6-6-6-6`,key:`mthhwq`}]]};yo.node;var bo=J(yo),xo={name:`circle-question-mark`,size:24,node:[[`circle`,{cx:`12`,cy:`12`,r:`10`,key:`1mglay`}],[`path`,{d:`M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3`,key:`1u773s`}],[`path`,{d:`M12 17h.01`,key:`p32p05`}]],aliases:[`help-circle`,`circle-help`]};xo.node;var So=J(xo),Co={name:`clock-3`,size:24,node:[[`circle`,{cx:`12`,cy:`12`,r:`10`,key:`1mglay`}],[`path`,{d:`M12 6v6h4`,key:`135r8i`}]]};Co.node;var wo=J(Co),To={name:`ellipsis`,size:24,node:[[`circle`,{cx:`12`,cy:`12`,r:`1`,key:`41hilf`}],[`circle`,{cx:`19`,cy:`12`,r:`1`,key:`1wjl8i`}],[`circle`,{cx:`5`,cy:`12`,r:`1`,key:`1pcz8c`}]],aliases:[`more-horizontal`]};To.node;var Eo=J(To),Do={name:`flame`,size:24,node:[[`path`,{d:`M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4`,key:`1slcih`}]]};Do.node;var Oo=J(Do),ko={name:`graduation-cap`,size:24,node:[[`path`,{d:`M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z`,key:`j76jl0`}],[`path`,{d:`M22 10v6`,key:`1lu8f3`}],[`path`,{d:`M6 12.5V16a6 3 0 0 0 12 0v-3.5`,key:`1r8lef`}]]};ko.node;var Ao=J(ko),jo={name:`house`,size:24,node:[[`path`,{d:`M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8`,key:`5wwlr5`}],[`path`,{d:`M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z`,key:`r6nss1`}]],aliases:[`home`]};jo.node;var Mo=J(jo),No={name:`image-plus`,size:24,node:[[`path`,{d:`M16 5h6`,key:`1vod17`}],[`path`,{d:`M19 2v6`,key:`4bpg5p`}],[`path`,{d:`M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5`,key:`1ue2ih`}],[`path`,{d:`m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21`,key:`1xmnt7`}],[`circle`,{cx:`9`,cy:`9`,r:`2`,key:`af1f0g`}]]};No.node;var Po=J(No),Y={name:`info`,size:24,node:[[`circle`,{cx:`12`,cy:`12`,r:`10`,key:`1mglay`}],[`path`,{d:`M12 16v-4`,key:`1dtifu`}],[`path`,{d:`M12 8h.01`,key:`e9boi3`}]]};Y.node;var Fo=J(Y),Io={name:`lightbulb`,size:24,node:[[`path`,{d:`M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5`,key:`1gvzjb`}],[`path`,{d:`M9 18h6`,key:`x1upvd`}],[`path`,{d:`M10 22h4`,key:`ceow96`}]]};Io.node;var Lo=J(Io),Ro={name:`list-checks`,size:24,node:[[`path`,{d:`M13 5h8`,key:`a7qcls`}],[`path`,{d:`M13 12h8`,key:`h98zly`}],[`path`,{d:`M13 19h8`,key:`c3s6r1`}],[`path`,{d:`m3 17 2 2 4-4`,key:`1jhpwq`}],[`path`,{d:`m3 7 2 2 4-4`,key:`1obspn`}]]};Ro.node;var zo=J(Ro),Bo={name:`menu`,size:24,node:[[`path`,{d:`M4 5h16`,key:`1tepv9`}],[`path`,{d:`M4 12h16`,key:`1lakjw`}],[`path`,{d:`M4 19h16`,key:`1djgab`}]]};Bo.node;var Vo=J(Bo),Ho={name:`message-circle`,size:24,node:[[`path`,{d:`M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719`,key:`1sd12s`}]]};Ho.node;var Uo=J(Ho),Wo={name:`palette`,size:24,node:[[`path`,{d:`M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z`,key:`e79jfc`}],[`circle`,{cx:`13.5`,cy:`6.5`,r:`.5`,fill:`currentColor`,key:`1okk4w`}],[`circle`,{cx:`17.5`,cy:`10.5`,r:`.5`,fill:`currentColor`,key:`f64h9f`}],[`circle`,{cx:`6.5`,cy:`12.5`,r:`.5`,fill:`currentColor`,key:`qy21gx`}],[`circle`,{cx:`8.5`,cy:`7.5`,r:`.5`,fill:`currentColor`,key:`fotxhn`}]]};Wo.node;var Go=J(Wo),Ko={name:`paperclip`,size:24,node:[[`path`,{d:`m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551`,key:`1miecu`}]]};Ko.node;var qo=J(Ko),Jo={name:`pen-line`,size:24,node:[[`path`,{d:`M13 21h8`,key:`1jsn5i`}],[`path`,{d:`M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z`,key:`1a8usu`}]],aliases:[`edit-3`]};Jo.node;var Yo=J(Jo),Xo={name:`plus`,size:24,node:[[`path`,{d:`M5 12h14`,key:`1ays0h`}],[`path`,{d:`M12 5v14`,key:`s699le`}]]};Xo.node;var Zo=J(Xo),Qo={name:`rotate-ccw`,size:24,node:[[`path`,{d:`M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8`,key:`1357e3`}],[`path`,{d:`M3 3v5h5`,key:`1xhq8a`}]]};Qo.node;var $o=J(Qo),es={name:`save`,size:24,node:[[`path`,{d:`M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z`,key:`1c8476`}],[`path`,{d:`M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7`,key:`1ydtos`}],[`path`,{d:`M7 3v4a1 1 0 0 0 1 1h7`,key:`t51u73`}]]};es.node;var ts=J(es),ns={name:`search`,size:24,node:[[`path`,{d:`m21 21-4.34-4.34`,key:`14j7rj`}],[`circle`,{cx:`11`,cy:`11`,r:`8`,key:`4ej97u`}]]};ns.node;var rs=J(ns),is={name:`send`,size:24,node:[[`path`,{d:`M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z`,key:`1ffxy3`}],[`path`,{d:`m21.854 2.147-10.94 10.939`,key:`12cjpa`}]]};is.node;var as=J(is),os={name:`settings`,size:24,node:[[`path`,{d:`M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915`,key:`1i5ecw`}],[`circle`,{cx:`12`,cy:`12`,r:`3`,key:`1v7zrd`}]]};os.node;var ss=J(os),cs={name:`shuffle`,size:24,node:[[`path`,{d:`m18 14 4 4-4 4`,key:`10pe0f`}],[`path`,{d:`m18 2 4 4-4 4`,key:`pucp1d`}],[`path`,{d:`M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-8.6a4 4 0 0 1 3.3-1.7H22`,key:`1ailkh`}],[`path`,{d:`M2 6h1.972a4 4 0 0 1 3.6 2.2`,key:`km57vx`}],[`path`,{d:`M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45`,key:`os18l9`}]]};cs.node;var ls=J(cs),us={name:`sparkles`,size:24,node:[[`path`,{d:`M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z`,key:`1s2grr`}],[`path`,{d:`M20 2v4`,key:`1rf3ol`}],[`path`,{d:`M22 4h-4`,key:`gwowj6`}],[`circle`,{cx:`4`,cy:`20`,r:`2`,key:`6kqj1y`}]],aliases:[`stars`]};us.node;var ds=J(us),fs={name:`target`,size:24,node:[[`circle`,{cx:`12`,cy:`12`,r:`10`,key:`1mglay`}],[`circle`,{cx:`12`,cy:`12`,r:`6`,key:`1vlfrh`}],[`circle`,{cx:`12`,cy:`12`,r:`2`,key:`1c9p78`}]]};fs.node;var ps=J(fs),ms={name:`thumbs-up`,size:24,node:[[`path`,{d:`M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z`,key:`emmmcr`}],[`path`,{d:`M7 10v12`,key:`1qc93n`}]]};ms.node;var hs=J(ms),gs={name:`trophy`,size:24,node:[[`path`,{d:`M10 14.66V17a1 1 0 0 1-1 1 2 2 0 0 0-2 2v2`,key:`pwuv1l`}],[`path`,{d:`M14 14.66V17a1 1 0 0 0 1 1 2 2 0 0 1 2 2v2`,key:`1y54w1`}],[`path`,{d:`M17.916 10H19.5A2.5 2.5 0 0 0 22 7.5V5a1 1 0 0 0-1-1h-3`,key:`e30mpu`}],[`path`,{d:`M4 22h16`,key:`57wxv0`}],[`path`,{d:`M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z`,key:`1mhfuq`}],[`path`,{d:`M6.084 10H4.5A2.5 2.5 0 0 1 2 7.5V5a1 1 0 0 1 1-1h3`,key:`i0yafy`}]]};gs.node;var _s=J(gs),vs={name:`upload`,size:24,node:[[`path`,{d:`M12 3v12`,key:`1x0j5s`}],[`path`,{d:`m17 8-5-5-5 5`,key:`7q97r8`}],[`path`,{d:`M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4`,key:`ih7n3h`}]]};vs.node;var ys=J(vs),bs={name:`user-round`,size:24,node:[[`circle`,{cx:`12`,cy:`8`,r:`5`,key:`1hypcn`}],[`path`,{d:`M20 21a8 8 0 0 0-16 0`,key:`rfgkzh`}]],aliases:[`user-2`]};bs.node;var xs=J(bs),Ss={name:`users`,size:24,node:[[`path`,{d:`M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2`,key:`1yyitq`}],[`path`,{d:`M16 3.128a4 4 0 0 1 0 7.744`,key:`16gr8j`}],[`path`,{d:`M22 21v-2a4 4 0 0 0-3-3.87`,key:`kshegd`}],[`circle`,{cx:`9`,cy:`7`,r:`4`,key:`nufk8`}]]};Ss.node;var Cs=J(Ss),ws={name:`x`,size:24,node:[[`path`,{d:`M18 6 6 18`,key:`1bl5f8`}],[`path`,{d:`m6 6 12 12`,key:`d8bk6v`}]]};ws.node;var Ts=J(ws),Es={name:`zap`,size:24,node:[[`path`,{d:`M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z`,key:`1v7up4`}]]};Es.node;var Ds=J(Es),Os=[{id:`linear-equation`,title:`สมการเชิงเส้นตัวแปรเดียว`,subtitle:`แกะสมการทีละขั้น เข้าใจที่มาของคำตอบ`,grade:`ม.1`,subject:`พีชคณิต`,level:`พื้นฐาน`,duration:`25 นาที`,progress:0,color:`indigo`,icon:`x=`,objectives:[`แก้สมการเชิงเส้นตัวแปรเดียวได้อย่างเป็นขั้นตอน`,`อธิบายเหตุผลของการย้ายข้างและตรวจคำตอบได้`],prerequisite:`การคำนวณจำนวนเต็มและสมบัติการเท่ากัน`,sections:[`รู้จักสมการ`,`หลักการรักษาสมดุล`,`ตัวอย่างการแก้สมการ`,`ข้อผิดพลาดที่พบบ่อย`,`ลองทำด้วยตัวเอง`],formula:`2x + 3 = 11 \\Rightarrow 2x = 8 \\Rightarrow x = 4`,description:`สมการคือประโยคสัญลักษณ์ที่บอกว่าปริมาณสองข้างเท่ากัน เราจะแก้สมการโดยรักษาความสมดุลของทั้งสองข้างไว้เสมอ`},{id:`pythagorean`,title:`ทฤษฎีบทพีทาโกรัส`,subtitle:`มองเห็นความสัมพันธ์ของด้านในสามเหลี่ยมมุมฉาก`,grade:`ม.2`,subject:`เรขาคณิต`,level:`กำลังดี`,duration:`32 นาที`,progress:0,color:`teal`,icon:`△`,objectives:[`ใช้ทฤษฎีบทพีทาโกรัสหาความยาวด้านที่ไม่ทราบค่า`,`ตรวจสอบว่าสามเหลี่ยมเป็นสามเหลี่ยมมุมฉากได้`],prerequisite:`การยกกำลังสองและการหารากที่สอง`,sections:[`สามเหลี่ยมมุมฉาก`,`ที่มาของสูตร`,`การหาด้านที่ไม่รู้จัก`,`โจทย์ประยุกต์`],formula:`a^2 + b^2 = c^2`,description:`ในสามเหลี่ยมมุมฉาก กำลังสองของด้านประกอบมุมฉากรวมกันเท่ากับกำลังสองของด้านตรงข้ามมุมฉาก`},{id:`linear-function`,title:`ฟังก์ชันเชิงเส้นและกราฟ`,subtitle:`เปลี่ยนสมการให้เป็นภาพ และอ่านความหมายจากกราฟ`,grade:`ม.3`,subject:`ฟังก์ชัน`,level:`กำลังดี`,duration:`40 นาที`,progress:0,color:`amber`,icon:`↗`,objectives:[`อธิบายความหมายของความชันและจุดตัดแกน`,`เขียนกราฟจากสมการเชิงเส้นได้`],prerequisite:`คู่อันดับและการอ่านกราฟบนระนาบพิกัด`,sections:[`ความสัมพันธ์และฟังก์ชัน`,`ความชัน`,`จุดตัดแกน`,`การอ่านกราฟจากสถานการณ์`],formula:`y = mx + b`,description:`ฟังก์ชันเชิงเส้นแสดงความสัมพันธ์ที่เปลี่ยนแปลงในอัตราคงที่ ความชันบอกว่า y เปลี่ยนไปมากน้อยเพียงใดเมื่อ x เพิ่มขึ้นหนึ่งหน่วย`},{id:`probability`,title:`ความน่าจะเป็นเบื้องต้น`,subtitle:`คาดการณ์เหตุการณ์ด้วยพื้นที่ของผลลัพธ์`,grade:`ม.3`,subject:`สถิติและความน่าจะเป็น`,level:`พื้นฐาน`,duration:`28 นาที`,progress:0,color:`rose`,icon:`½`,objectives:[`ระบุแซมเปิลสเปซและเหตุการณ์ได้`,`คำนวณความน่าจะเป็นของเหตุการณ์อย่างง่าย`],prerequisite:`การนับจำนวนและเศษส่วน`,sections:[`ผลลัพธ์ที่เป็นไปได้`,`เหตุการณ์`,`สูตรความน่าจะเป็น`,`ฝึกคิดจากสถานการณ์จริง`],formula:`P(A) = \\frac{n(A)}{n(S)}`,description:`ความน่าจะเป็นเป็นตัวเลขระหว่าง 0 ถึง 1 ที่บอกว่าเหตุการณ์หนึ่งมีโอกาสเกิดขึ้นมากน้อยเพียงใด`}],ks=[{id:`ex-1`,topic:`สมการเชิงเส้น`,prompt:`ถ้า 3x - 5 = 16 แล้ว x มีค่าเท่าใด?`,choices:[`5`,`7`,`11`,`63`],correct:1,explanation:`บวก 5 ทั้งสองข้างได้ 3x = 21 จากนั้นหารด้วย 3 จึงได้ x = 7`,hint:`ทำให้พจน์ที่ไม่มี x หายไปก่อน โดยบวก 5 ทั้งสองข้าง`},{id:`ex-2`,topic:`สมการเชิงเส้น`,prompt:`ข้อใดอธิบายการเปลี่ยนจาก 2x + 4 = 14 เป็น 2x = 10 ได้ถูกต้องที่สุด?`,choices:[`ย้าย 4 ไปอีกข้างแล้วเปลี่ยนเครื่องหมาย`,`ลบ 4 จากทั้งสองข้างของสมการ`,`หารทั้งสองข้างด้วย 4`,`ตัด 4 ออกจากสมการ`],correct:1,explanation:`การลบ 4 จากทั้งสองข้างรักษาความเท่ากันไว้ จึงได้ 2x = 10 อย่างถูกต้อง`,hint:`สมการเหมือนตาชั่ง ถ้าลบด้านหนึ่ง ต้องลบอีกด้านด้วย`},{id:`ex-3`,topic:`การคิดเชิงเหตุผล`,prompt:`ถ้า a = 4 และ b = -2 ค่าของ a² + b คือเท่าใด?`,choices:[`6`,`10`,`14`,`18`],correct:2,explanation:`แทนค่าได้ 4² + (-2) = 16 - 2 = 14 ระวังว่า b เป็นจำนวนลบ`,hint:`คำนวณเลขยกกำลังก่อน แล้วจึงบวกจำนวนลบ`}],As=[{id:`post-1`,title:`ทำไมเวลาย้ายข้างต้องเปลี่ยนเครื่องหมาย?`,body:`หนูจำได้ว่าต้องเปลี่ยนเครื่องหมาย แต่ยังไม่เข้าใจว่าจริง ๆ แล้วเกิดอะไรขึ้น ใครช่วยอธิบายแบบเห็นภาพได้บ้างคะ`,author:`น้องพิม`,initials:`พพ`,tag:`พีชคณิต`,time:`12 นาทีที่แล้ว`,likes:18,comments:6,replies:[`ลองคิดว่าการลบจำนวนเดียวกันออกจากทั้งสองข้าง เหมือนการย้ายข้างเลยครับ ที่เปลี่ยนคือรูปแบบการเขียน ไม่ใช่กฎใหม่`,`ชอบคำอธิบายเรื่องตาชั่งในบทเรียนมากค่ะ`]},{id:`post-2`,title:`มีวิธีจำสูตรพีทาโกรัสให้ไม่สับสนไหม`,body:`เวลาโจทย์ให้ด้านมา 3 ด้าน หนูไม่แน่ใจว่าด้านไหนคือ c ใครมีวิธีสังเกตง่าย ๆ ช่วยแชร์หน่อยค่ะ`,author:`ต้นน้ำ`,initials:`ตน`,tag:`เรขาคณิต`,time:`1 ชั่วโมงที่แล้ว`,likes:12,comments:4,replies:[`ด้านตรงข้ามมุมฉากจะยาวที่สุดเสมอ และเป็นด้าน c ครับ`]},{id:`post-3`,title:`แชร์วิธีอ่านกราฟเส้นตรงแบบไม่ต้องท่อง`,body:`ถ้าเราเห็น y = mx + b ให้มอง m เป็น “ความเร็วในการขึ้นลง” และ b เป็น “จุดเริ่มต้น” จะเชื่อมกับโจทย์ได้ง่ายขึ้นมาก`,author:`ครูเมย์`,initials:`คม`,tag:`ฟังก์ชัน`,time:`เมื่อวาน`,likes:31,comments:9,replies:[`ขอบคุณสำหรับภาพจำดี ๆ ค่ะ`]}],js=[{rank:1,name:`น้องข้าวหอม`,xp:`1,240 XP`,initials:`ขห`,color:`gold`},{rank:2,name:`ต้นน้ำ`,xp:`1,080 XP`,initials:`ตน`,color:`silver`},{rank:3,name:`พิมพ์ชนก`,xp:`840 XP`,initials:`พช`,color:`bronze`},{rank:4,name:`น้องฟ้า`,xp:`760 XP`,initials:`นฟ`,color:`plain`}],Ms=`https://proj14.ipst.ac.th/m4-6-math-adv/m4-math-adv-book1/`,Ns=`https://proj14.ipst.ac.th/m4-6-math-adv/m4-math-adv-book2/`,Ps=`https://proj14.ipst.ac.th/m4-6-math-adv/m5-math-adv-book1/`,Fs=`https://proj14.ipst.ac.th/m4-6-math-adv/m5-math-adv-book2/`,Is=`https://proj14.ipst.ac.th/m4-6-math-adv/m6-math-adv-book1/`,Ls=`https://proj14.ipst.ac.th/m4-6-math-adv/m6-math-adv-book2/`,Rs=`https://uatscimath.ipst.ac.th/ebook-mathematics/item/8379-2560-2551-8379`;function zs(e,t,n,r,i,a,o,s,c,l,u,d,f,p,m=[`จำนวนและการคำนวณพื้นฐาน`]){return{id:e,title:t,englishTitle:n,educationLevel:`มัธยมศึกษาตอนต้น`,category:r,offerings:[{grade:i,semester:a,course:`คณิตศาสตร์พื้นฐาน`,depth:`แกนกลางสำหรับชั้นเรียนทั่วไป`,verified:!0}],subtopics:o,objectives:[`อธิบายแนวคิดเรื่อง${t}ด้วยภาษาของตนเอง`,`เลือกวิธีทำและตรวจสอบคำตอบของ${t}ได้`,`เชื่อมโยง${t}กับสถานการณ์หรือบทเรียนอื่น`],intro:`${t}ช่วยให้ผู้เรียนมองเห็นความสัมพันธ์ของจำนวน รูป หรือข้อมูลอย่างเป็นระบบ ก่อนนำไปใช้แก้ปัญหาในชีวิตจริงและบทเรียนขั้นต่อไป`,prerequisites:m,estimatedMinutes:55,icon:c.slice(0,2),color:e.includes(`geometry`)||e.includes(`circle`)||e.includes(`prism`)||e.includes(`similar`)?`teal`:e.includes(`statistics`)||e.includes(`probability`)?`rose`:`indigo`,formula:c,focus:s,condition:l,exampleProblem:u,exampleSteps:d,exampleAnswer:f,alternative:`ลองอธิบายด้วยภาพ ตาราง เส้นจำนวน หรือการแทนค่ากลับ แทนการใช้สูตรทันที เพื่อให้เห็นว่าเหตุผลของวิธีทำยังคงเดิม`,commonMistake:`สับสนระหว่างขั้นตอนการคำนวณกับเงื่อนไขที่ทำให้วิธีนั้นใช้ได้ จึงควรเขียนสิ่งที่โจทย์กำหนดและตรวจคำตอบทุกครั้ง`,application:p,summary:`${t}มีแก่นสำคัญคือ ${s} เมื่อทำโจทย์ให้ตรวจ ${l} แล้วอธิบายเหตุผลประกอบคำตอบ`,prerequisiteChapterIds:[],sourceStatus:`รายการตามโจทย์ผู้ใช้`,sourceReferences:[]}}function Bs(e,t,n,r,i,a,o,s,c,l,u,d,f,p,m){return{id:e,title:t,englishTitle:n,educationLevel:`มัธยมศึกษาตอนปลาย`,category:r,offerings:i,subtopics:a,objectives:[`อธิบาย${t}และสัญลักษณ์ที่ใช้ได้อย่างถูกต้อง`,`เลือกแบบจำลองหรือวิธีพิสูจน์ที่เหมาะกับโจทย์${t}`,`วิเคราะห์ข้อจำกัดและสื่อสารคำตอบโดยมีเหตุผล`],intro:`${t}เป็นแนวคิดสำคัญของคณิตศาสตร์ระดับมัธยมศึกษาตอนปลาย ช่วยให้ผู้เรียนสร้างแบบจำลอง วิเคราะห์ความสัมพันธ์ และเตรียมพื้นฐานสำหรับการเรียนต่อ`,prerequisites:p,estimatedMinutes:75,progress:0,icon:s.slice(0,2),color:e.includes(`statistics`)||e.includes(`probability`)||e.includes(`random`)?`rose`:e.includes(`trigonometric`)||e.includes(`vector`)?`teal`:e.includes(`counting`)||e.includes(`sequence`)?`amber`:`indigo`,formula:s,focus:o,condition:c,exampleProblem:l,exampleSteps:u,exampleAnswer:d,alternative:`เปรียบเทียบวิธีเชิงสัญลักษณ์กับการแทนค่าหรือการแสดงภาพ แล้วอธิบายว่าแต่ละวิธีมีเงื่อนไขและข้อจำกัดอย่างไร`,commonMistake:`ใช้สูตรโดยไม่ตรวจโดเมน เงื่อนไข หรือความหมายของสัญลักษณ์ ทำให้ได้คำตอบที่คำนวณได้แต่ไม่สอดคล้องกับโจทย์`,application:f,summary:`${t}ควรเรียนจากความหมายไปสู่วิธีทำ โดยย้ำว่า ${o} และต้องตรวจ ${c}`,prerequisiteChapterIds:[],sourceStatus:`อ้างอิงสารบัญ สสวท. และจัดชั้น/ภาคเรียนแบบปรับได้`,sourceReferences:[{label:`คู่มือการใช้หลักสูตรคณิตศาสตร์ ม.ปลาย (สสวท.)`,url:Rs},{label:`สารบัญสื่อ Project 14 (สสวท.)`,url:m}]}}var Vs=[zs(`m1-integers`,`จำนวนเต็ม`,`Integers`,`จำนวนและพีชคณิต`,`ม.1`,`ภาคเรียนที่ 1`,[`เส้นจำนวนและการเปรียบเทียบ`,`การดำเนินการของจำนวนเต็ม`,`สมบัติและการแก้โจทย์`],`ใช้เส้นจำนวนและสมบัติการดำเนินการเพื่ออธิบายจำนวนเต็ม`,`a-b=a+(-b)`,`ต้องรักษาลำดับการดำเนินการและเครื่องหมายของจำนวนลบ`,`รถอยู่ชั้นใต้ดินชั้น -2 แล้วขึ้น 7 ชั้น จะอยู่ชั้นใด`,[`แทนสถานการณ์ด้วย -2+7`,`เดินไปทางขวา 7 หน่วยบนเส้นจำนวน`,`ตำแหน่งสุดท้ายคือ 5`],`ชั้น 5`,`อุณหภูมิ ระดับความสูง คะแนนได้-เสีย และการเงินที่มีหนี้สิน`,[`การนับจำนวนและเส้นจำนวน`]),zs(`m1-geometric-construction`,`การสร้างทางเรขาคณิต`,`Geometric Constructions`,`เรขาคณิต`,`ม.1`,`ภาคเรียนที่ 1`,[`การแบ่งครึ่งส่วนของเส้นตรง`,`การสร้างมุมและเส้นตั้งฉาก`,`การตรวจความถูกต้องของรูปสร้าง`],`ใช้วงเวียนและสันตรงสร้างรูปโดยอาศัยระยะเท่ากันและมุมเท่ากัน`,`AB=AC`,`ต้องใช้เครื่องมือสร้างโดยไม่กะระยะด้วยสายตาและรักษาจุดศูนย์กลางของวงเวียน`,`สร้างเส้นตั้งฉากแบ่งครึ่งส่วนของเส้นตรง AB`,[`กางวงเวียนมากกว่าครึ่งหนึ่งของ AB`,`วาดส่วนโค้งจาก A และ B ให้ตัดกันสองจุด`,`ลากเส้นผ่านจุดตัด จะตั้งฉากและแบ่งครึ่ง AB`],`เส้นที่ลากผ่านจุดตัดของส่วนโค้ง`,`การออกแบบ ลายเส้น งานช่าง และการสร้างรูปที่มีสมมาตร`,[`จุด เส้นตรง มุม และความยาว`]),zs(`m1-exponents`,`เลขยกกำลัง`,`Exponents`,`จำนวนและพีชคณิต`,`ม.1`,`ภาคเรียนที่ 1`,[`ความหมายของเลขยกกำลัง`,`การคูณและหารเลขยกกำลัง`,`การเขียนจำนวนในรูปสัญกรณ์วิทยาศาสตร์`],`มองเลขยกกำลังเป็นการคูณซ้ำและใช้สมบัติอย่างมีเงื่อนไข`,`a^m\\cdot a^n=a^{m+n}`,`ฐานต้องเหมือนกันเมื่อนำเลขชี้กำลังมาบวกกัน`,`จงหาค่า 2^3\\cdot2^4`,[`ฐานเหมือนกัน จึงรวมเลขชี้กำลังได้`,`2^3\\cdot2^4=2^{3+4}`,`2^7=128`],`128`,`การเขียนระยะทาง ข้อมูลดิจิทัล และการเปรียบเทียบการเติบโต`,[`การคูณจำนวนธรรมชาติ`]),zs(`m1-decimals-fractions`,`ทศนิยมและเศษส่วน`,`Decimals and Fractions`,`จำนวนและพีชคณิต`,`ม.1`,`ภาคเรียนที่ 1`,[`ความสัมพันธ์ระหว่างเศษส่วนกับทศนิยม`,`การบวก ลบ คูณ หาร`,`โจทย์ปัญหาและการประมาณค่า`],`เปลี่ยนรูปและคำนวณเศษส่วนหรือทศนิยมโดยคงความหมายของปริมาณเดิม`,`0.75=\\frac{3}{4}`,`ตัวส่วนต้องไม่เป็นศูนย์และควรทำหน่วยหรือส่วนให้สอดคล้องก่อนคำนวณ`,`จงเขียน 0.75 ในรูปเศษส่วนอย่างต่ำ`,[`0.75=75/100`,`หารทั้งเศษและส่วนด้วย 25`,`ได้ 3/4`],`3/4`,`ส่วนลด สูตรอาหาร เวลา และการวัดความยาว`,[`จำนวนเต็มและค่าประจำหลัก`]),zs(`m1-2d-3d-figures`,`รูปเรขาคณิตสองมิติและสามมิติ`,`Two- and Three-Dimensional Geometric Figures`,`เรขาคณิต`,`ม.1`,`ภาคเรียนที่ 1`,[`รูปหลายเหลี่ยมและวงกลม`,`ทรงปริซึมและทรงกระบอก`,`พื้นที่ผิวและปริมาตรเบื้องต้น`],`อ่านสมบัติของรูปและเลือกสูตรพื้นที่หรือปริมาตรให้ตรงกับมิติของรูป`,`V=Bh`,`ต้องแยกหน่วยความยาว พื้นที่ และปริมาตร และระบุฐานกับความสูงให้ถูกต้อง`,`ปริซึมมีพื้นที่ฐาน 12 ตารางเซนติเมตร สูง 5 เซนติเมตร จงหาปริมาตร`,[`ใช้ V=Bh`,`แทน B=12 และ h=5`,`V=60 ลูกบาศก์เซนติเมตร`],`60 ลูกบาศก์เซนติเมตร`,`การออกแบบบรรจุภัณฑ์ การคำนวณพื้นที่ห้อง และการวัดวัสดุ`,[`ความยาว พื้นที่ และหน่วยวัด`]),zs(`m1-linear-equation`,`สมการเชิงเส้นตัวแปรเดียว`,`Linear Equations in One Variable`,`จำนวนและพีชคณิต`,`ม.1`,`ภาคเรียนที่ 2`,[`สมบัติการเท่ากัน`,`การแก้สมการทีละขั้น`,`โจทย์ปัญหาด้วยสมการ`],`รักษาความสมดุลของสองข้างสมการเพื่อหาค่าตัวแปรอย่างมีเหตุผล`,`ax+b=c`,`ต้องทำการดำเนินการเดียวกันกับทั้งสองข้างและตรวจคำตอบด้วยการแทนค่า`,`ถ้า 3x-5=16 แล้ว x เท่ากับเท่าใด`,[`บวก 5 ทั้งสองข้าง ได้ 3x=21`,`หารด้วย 3 ทั้งสองข้าง`,`x=7`],`7`,`การแบ่งเงิน ระยะทาง เวลา และการหาค่าที่ไม่ทราบจากเงื่อนไข`,[`จำนวนเต็มและสมบัติการเท่ากัน`]),zs(`m1-ratio-proportion-percent`,`อัตราส่วน สัดส่วน และร้อยละ`,`Ratios, Proportions, and Percentages`,`จำนวนและพีชคณิต`,`ม.1`,`ภาคเรียนที่ 2`,[`อัตราส่วนและอัตราส่วนเทียบเท่า`,`สัดส่วน`,`ร้อยละและการเปลี่ยนแปลง`],`เปรียบเทียบปริมาณที่มีหน่วยเดียวกันหรือสัมพันธ์กันด้วยอัตราส่วนและร้อยละ`,`a:b=c:d\\Rightarrow ad=bc`,`ต้องจัดหน่วยให้เหมือนกันและระบุว่าร้อยละคิดจากฐานใด`,`เสื้อราคา 800 บาทลด 15% ต้องจ่ายกี่บาท`,[`ส่วนลดคือ 0.15(800)=120`,`ราคาที่จ่ายคือ 800-120`,`จ่าย 680 บาท`],`680 บาท`,`ส่วนลด ภาษี แผนที่ อัตราเร็ว และสูตรผสม`,[`เศษส่วนและทศนิยม`]),zs(`m1-graphs-linear`,`กราฟและความสัมพันธ์เชิงเส้น`,`Graphs and Linear Relationships`,`ฟังก์ชันและกราฟ`,`ม.1`,`ภาคเรียนที่ 2`,[`คู่อันดับและตารางค่า`,`กราฟเส้นตรง`,`การแปลความหมายความชันอย่างง่าย`],`ใช้ตารางและกราฟแสดงความสัมพันธ์ที่เปลี่ยนแปลงอย่างเป็นแบบแผน`,`y=mx+b`,`แกน x และ y ต้องมีสเกลกับหน่วยชัดเจน และจุดต้องสอดคล้องกับคู่ลำดับ`,`กราฟ y=2x+1 เมื่อ x=3 ให้ค่า y เท่าใด`,[`แทน x=3 ในสมการ`,`y=2(3)+1`,`y=7`],`7`,`ค่าใช้จ่ายคงที่กับค่าใช้จ่ายต่อหน่วย และระยะทาง-เวลา`,[`คู่อันดับและสมการเชิงเส้น`]),zs(`m1-statistics-1`,`สถิติ (1)`,`Statistics 1`,`สถิติ`,`ม.1`,`ภาคเรียนที่ 2`,[`ประชากรและกลุ่มตัวอย่าง`,`การเก็บและจัดข้อมูล`,`ตารางและแผนภูมิพื้นฐาน`],`แยกประชากรกับกลุ่มตัวอย่างและนำเสนอข้อมูลให้ตอบคำถามได้ตรงประเด็น`,`\\bar{x}=\\frac{\\sum x}{n}`,`การเลือกตัวอย่างต้องคำนึงถึงความเป็นตัวแทน ไม่สรุปเกินข้อมูลที่เก็บ`,`หาค่าเฉลี่ยของ 4, 6, 7, 7, 11`,[`บวกข้อมูลได้ 35`,`มีข้อมูล 5 ค่า`,`ค่าเฉลี่ย=35/5=7`],`7`,`การสำรวจความชอบ เวลาเดินทาง หรือการอ่านข้อมูลข่าวสาร`,[`การอ่านตารางและการบวกหาร`]),zs(`m2-pythagorean`,`ทฤษฎีบทพีทาโกรัส`,`Pythagorean Theorem`,`เรขาคณิต`,`ม.2`,`ภาคเรียนที่ 1`,[`สามเหลี่ยมมุมฉาก`,`การหาด้านที่ไม่รู้จัก`,`บทกลับของทฤษฎีบท`],`เชื่อมโยงกำลังสองของด้านในสามเหลี่ยมมุมฉากกับระยะทางและการตรวจรูป`,`a^2+b^2=c^2`,`c ต้องเป็นด้านตรงข้ามมุมฉากและยาวที่สุด`,`สามเหลี่ยมมุมฉากมีด้านประกอบมุมฉาก 6 และ 8 หน่วย จงหาด้านตรงข้ามมุมฉาก`,[`c^2=6^2+8^2=36+64`,`c^2=100`,`c=10 เพราะความยาวเป็นบวก`],`10 หน่วย`,`ระยะทางบนแผนที่ ความสูงบันได และงานออกแบบ`,[`การยกกำลังสองและรากที่สอง`]),zs(`m2-real-numbers-intro`,`ความรู้เบื้องต้นเกี่ยวกับจำนวนจริง`,`Introduction to Real Numbers`,`จำนวนและพีชคณิต`,`ม.2`,`ภาคเรียนที่ 1`,[`จำนวนตรรกยะและอตรรกยะ`,`รากที่สอง`,`การประมาณและเปรียบเทียบจำนวนจริง`],`เห็นระบบจำนวนจริงเป็นเส้นต่อเนื่องและแยกจำนวนตรรกยะออกจากอตรรกยะ`,`\\sqrt{2}\\notin\\mathbb{Q}`,`ห้ามตัดรากหรือประมาณค่าจนทำให้ความเท่ากันเปลี่ยนไปโดยไม่ระบุว่าเป็นค่าประมาณ`,`จำนวนใดอยู่ระหว่าง 1.4 และ 1.5 และใกล้ \\sqrt{2} ที่สุด`,[`\\sqrt{2}ประมาณ 1.414`,`1.414 อยู่ระหว่าง 1.4 กับ 1.5`,`จึงเป็นตัวเลือกที่เหมาะที่สุด`],`\\sqrt{2}`,`การวัดที่ไม่ลงตัว เส้นทแยงมุม และการประมาณค่า`,[`เศษส่วน ทศนิยม และเลขยกกำลัง`]),zs(`m2-prisms-cylinders`,`ปริซึมและทรงกระบอก`,`Prisms and Cylinders`,`เรขาคณิต`,`ม.2`,`ภาคเรียนที่ 1`,[`พื้นที่ผิวปริซึม`,`ปริมาตรปริซึม`,`พื้นที่ผิวและปริมาตรทรงกระบอก`],`แยกพื้นที่ฐาน ความสูง และพื้นที่ผิวเพื่อสร้างแบบจำลองปริมาตรของทรง`,`V=Bh\\quad V_{cyl}=\\pi r^2h`,`ความสูงต้องตั้งฉากกับฐาน และพื้นที่ผิวรวมต้องนับทุกหน้า`,`ทรงกระบอก r=3, h=10 ใช้ \\pi=3.14 จงหาปริมาตร`,[`V=\\pi r^2h`,`แทนค่า 3.14(3^2)(10)`,`V=282.6 ลูกบาศก์หน่วย`],`282.6 ลูกบาศก์หน่วย`,`การออกแบบกระป๋อง ถังน้ำ และการคำนวณวัสดุหุ้มผิว`,[`พื้นที่วงกลมและหน่วยวัด`]),zs(`m2-transformations`,`การแปลงทางเรขาคณิต`,`Geometric Transformations`,`เรขาคณิต`,`ม.2`,`ภาคเรียนที่ 1`,[`การเลื่อนขนาน`,`การสะท้อน`,`การหมุนและการย่อขยาย`],`ติดตามตำแหน่งของจุดและสมบัติที่คงเดิมเมื่อรูปถูกแปลง`,`(x,y)\\mapsto(x+a,y+b)`,`ต้องระบุศูนย์หมุน ทิศทาง มุม และอัตราส่วนให้ครบเมื่อโจทย์กำหนด`,`เลื่อนจุด (2,-1) ไปทางซ้าย 3 และขึ้น 4 จะได้จุดใด`,[`x ใหม่=2-3=-1`,`y ใหม่=-1+4=3`,`จุดใหม่คือ (-1,3)`],`(-1,3)`,`การออกแบบลวดลาย แผนที่ และภาพจากพิกัด`,[`ระนาบพิกัดและคู่อันดับ`]),zs(`m2-exponent-properties`,`สมบัติของเลขยกกำลัง`,`Properties of Exponents`,`จำนวนและพีชคณิต`,`ม.2`,`ภาคเรียนที่ 1`,[`เลขชี้กำลังศูนย์และลบ`,`การคูณหารเลขยกกำลัง`,`การแก้ปัญหาด้วยเลขยกกำลัง`],`ใช้กฎเลขยกกำลังโดยตรวจฐานและค่าที่ห้ามเป็นศูนย์`,`a^{-n}=\\frac{1}{a^n}`,`ฐานเดียวกันจึงรวมเลขชี้กำลังได้ แต่ห้ามใช้กฎเดียวกันกับฐานต่างกันโดยไม่แปลงรูป`,`จงทำให้ 3^5/3^2 อยู่ในรูปอย่างง่าย`,[`ฐานเหมือนกันจึงลบเลขชี้กำลัง`,`3^{5-2}=3^3`,`ได้ 27`],`27`,`การเขียนหน่วยขนาดเล็ก การคำนวณเชิงวิทยาศาสตร์ และการเติบโต`,[`เลขยกกำลังเบื้องต้น`]),zs(`m2-polynomials`,`พหุนาม`,`Polynomials`,`จำนวนและพีชคณิต`,`ม.2`,`ภาคเรียนที่ 1`,[`เอกนามและดีกรี`,`การบวกและลบพหุนาม`,`การคูณพหุนาม`],`มองพหุนามเป็นผลรวมของพจน์และจัดรูปโดยรวมพจน์ที่คล้ายกัน`,`P(x)=2x^2-3x+1`,`รวมได้เฉพาะพจน์ที่มีตัวแปรและเลขชี้กำลังเหมือนกัน`,`จงหาผลบวก (2x^2+3x)+(x^2-5x+1)`,[`รวม 2x^2 กับ x^2 ได้ 3x^2`,`รวม 3x กับ -5x ได้ -2x`,`คำตอบคือ 3x^2-2x+1`],`3x^2-2x+1`,`การสร้างสูตรต้นทุน พื้นที่ และแบบจำลองที่มีตัวแปร`,[`เลขยกกำลังและการแจกแจง`]),zs(`m2-statistics-2`,`สถิติ (2)`,`Statistics 2`,`สถิติ`,`ม.2`,`ภาคเรียนที่ 2`,[`แผนภาพจุดและแผนภาพต้น-ใบ`,`ค่ากลางของข้อมูล`,`การเปรียบเทียบการกระจาย`],`เลือกค่ากลางและรูปแบบการนำเสนอให้เหมาะกับชนิดและการกระจายของข้อมูล`,`พิสัย=ค่าสูงสุด-ค่าต่ำสุด`,`ค่าเฉลี่ยอาจถูกค่าผิดปกติดึงให้เปลี่ยนมากกว่ามัธยฐาน`,`ข้อมูล 3, 4, 4, 5, 14 มีค่ามัธยฐานเท่าใด`,[`เรียงข้อมูลแล้ว`,`ค่าตรงกลางของข้อมูล 5 ค่าอยู่ตำแหน่งที่ 3`,`มัธยฐานคือ 4`],`4`,`การเปรียบเทียบคะแนน เวลา หรือราคาโดยไม่มองแค่ค่าเฉลี่ย`,[`สถิติ (1) และการเรียงข้อมูล`]),zs(`m2-congruence`,`ความเท่ากันทุกประการ`,`Congruence`,`เรขาคณิต`,`ม.2`,`ภาคเรียนที่ 2`,[`ความหมายของรูปเท่ากันทุกประการ`,`เกณฑ์ ด้าน-มุม-ด้าน และ ด้าน-ด้าน-ด้าน`,`การใช้ความเท่ากันหาความยาวหรือมุม`],`ใช้การจับคู่จุดและเกณฑ์ความเท่ากันทุกประการเพื่อพิสูจน์สมบัติของรูป`,`SSS\\;SAS\\;ASA`,`ต้องจับคู่ด้านและมุมที่สมนัยกันให้ถูก ไม่สรุปจากภาพเพียงอย่างเดียว`,`สามเหลี่ยมสองรูปมีด้านเท่ากันคู่ต่อคู่ ควรใช้เกณฑ์ใด`,[`ตรวจว่าด้านทั้งสามคู่เท่ากัน`,`เป็นเกณฑ์ด้าน-ด้าน-ด้าน`,`สรุปว่าสามเหลี่ยมเท่ากันทุกประการได้`],`SSS`,`การพิสูจน์ความแข็งแรงของโครงสร้างและการออกแบบชิ้นส่วน`,[`มุม เส้น และสมบัติสามเหลี่ยม`]),zs(`m2-parallel-lines`,`เส้นขนาน`,`Parallel Lines`,`เรขาคณิต`,`ม.2`,`ภาคเรียนที่ 2`,[`มุมแย้งและมุมสมนัย`,`มุมภายในด้านเดียว`,`การพิสูจน์เส้นขนาน`],`ใช้ความสัมพันธ์ของมุมเมื่อเส้นตัดตัดเส้นขนานเพื่อหามุมและให้เหตุผล`,`\\angle_{alternate}=\\angle_{alternate}`,`ต้องระบุเส้นตัดและคู่มุมก่อนใช้สมบัติ และจำว่ามุมภายในด้านเดียวรวม 180 องศา`,`ถ้ามุมแย้งภายในมุมหนึ่ง 65 องศา อีกมุมหนึ่งเท่าใด`,[`เส้นขนานทำให้มุมแย้งภายในเท่ากัน`,`จึงมีขนาดเท่ากับ 65 องศา`,`ไม่ต้องใช้ 180 องศากับคู่นี้`],`65 องศา`,`การอ่านแบบแปลน ถนน รางรถไฟ และการออกแบบโครงสร้าง`,[`การวัดมุมและเส้นตัด`]),zs(`m2-geometric-reasoning`,`การใช้เหตุผลทางเรขาคณิต`,`Geometric Reasoning`,`เรขาคณิต`,`ม.2`,`ภาคเรียนที่ 2`,[`ข้อความคาดการณ์และบทนิยาม`,`เหตุผลแบบนิรนัย`,`การเขียนพิสูจน์เป็นลำดับ`],`แยกข้อเท็จจริง ข้อสรุป และเหตุผลเพื่อสื่อสารการพิสูจน์อย่างเป็นขั้นตอน`,`p\\Rightarrow q`,`ภาพช่วยตั้งข้อสังเกตได้แต่ไม่เพียงพอแทนการพิสูจน์ทั่วไป`,`ถ้า AB=AC และ D เป็นจุดกึ่งกลางของ BC เหตุใด AD จึงเป็นเส้นแบ่งครึ่งมุม`,[`พิจารณา \\triangle ABD และ \\triangle ACD`,`มี AB=AC, BD=DC และ AD ร่วมกัน จึงเท่ากันแบบ SSS`,`มุม BAD และ DAC เท่ากัน`],`เพราะสามเหลี่ยมสองรูปเท่ากันทุกประการ`,`การตรวจแบบก่อสร้าง การแก้โจทย์พิสูจน์ และการอธิบายเหตุผล`,[`ความเท่ากันทุกประการและสมบัติมุม`]),zs(`m2-quadratic-factoring`,`การแยกตัวประกอบของพหุนามดีกรีสอง`,`Factoring Quadratic Polynomials`,`จำนวนและพีชคณิต`,`ม.2`,`ภาคเรียนที่ 2`,[`การดึงตัวร่วม`,`ผลต่างกำลังสอง`,`พหุนามดีกรีสองรูป ax²+bx+c`],`ย้อนกระจายพหุนามเพื่อหาตัวประกอบและใช้ตัวประกอบตรวจคำตอบ`,`x^2+(p+q)x+pq=(x+p)(x+q)`,`ตรวจด้วยการคูณกลับและระวังเครื่องหมายของผลคูณกับผลบวก`,`จงแยกตัวประกอบ x^2+5x+6`,[`หา p,q ที่คูณได้ 6 และบวกได้ 5 คือ 2,3`,`เขียนเป็น (x+2)(x+3)`,`คูณกลับได้ x^2+5x+6`],`(x+2)(x+3)`,`การแก้สมการกำลังสองและการหาขนาดพื้นที่จากแบบจำลอง`,[`การคูณพหุนามและพจน์คล้าย`]),zs(`m3-linear-inequality`,`อสมการเชิงเส้นตัวแปรเดียว`,`Linear Inequalities in One Variable`,`จำนวนและพีชคณิต`,`ม.3`,`ภาคเรียนที่ 1`,[`สัญลักษณ์อสมการ`,`การแก้อสมการ`,`การเขียนคำตอบบนเส้นจำนวน`],`แก้อสมการโดยรักษาทิศทางเครื่องหมายและกลับเครื่องหมายเมื่อคูณหรือหารด้วยจำนวนลบ`,`a<b\\Rightarrow -a>-b`,`เมื่อคูณหรือหารทั้งสองข้างด้วยจำนวนลบ เครื่องหมายต้องกลับทิศ`,`แก้ 2x-3>5`,[`บวก 3 ได้ 2x>8`,`หารด้วย 2 ซึ่งเป็นบวก`,`x>4`],`x>4`,`ข้อจำกัดงบประมาณ ระยะทาง และเกณฑ์ความปลอดภัย`,[`สมการเชิงเส้นและจำนวนลบ`]),zs(`m3-higher-degree-factoring`,`การแยกตัวประกอบของพหุนามที่มีดีกรีสูงกว่าสอง`,`Factoring Polynomials of Degree Higher Than Two`,`จำนวนและพีชคณิต`,`ม.3`,`ภาคเรียนที่ 1`,[`การดึงตัวร่วมและจัดกลุ่ม`,`ผลบวก/ผลต่างกำลังสาม`,`การใช้ตัวประกอบแก้สมการ`],`มองโครงสร้างของพหุนามดีกรีสูงและเลือกวิธีแยกตัวประกอบที่ลดความซับซ้อน`,`x^3-a^3=(x-a)(x^2+ax+a^2)`,`ต้องตรวจว่าทุกพจน์ถูกนำออกมาครบและห้ามตัดตัวประกอบโดยไม่พิจารณาค่าที่ทำให้เป็นศูนย์`,`จงแยกตัวประกอบ x^3-8`,[`มอง 8 เป็น 2^3`,`ใช้ผลต่างกำลังสาม`,`ได้ (x-2)(x^2+2x+4)`],`(x-2)(x^2+2x+4)`,`การแก้สมการและการสร้างแบบจำลองปริมาตร`,[`พหุนามดีกรีสองและเลขยกกำลัง`]),zs(`m3-quadratic-equation`,`สมการกำลังสองตัวแปรเดียว`,`Quadratic Equations in One Variable`,`จำนวนและพีชคณิต`,`ม.3`,`ภาคเรียนที่ 1`,[`การแยกตัวประกอบ`,`การทำกำลังสองสมบูรณ์`,`สูตรกำลังสองและการตรวจราก`],`เลือกวิธีแก้สมการกำลังสองและตรวจว่ารากสอดคล้องกับสมการเดิม`,`x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}`,`ต้องมี a ไม่เท่ากับศูนย์และพิจารณาค่าภายใต้รากที่สอง`,`แก้ x^2-5x+6=0`,[`แยกตัวประกอบเป็น (x-2)(x-3)=0`,`ใช้สมบัติผลคูณเป็นศูนย์`,`x=2 หรือ x=3`],`x=2,3`,`การหาจุดตัดกราฟและปัญหาพื้นที่`,[`การแยกตัวประกอบพหุนามดีกรีสอง`]),zs(`m3-similarity`,`ความคล้าย`,`Similarity`,`เรขาคณิต`,`ม.3`,`ภาคเรียนที่ 1`,[`รูปคล้ายและอัตราส่วนสเกล`,`เกณฑ์มุม-มุม`,`การใช้รูปคล้ายแก้ปัญหา`],`ใช้ความสัมพันธ์ของมุมและอัตราส่วนด้านที่สมนัยกันเพื่อหาความยาวที่ไม่รู้จัก`,`\\frac{AB}{DE}=\\frac{BC}{EF}`,`ต้องจับคู่ด้านสมนัยกันตามมุมที่เท่ากันและใช้สเกลเดียวกันทั้งรูป`,`รูปสามเหลี่ยมคล้ายกันมีอัตราส่วนเล็กต่อใหญ่ 2:3 ถ้าด้านใหญ่ 12 ด้านเล็กเท่าใด`,[`ตั้งสัดส่วนเล็ก/ใหญ่=2/3`,`ด้านเล็ก=12(2/3)`,`ได้ 8 หน่วย`],`8 หน่วย`,`แผนที่ เงา การถ่ายภาพ และการวัดความสูงที่เข้าถึงไม่ได้`,[`อัตราส่วนและมุมในสามเหลี่ยม`]),zs(`m3-quadratic-graphs`,`กราฟของฟังก์ชันกำลังสอง`,`Graphs of Quadratic Functions`,`ฟังก์ชันและกราฟ`,`ม.3`,`ภาคเรียนที่ 1`,[`พาราโบลาและจุดยอด`,`แกนสมมาตร`,`การแปลความหมายจุดตัดแกน`],`อ่านรูปร่างและตำแหน่งของพาราโบลาจากสมการและเชื่อมโยงกับรากของสมการ`,`y=a(x-h)^2+k`,`เครื่องหมายของ a บอกทิศเปิด และ h,k บอกพิกัดจุดยอดในรูปจุดยอด`,`จุดยอดของ y=(x-2)^2-3 คือจุดใด`,[`เทียบกับ y=a(x-h)^2+k`,`ได้ h=2 และ k=-3`,`จุดยอดคือ (2,-3)`],`(2,-3)`,`การหาค่าสูงสุด-ต่ำสุดและวิถีของวัตถุแบบจำลอง`,[`พิกัดและสมการกำลังสอง`]),zs(`m3-statistics-3`,`สถิติ (3)`,`Statistics 3`,`สถิติ`,`ม.3`,`ภาคเรียนที่ 1`,[`ควอไทล์และแผนภาพกล่อง`,`การกระจายและค่าผิดปกติ`,`การเปรียบเทียบชุดข้อมูล`],`อธิบายการกระจายของข้อมูลด้วยพิสัย ควอไทล์ และแผนภาพกล่องโดยไม่สรุปเกินข้อมูล`,`IQR=Q_3-Q_1`,`ต้องเรียงข้อมูลและใช้เกณฑ์ควอไทล์เดียวกันก่อนเปรียบเทียบชุดข้อมูล`,`ถ้า Q1=12 และ Q3=20 พิสัยระหว่างควอไทล์เป็นเท่าใด`,[`ใช้ IQR=Q3-Q1`,`แทนค่า 20-12`,`ได้ 8`],`8`,`การอ่านผลสอบ รายได้ หรือข้อมูลที่มีค่าผิดปกติ`,[`สถิติ (1)-(2) และการเรียงข้อมูล`]),zs(`m3-linear-systems`,`ระบบสมการเชิงเส้นสองตัวแปร`,`Systems of Linear Equations in Two Variables`,`จำนวนและพีชคณิต`,`ม.3`,`ภาคเรียนที่ 2`,[`กราฟและจุดตัด`,`วิธีแทนค่า`,`วิธีกำจัดตัวแปรและการตีความคำตอบ`],`หาคู่ลำดับที่ทำให้สมการสองสมการเป็นจริงพร้อมกันและอธิบายความหมายของจุดตัด`,`\\begin{cases}x+y=7\\2x-y=2\\end{cases}`,`ต้องตรวจคู่ลำดับที่ได้กับสมการทั้งสอง ไม่ใช่เพียงสมการเดียว`,`แก้ระบบ x+y=7 และ 2x-y=2`,[`บวกสมการได้ 3x=9`,`x=3 แล้วแทนใน x+y=7`,`y=4 จึงได้ (3,4)`],`(3,4)`,`โจทย์จำนวนสินค้า ราคา และการเคลื่อนที่ที่มีสองเงื่อนไข`,[`สมการเชิงเส้นตัวแปรเดียวและกราฟ`]),zs(`m3-circles`,`วงกลม`,`Circles`,`เรขาคณิต`,`ม.3`,`ภาคเรียนที่ 2`,[`คอร์ด เส้นสัมผัส และมุมในวงกลม`,`ความยาวส่วนโค้งและพื้นที่`,`สมการวงกลมบนระนาบพิกัด`],`เชื่อมโยงรัศมี เส้นผ่านศูนย์กลาง มุม และสมบัติของเส้นในวงกลม`,`(x-h)^2+(y-k)^2=r^2`,`รัศมีตั้งฉากกับเส้นสัมผัสที่จุดสัมผัสและมุมในครึ่งวงกลมเป็น 90 องศา`,`วงกลมศูนย์กลาง (2,-1) รัศมี 3 มีสมการอย่างไร`,[`ใช้รูป (x-h)^2+(y-k)^2=r^2`,`แทน h=2,k=-1,r=3`,`ได้ (x-2)^2+(y+1)^2=9`],`(x-2)^2+(y+1)^2=9`,`การออกแบบล้อ วงเวียน สถาปัตยกรรม และตำแหน่งบนแผนที่`,[`มุม พิกัด และรัศมี`]),zs(`m3-pyramids-cones-spheres`,`พีระมิด กรวย และทรงกลม`,`Pyramids, Cones, and Spheres`,`เรขาคณิต`,`ม.3`,`ภาคเรียนที่ 2`,[`พื้นที่ผิวพีระมิดและกรวย`,`ปริมาตรพีระมิดและกรวย`,`พื้นที่ผิวและปริมาตรทรงกลม`],`เลือกแบบจำลองและสูตรให้สัมพันธ์กับฐาน ความสูงเอียง และรัศมีของทรงสามมิติ`,`V_{cone}=\\frac13\\pi r^2h`,`ความสูงเอียงไม่ใช่ความสูงตั้งฉาก และต้องเลือกหน่วยเดียวกันตลอดการคำนวณ`,`กรวยรัศมี 3 สูง 4 ใช้ \\pi=3.14 มีปริมาตรเท่าใด`,[`V=1/3(3.14)(3^2)(4)`,`ตัด 4 กับ 3 ได้ 4(3.14)(3)`,`ได้ 37.68 ลูกบาศก์หน่วย`],`37.68 ลูกบาศก์หน่วย`,`การออกแบบหลังคา ภาชนะ และวัตถุทรงกลม`,[`พื้นที่วงกลมและปริซึม`]),zs(`m3-probability`,`ความน่าจะเป็น`,`Probability`,`สถิติและความน่าจะเป็น`,`ม.3`,`ภาคเรียนที่ 2`,[`แซมเปิลสเปซและเหตุการณ์`,`ความน่าจะเป็นของเหตุการณ์`,`เหตุการณ์ตรงข้ามและการทดลองซ้ำ`],`นับผลลัพธ์อย่างเป็นระบบและตีความความน่าจะเป็นเป็นสัดส่วนของเหตุการณ์ที่สนใจ`,`P(A)=\\frac{n(A)}{n(S)}`,`ผลลัพธ์ต้องมีโอกาสเกิดที่กำหนดชัดและค่าความน่าจะเป็นอยู่ระหว่าง 0 ถึง 1`,`ทอยลูกเต๋า 1 ลูก โอกาสได้จำนวนคู่เป็นเท่าใด`,[`ผลลัพธ์ทั้งหมด 6 แบบ`,`จำนวนคู่คือ 2,4,6 มี 3 แบบ`,`P=3/6=1/2`],`1/2`,`การประเมินความเสี่ยง เกม และการตัดสินใจจากข้อมูล`,[`เศษส่วนและการนับเบื้องต้น`]),zs(`m3-trig-ratios`,`อัตราส่วนตรีโกณมิติ`,`Trigonometric Ratios`,`เรขาคณิต`,`ม.3`,`ภาคเรียนที่ 2`,[`ไซน์ โคไซน์ และแทนเจนต์`,`การหาด้านและมุม`,`โจทย์ความสูงและระยะทาง`],`เลือกอัตราส่วนตรีโกณมิติจากด้านที่รู้และด้านที่ต้องการในสามเหลี่ยมมุมฉาก`,`\\sin\\theta=\\frac{opposite}{hypotenuse}`,`ต้องระบุด้านตรงข้าม ประชิด และด้านตรงข้ามมุมฉากจากมุมอ้างอิงเดียวกัน`,`สามเหลี่ยมมุมฉากมีด้านตรงข้ามมุม 6 และด้านตรงข้ามมุมฉาก 10 จงหา sin θ`,[`ใช้ sin θ=ด้านตรงข้าม/ด้านตรงข้ามมุมฉาก`,`แทนค่า 6/10`,`ลดรูปเป็น 3/5`],`3/5`,`การวัดความสูงอาคาร ความลาดเอียง และงานสำรวจ`,[`ทฤษฎีบทพีทาโกรัสและมุม`])],Hs=[Bs(`upper-sets`,`เซต`,`Sets`,`จำนวนและพีชคณิต`,[{grade:`ม.4`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์พื้นฐาน`,depth:`ภาษาและการดำเนินการของเซต`,verified:!0,sourceId:`ipst-basic-m4`},{grade:`ม.4`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`การดำเนินการ เซตจำกัด และการประยุกต์`,verified:!0,sourceId:`ipst-adv-m4-1`}],[`สมาชิกและการเขียนเซต`,`สับเซตและเพาเวอร์เซต`,`ยูเนียน อินเตอร์เซกชัน และแผนภาพเวนน์`],`แปลความสัมพันธ์ของสมาชิกเป็นภาษาเซตและใช้การดำเนินการแก้ปัญหา`,`n(A\\cup B)=n(A)+n(B)-n(A\\cap B)`,`ต้องกำหนดเอกภพสัมพัทธ์และไม่สับสนสมาชิกกับสับเซต`,`ให้ A={1,2,3}, B={3,4} จงหา A\\cup B`,[`รวบรวมสมาชิกของทั้งสองเซต`,`ตัดสมาชิกซ้ำคือ 3 ออกหนึ่งครั้ง`,`ได้ {1,2,3,4}`],`{1,2,3,4}`,`การจัดกลุ่มข้อมูล การค้นหา และการนับสมาชิกที่ซ้ำกัน`,[`ตรรกะเบื้องต้นและการนับ`],Ms),Bs(`upper-logic`,`ตรรกศาสตร์`,`Logic`,`ตรรกศาสตร์`,[{grade:`ม.4`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์พื้นฐาน`,depth:`ประพจน์และการเชื่อมประพจน์`,verified:!0,sourceId:`ipst-basic-m4`},{grade:`ม.4`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`ประพจน์ ตัวบ่งปริมาณ และการอ้างเหตุผล`,verified:!0,sourceId:`ipst-adv-m4-1`}],[`ประพจน์และค่าความจริง`,`ตัวเชื่อมและตารางค่าความจริง`,`เงื่อนไขจำเป็น เพียงพอ และการอ้างเหตุผล`],`ตรวจความถูกต้องของการให้เหตุผลด้วยค่าความจริงและโครงสร้างของประพจน์`,`p\\Rightarrow q\\equiv\\neg p\\lor q`,`ต้องแยก “ถ้า...แล้ว...” ออกจากบทกลับและไม่ใช้ตัวอย่างเดียวพิสูจน์ข้อความทั่วไป`,`ถ้า p เป็นเท็จ และ q เป็นจริง ค่าความจริงของ p⇒q คืออะไร`,[`พิจารณาประพจน์แบบเงื่อนไข`,`กรณี p เท็จไม่ทำให้เงื่อนไขผิด`,`จึงเป็นจริง`],`จริง`,`การตรวจข่าว การเขียนเงื่อนไขโปรแกรม และการพิสูจน์`,[`เซตและภาษาไทยเชิงตรรกะ`],Ms),Bs(`upper-real-numbers`,`จำนวนจริง`,`Real Numbers`,`จำนวนและพีชคณิต`,[{grade:`ม.4`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`สมบัติของจำนวนจริง อสมการ และค่าสัมบูรณ์`,verified:!0,sourceId:`ipst-adv-m4-1`}],[`สมบัติของจำนวนจริง`,`ค่าสัมบูรณ์และช่วง`,`รากที่ n และการแก้อสมการ`],`ใช้สมบัติของจำนวนจริงเพื่อแปลงรูปและวิเคราะห์ช่วงคำตอบโดยไม่ละเมิดเงื่อนไข`,`|x-a|<r\\Longleftrightarrow a-r<x<a+r`,`ต้องพิจารณาเครื่องหมาย ตัวส่วน และโดเมนเมื่อยกกำลังหรือถอดราก`,`แก้ |x-2|<3`,[`แปลเป็น -3<x-2<3`,`บวก 2 ทุกส่วน`,`-1<x<5`],`(-1,5)`,`การกำหนดช่วงความคลาดเคลื่อนและการวิเคราะห์เงื่อนไขของแบบจำลอง`,[`จำนวนเต็ม เศษส่วน เลขยกกำลัง`],Ms),Bs(`upper-relations-functions`,`ความสัมพันธ์และฟังก์ชัน`,`Relations and Functions`,`ฟังก์ชันและกราฟ`,[{grade:`ม.4`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์พื้นฐาน`,depth:`กราฟ โดเมน เรนจ์ และการตีความฟังก์ชัน`,verified:!0,sourceId:`ipst-basic-m5`},{grade:`ม.4`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`ความสัมพันธ์ ฟังก์ชัน ฟังก์ชันประกอบ และฟังก์ชันผกผัน`,verified:!0,sourceId:`ipst-adv-m4-2`}],[`คู่อันดับและความสัมพันธ์`,`โดเมน เรนจ์ และฟังก์ชัน`,`ฟังก์ชันประกอบและผกผัน`],`มองฟังก์ชันเป็นกฎที่จับคู่สมาชิกแต่ละตัวในโดเมนกับผลลัพธ์เดียว`,`f:A\\to B`,`ต้องตรวจว่าทุกสมาชิกในโดเมนมีภาพเพียงหนึ่งค่าและระบุโดเมนก่อนคำนวณ`,`ให้ f(x)=2x+1 จงหา f(3)`,[`แทน x=3 ในกฎของฟังก์ชัน`,`f(3)=2(3)+1`,`ได้ 7`],`7`,`แบบจำลองค่าใช้จ่าย อุณหภูมิ และความสัมพันธ์ระหว่างตัวแปร`,[`กราฟและสมการเชิงเส้น`],Ns),Bs(`upper-exponential-log`,`ฟังก์ชันเอกซ์โพเนนเชียลและฟังก์ชันลอการิทึม`,`Exponential and Logarithmic Functions`,`ฟังก์ชันและกราฟ`,[{grade:`ม.4`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`ฟังก์ชัน กราฟ สมบัติ และสมการเอกซ์โพเนนเชียล/ลอการิทึม`,verified:!0,sourceId:`ipst-adv-m4-2`}],[`ฟังก์ชันเอกซ์โพเนนเชียล`,`ลอการิทึมและสมบัติ`,`สมการและการประยุกต์การเติบโต`],`เชื่อมความหมายของลอการิทึมกับเลขชี้กำลังและวิเคราะห์การเติบโตที่เปลี่ยนแปลงตามเวลา`,`log_a x=y\\Longleftrightarrow a^y=x`,`ฐานต้องมากกว่า 0 และไม่เท่ากับ 1 ส่วนจำนวนที่อยู่ใน log ต้องมากกว่า 0`,`จงแก้ log_2 x=3`,[`เขียนเป็นเลขยกกำลัง 2^3=x`,`คำนวณ 2^3`,`x=8 ซึ่งอยู่ในโดเมน`],`8`,`ดอกเบี้ยทบต้น การแพร่กระจาย และการวัดระดับเสียง`,[`เลขยกกำลังและฟังก์ชัน`],Ns),Bs(`upper-analytic-geometry`,`เรขาคณิตวิเคราะห์`,`Analytic Geometry`,`เรขาคณิต`,[{grade:`ม.4`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`จุด เส้นตรง วงกลม และระยะทางในพิกัด`,verified:!0,sourceId:`ipst-adv-m4-2`}],[`ระยะทางและจุดกึ่งกลาง`,`ความชันและสมการเส้นตรง`,`วงกลมและการประยุกต์พิกัด`],`ใช้พิกัดและสมการแทนรูปเรขาคณิตเพื่อคำนวณและพิสูจน์ความสัมพันธ์`,`m=\\frac{y_2-y_1}{x_2-x_1}`,`ต้องแยกกรณีเส้นตั้งฉากที่ความชันไม่กำหนดและระบุหน่วยของระยะทาง`,`จงหาจุดกึ่งกลางของ A(2,4) และ B(6,8)`,[`ใช้ M=((x1+x2)/2,(y1+y2)/2)`,`แทนค่าได้ ((2+6)/2,(4+8)/2)`,`M=(4,6)`],`(4,6)`,`แผนที่ ระบบพิกัด และการตรวจรูปทรงจากจุดข้อมูล`,[`ระนาบพิกัดและพีชคณิต`],Ns),Bs(`upper-trig-functions`,`ฟังก์ชันตรีโกณมิติ`,`Trigonometric Functions`,`ฟังก์ชันและกราฟ`,[{grade:`ม.5`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`ฟังก์ชัน วงกลมหนึ่งหน่วย กราฟ และเอกลักษณ์`,verified:!0,sourceId:`ipst-adv-m5-1`}],[`วงกลมหนึ่งหน่วยและเรเดียน`,`กราฟไซน์ โคไซน์ และแทนเจนต์`,`เอกลักษณ์และสมการตรีโกณมิติ`],`มองค่าตรีโกณมิติเป็นฟังก์ชันของมุมและใช้กราฟหรือเอกลักษณ์อธิบายการเปลี่ยนแปลง`,`sin^2x+cos^2x=1`,`ต้องแปลงหน่วยองศา-เรเดียนให้ถูกและตรวจคาบของฟังก์ชัน`,`จงหาค่า sin(π/6)`,[`จากวงกลมหนึ่งหน่วยหรือค่ามุมมาตรฐาน`,`มุม π/6 เท่ากับ 30 องศา`,`sin(π/6)=1/2`],`1/2`,`คลื่น เสียง การหมุน และแบบจำลองคาบเวลา`,[`อัตราส่วนตรีโกณมิติและฟังก์ชัน`],Ps),Bs(`upper-matrices`,`เมทริกซ์`,`Matrices`,`พีชคณิต`,[{grade:`ม.5`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`การดำเนินการ ดีเทอร์มิแนนต์ และเมทริกซ์ผกผัน`,verified:!0,sourceId:`ipst-adv-m5-1`}],[`ชนิดและการเท่ากันของเมทริกซ์`,`การบวก คูณ และดีเทอร์มิแนนต์`,`เมทริกซ์ผกผันกับระบบสมการ`],`ใช้เมทริกซ์จัดข้อมูลและแก้ระบบสมการ โดยคงลำดับแถว-หลักให้ถูกต้อง`,`A^{-1}A=I`,`เมทริกซ์ผกผันมีได้เมื่อดีเทอร์มิแนนต์ไม่เป็นศูนย์และขนาดเมทริกซ์คูณกันได้`,`A=[[1,2],[3,4]] จงหาดีเทอร์มิแนนต์`,[`det(A)=1(4)-2(3)`,`ลบผลคูณแนวทแยง`,`ได้ -2`],`-2`,`ตารางข้อมูล การเข้ารหัส และการแก้ระบบสมการ`,[`ระบบสมการเชิงเส้น`],Ps),Bs(`upper-vectors`,`เวกเตอร์`,`Vectors`,`เรขาคณิตและพีชคณิต`,[{grade:`ม.5`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`เวกเตอร์ในระนาบ การบวก และผลคูณสเกลาร์`,verified:!0,sourceId:`ipst-adv-m5-1`}],[`เวกเตอร์และขนาด`,`การบวกและการคูณด้วยสเกลาร์`,`ผลคูณสเกลาร์และมุมระหว่างเวกเตอร์`],`ใช้เวกเตอร์แทนการกระจัดและความสัมพันธ์เชิงทิศทาง พร้อมเชื่อมกับพิกัด`,`||\\vec{v}||=\\sqrt{x^2+y^2}`,`ผลคูณสเกลาร์เป็นจำนวนและใช้ตรวจตั้งฉากได้เมื่อผลคูณเป็นศูนย์`,`จงหาขนาดของเวกเตอร์ (3,4)`,[`ใช้สูตรขนาด`,`sqrt(3^2+4^2)=sqrt(25)`,`ได้ 5`],`5`,`แรง การเคลื่อนที่ พิกัด และกราฟิกคอมพิวเตอร์`,[`เรขาคณิตวิเคราะห์และพีชคณิต`],Ps),Bs(`upper-complex`,`จำนวนเชิงซ้อน`,`Complex Numbers`,`จำนวนและพีชคณิต`,[{grade:`ม.5`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`รูป a+bi การคำนวณ และรากของสมการ`,verified:!0,sourceId:`ipst-adv-m5-2`}],[`หน่วยจินตภาพและรูปเชิงขั้ว`,`การบวก คูณ หารจำนวนเชิงซ้อน`,`รากของสมการและระนาบเชิงซ้อน`],`ขยายระบบจำนวนเพื่อแก้สมการที่ไม่มีคำตอบในจำนวนจริงและตีความบนระนาบเชิงซ้อน`,`i^2=-1`,`ต้องใช้สังยุคเมื่อหารและลดเลขชี้กำลังของ i ตามคาบ 4`,`จงหาค่า (2+3i)+(1-5i)`,[`รวมส่วนจริงและส่วนจินตภาพแยกกัน`,`2+1=3 และ 3i-5i=-2i`,`ได้ 3-2i`],`3-2i`,`สัญญาณ ไฟฟ้า การหมุน และการแก้สมการพหุนาม`,[`จำนวนจริงและพหุนาม`],Fs),Bs(`upper-counting`,`หลักการนับเบื้องต้น`,`Fundamental Counting Principles`,`สถิติและความน่าจะเป็น`,[{grade:`ม.4`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์พื้นฐาน`,depth:`หลักการคูณและการนับกรณีง่าย`,verified:!0,sourceId:`ipst-basic-m4`},{grade:`ม.5`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`การเรียงสับเปลี่ยนและการจัดหมู่`,verified:!0,sourceId:`ipst-adv-m5-2`}],[`หลักการบวกและหลักการคูณ`,`แฟกทอเรียลและการเรียงสับเปลี่ยน`,`การจัดหมู่และการนับแบบมีเงื่อนไข`],`แบ่งปัญหาเป็นกรณีที่ไม่ซ้ำกันหรือเป็นขั้นตอนต่อเนื่อง แล้วเลือกหลักการนับให้เหมาะ`,`n!=n(n-1)\\cdots1`,`หลักการคูณใช้เมื่อทำขั้นตอนต่อเนื่อง ส่วนหลักการบวกใช้กรณีแยกกันและไม่ซ้ำ`,`มีเสื้อ 3 ตัวและกางเกง 2 ตัว แต่งชุดได้กี่แบบ`,[`เลือกเสื้อได้ 3 วิธี`,`แต่ละวิธีเลือกกางเกงได้ 2 วิธี`,`3×2=6 แบบ`],`6 แบบ`,`การจัดตาราง การสร้างรหัส และการนับผลลัพธ์ในความน่าจะเป็น`,[`การคูณและการแยกกรณี`],Fs),Bs(`upper-probability`,`ความน่าจะเป็น`,`Probability`,`สถิติและความน่าจะเป็น`,[{grade:`ม.4`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์พื้นฐาน`,depth:`เหตุการณ์และความน่าจะเป็นเบื้องต้น`,verified:!0,sourceId:`ipst-basic-m4`},{grade:`ม.5`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`ความน่าจะเป็นแบบมีเงื่อนไข กฎบวก และกฎคูณ`,verified:!0,sourceId:`ipst-adv-m5-2`}],[`แซมเปิลสเปซและเหตุการณ์`,`กฎบวก กฎคูณ และความน่าจะเป็นมีเงื่อนไข`,`เหตุการณ์อิสระและการประยุกต์`],`วิเคราะห์ความไม่แน่นอนด้วยการนับผลลัพธ์และเงื่อนไขของเหตุการณ์`,`P(A|B)=\\frac{P(A\\cap B)}{P(B)}`,`ต้องระบุเหตุการณ์และเงื่อนไขให้ชัด และตัวส่วนของความน่าจะเป็นมีเงื่อนไขต้องไม่เป็นศูนย์`,`ถ้า P(A∩B)=0.2 และ P(B)=0.5 จงหา P(A|B)`,[`ใช้สูตร P(A|B)=P(A∩B)/P(B)`,`แทนค่า 0.2/0.5`,`ได้ 0.4`],`0.4`,`การประเมินความเสี่ยง การตรวจคัดกรอง และการตัดสินใจ`,[`หลักการนับและเศษส่วน`],Fs),Bs(`upper-sequences-series`,`ลำดับและอนุกรม`,`Sequences and Series`,`จำนวนและพีชคณิต`,[{grade:`ม.5`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์พื้นฐาน`,depth:`ลำดับเลขคณิต ลำดับเรขาคณิต และผลบวก`,verified:!0,sourceId:`ipst-basic-m5`},{grade:`ม.6`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`ลำดับ อนุกรม อนุกรมอนันต์ และการประยุกต์`,verified:!0,sourceId:`ipst-adv-m6-1`}],[`ลำดับเลขคณิต`,`ลำดับเรขาคณิต`,`อนุกรมและการหาผลบวก`],`มองลำดับเป็นฟังก์ชันบนจำนวนธรรมชาติและเลือกสูตรจากรูปแบบการเปลี่ยนแปลง`,`a_n=a_1+(n-1)d`,`ต้องระบุพจน์แรก ดัชนี และผลต่างหรืออัตราส่วนร่วมให้ตรงกับโจทย์`,`ลำดับ 3,7,11,... พจน์ที่ 10 เท่ากับเท่าใด`,[`a1=3 และ d=4`,`a10=3+(10-1)4`,`ได้ 39`],`39`,`เงินออม การผ่อนชำระ การเติบโต และการประมาณค่า`,[`เลขยกกำลังและฟังก์ชัน`],Is),Bs(`upper-calculus`,`แคลคูลัสเบื้องต้น`,`Introduction to Calculus`,`แคลคูลัส`,[{grade:`ม.6`,semester:`ภาคเรียนที่ 1`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`ลิมิต อนุพันธ์เบื้องต้น และปริพันธ์อย่างง่าย`,verified:!0,sourceId:`ipst-adv-m6-1`}],[`ลิมิตและความต่อเนื่อง`,`อนุพันธ์ในฐานะอัตราการเปลี่ยนแปลง`,`ปริพันธ์และพื้นที่ใต้กราฟ`],`ใช้ลิมิตอธิบายการเปลี่ยนแปลง ณ จุดหนึ่งและเชื่อมอนุพันธ์กับปัญหาสูงสุด-ต่ำสุด`,`\\lim_{x\\to a}f(x)`,`ต้องตรวจโดเมนและความต่อเนื่องก่อนใช้กฎลิมิตหรือแปลความหมายอนุพันธ์`,`ถ้า f(x)=x^2 จงหาค่า lim เมื่อ x เข้าใกล้ 2`,[`ฟังก์ชันเป็นพหุนามจึงต่อเนื่อง`,`แทน x=2 ได้โดยตรง`,`ลิมิตเท่ากับ 4`],`4`,`อัตราเร็ว การเติบโต ต้นทุนต่ำสุด และพื้นที่สะสม`,[`ฟังก์ชันและพีชคณิต`],Is),Bs(`upper-statistics-meaning`,`ความหมายของสถิติศาสตร์และข้อมูล`,`Meaning of Statistics and Data`,`สถิติ`,[{grade:`ม.6`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์พื้นฐาน`,depth:`ประชากร ตัวอย่าง ตัวแปร และการเก็บข้อมูล`,verified:!0,sourceId:`ipst-basic-m6`},{grade:`ม.6`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`การออกแบบการสำรวจและคุณภาพข้อมูล`,verified:!0,sourceId:`ipst-adv-m6-2`}],[`ประชากรและกลุ่มตัวอย่าง`,`ประเภทของตัวแปรและแหล่งข้อมูล`,`การออกแบบการเก็บข้อมูล`],`อ่านที่มาของข้อมูลและประเมินว่าข้อมูลตอบคำถามวิจัยได้ดีเพียงใดก่อนคำนวณสถิติ`,`sample\\subseteq population`,`ตัวอย่างที่ไม่เป็นตัวแทนทำให้ข้อสรุปมีอคติ แม้คำนวณค่าได้ถูกต้อง`,`หากต้องการรู้เวลานอนของนักเรียนทั้งโรงเรียน ควรเริ่มจากอะไร`,[`กำหนดประชากรคือ นักเรียนทั้งโรงเรียน`,`ออกแบบตัวอย่างที่เป็นตัวแทน`,`กำหนดวิธีเก็บข้อมูลก่อนสรุป`],`กำหนดประชากรและแผนการสุ่มตัวอย่าง`,`การสำรวจสุขภาพ ความคิดเห็น และข้อมูลในข่าว`,[`สถิติพื้นฐานและการอ่านตาราง`],Ls),Bs(`upper-qualitative-data`,`การวิเคราะห์และนำเสนอข้อมูลเชิงคุณภาพ`,`Analysis and Presentation of Qualitative Data`,`สถิติ`,[{grade:`ม.6`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์พื้นฐาน`,depth:`ตารางความถี่ แผนภูมิแท่ง วงกลม และการตีความ`,verified:!0,sourceId:`ipst-basic-m6`},{grade:`ม.6`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`เลือกภาพแทนข้อมูลและวิจารณ์การนำเสนอ`,verified:!0,sourceId:`ipstAdvM6Book2`}],[`ข้อมูลเชิงคุณภาพและความถี่`,`แผนภูมิแท่งและแผนภูมิวงกลม`,`การอ่านและวิจารณ์กราฟ`],`สรุปข้อมูลที่เป็นกลุ่มหรือประเภทด้วยตารางและกราฟที่ไม่ทำให้ผู้ดูเข้าใจผิด`,`ร้อยละ=\\frac{ความถี่}{จำนวนทั้งหมด}\\times100`,`ความสูงของแท่งและขนาดมุมต้องสอดคล้องกับความถี่และต้องระบุฐานของร้อยละ`,`นักเรียน 40 คนชอบกีฬา 10 คน คิดเป็นกี่เปอร์เซ็นต์`,[`คำนวณ 10/40×100`,`ได้ 25`,`คิดเป็น 25%`],`25%`,`การอ่านผลสำรวจ การสื่อสารข้อมูล และการตรวจกราฟข่าว`,[`การนับและร้อยละ`],Ls),Bs(`upper-quantitative-data`,`การวิเคราะห์และนำเสนอข้อมูลเชิงปริมาณ`,`Analysis and Presentation of Quantitative Data`,`สถิติ`,[{grade:`ม.6`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์พื้นฐาน`,depth:`ค่ากลาง การกระจาย และการนำเสนอข้อมูลเชิงปริมาณ`,verified:!0,sourceId:`ipst-basic-m6`},{grade:`ม.6`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`ควอร์ไทล์ เปอร์เซ็นไทล์ แผนภาพกล่อง และการแปลผล`,verified:!0,sourceId:`ipstAdvM6Book2`}],[`ค่าเฉลี่ย มัธยฐาน และฐานนิยม`,`พิสัย ส่วนเบี่ยงเบนมาตรฐาน และควอร์ไทล์`,`แผนภาพกล่องและการเปรียบเทียบ`],`เลือกค่าวัดที่เหมาะกับคำถามและอธิบายการกระจาย ไม่สรุปจากค่ากลางเพียงค่าเดียว`,`\\bar{x}=\\frac{\\sum x_i}{n}`,`ต้องระบุหน่วยและพิจารณาค่าผิดปกติก่อนเลือกค่าเฉลี่ยหรือมัธยฐาน`,`ข้อมูล 2,4,4,6,9 มีค่าเฉลี่ยเท่าใด`,[`บวกข้อมูลได้ 25`,`มี 5 ค่า`,`ค่าเฉลี่ยคือ 5`],`5`,`การวิเคราะห์คะแนน รายได้ เวลา และความเหลื่อมล้ำของข้อมูล`,[`สถิติ (3) และการอ่านกราฟ`],Ls),Bs(`upper-random-variables`,`ตัวแปรสุ่มและการแจกแจงความน่าจะเป็น`,`Random Variables and Probability Distributions`,`สถิติและความน่าจะเป็น`,[{grade:`ม.6`,semester:`ภาคเรียนที่ 2`,course:`คณิตศาสตร์เพิ่มเติม`,depth:`ตัวแปรสุ่มไม่ต่อเนื่อง การแจกแจง และค่าคาดหมาย`,verified:!0,sourceId:`ipst-adv-m6-2`}],[`ตัวแปรสุ่มและการแจกแจง`,`ค่าคาดหมายและความแปรปรวน`,`การแจกแจงทวินามและการประยุกต์`],`เปลี่ยนผลลัพธ์สุ่มเป็นค่าตัวเลขและสรุปการแจกแจงด้วยค่าคาดหมายอย่างมีความหมาย`,`E(X)=\\sum xP(X=x)`,`ความน่าจะเป็นของทุกค่าต้องรวมกันเป็น 1 และต้องแยกค่าคาดหมายออกจากผลลัพธ์ที่เกิดจริง`,`ตัวแปรสุ่ม X มีค่า 0,1 โดย P(X=1)=0.3 จงหา E(X)`,[`E(X)=0P(0)+1P(1)`,`แทนค่าได้ 0+0.3`,`E(X)=0.3`],`0.3`,`การประเมินจำนวนเหตุการณ์เฉลี่ย ความเสี่ยง และคุณภาพการผลิต`,[`ความน่าจะเป็นและผลรวม`],Ls)];function Us(e){return e.subtopics.map((t,n)=>({id:`${e.id}-lesson-${n+1}`,chapterId:e.id,title:t,order:n+1,duration:`${18+n*5} นาที`,objective:n===0?`อธิบาย${t}โดยใช้คำศัพท์และตัวแทนที่ถูกต้อง`:n===1?`เลือกวิธีทำ${t}และตรวจเงื่อนไขของคำตอบ`:`ประยุกต์${t}กับโจทย์หลายขั้นและสื่อสารเหตุผล`,summary:n===0?`เริ่มจากความหมายของ${t}และสร้างภาพรวมก่อนใช้สัญลักษณ์`:n===1?`เชื่อมคำจำกัดความกับขั้นตอนคำนวณ โดยตรวจ ${e.condition}`:`ใช้ความรู้เรื่อง${t}แก้ปัญหาและอธิบายว่าทำไมคำตอบจึงสมเหตุสมผล`,definitions:`${e.title}ในส่วนนี้หมายถึง ${e.focus} คำสำคัญที่ควรรู้คือ “${t}” และต้องอ่านสัญลักษณ์ตามบริบท ไม่เดาความหมายจากรูปเพียงอย่างเดียว`,foundation:`เหตุผลสำคัญคือ ${e.focus} เมื่อเปลี่ยนรูปหรือแทนค่า ต้องรักษาความสัมพันธ์เดิมและตรวจ ${e.condition}`,workedExample:{problem:e.exampleProblem,steps:e.exampleSteps,answer:e.exampleAnswer,formula:e.formula},alternative:e.alternative,commonMistake:e.commonMistake,application:e.application,furtherLearning:n<e.subtopics.length-1?`ถัดไป: ${e.subtopics[n+1]}`:`เชื่อมต่อกับบทถัดไปที่ใช้${e.title}เป็นพื้นฐาน`}))}function Ws(e){let t=e.offerings[0],n=(n,r,i,a,o,s,c)=>({id:`${e.id}-q-${n}`,chapterId:e.id,grade:t.grade,course:t.course,topic:e.title,subtopic:e.subtopics[(n-1)%e.subtopics.length],difficulty:c,format:`multiple-choice`,prompt:r,choices:i,correct:a,explanation:o,hint:`กลับไปดูคำจำกัดความของ${e.title} แล้วตรวจ ${e.condition}`,misconception:s});return[n(1,`ข้อใดสรุปแก่นของ “${e.title}” ได้ถูกต้องที่สุด`,[e.focus,`จำสูตรโดยไม่สนใจเงื่อนไข`,`ใช้ตัวเลขแทนทุกอย่างทันที`,`สรุปจากภาพตัวอย่างเพียงรูปเดียว`],0,`แก่นของบทนี้คือ ${e.focus} จึงต้องอธิบายความหมายก่อนเลือกวิธีทำ`,`เลือกกฎจากชื่อบทโดยไม่แปลความหมาย`,`พื้นฐาน`),n(2,e.exampleProblem,[e.exampleAnswer,`ไม่สามารถหาคำตอบได้`,`ต้องใช้ข้อมูลเพิ่มเสมอ`,`คำตอบเป็นศูนย์ทุกกรณี`],0,`จากตัวอย่าง เริ่มด้วย ${e.exampleSteps[0]} แล้วได้คำตอบ ${e.exampleAnswer}`,`ข้ามการตรวจเงื่อนไขหรือคำนวณผิดขั้น`,`พื้นฐาน`),n(3,`ก่อนเริ่มโจทย์เรื่อง${e.title} ควรทบทวนสิ่งใด`,[e.prerequisites[0],`ท่องคำตอบของเพื่อน`,`ตัดหน่วยออกจากโจทย์`,`วาดกราฟโดยไม่อ่านโจทย์`],0,`ความรู้พื้นฐานที่เกี่ยวข้องคือ ${e.prerequisites.join(` และ `)}`,`เริ่มทำโดยไม่ตรวจพื้นฐานที่โจทย์ใช้`,`พื้นฐาน`),n(4,`นิพจน์ใดเกี่ยวข้องกับแนวคิดหลักของ${e.title}`,[e.formula,`a+b=a-b`,`P(A)>1 เสมอ`,`x=x+1 ทุกค่า`],0,`นิพจน์ ${e.formula} ใช้ได้เมื่อ ${e.condition}`,`ใช้สูตรถูกบทแต่ผิดเงื่อนไข`,`กำลังดี`),n(5,`สถานการณ์ใดเป็นการประยุกต์${e.title}ได้เหมาะสมที่สุด`,[e.application,`หาคำตอบโดยไม่กำหนดตัวแปร`,`ใช้หน่วยต่างกันในสมการเดียว`,`เปลี่ยนข้อมูลหลังคำนวณเพื่อให้ได้คำตอบ`],0,`บทนี้เชื่อมกับ ${e.application} เพราะสามารถกำหนดปริมาณและตรวจความหมายของคำตอบได้`,`ไม่แปลคำตอบกลับเป็นบริบท`,`กำลังดี`),n(6,`ข้อควรระวังสำคัญเมื่อทำโจทย์${e.title}คือข้อใด`,[e.condition,`คำตอบทุกข้อเป็นบวก`,`ไม่ต้องตรวจโดเมนหรือหน่วย`,`สูตรใช้ได้เหมือนกันทุกสถานการณ์`],0,`ต้องตรวจว่า ${e.condition} ก่อนยอมรับคำตอบ`,`ละเลยโดเมน เครื่องหมาย หน่วย หรือข้อสมมติ`,`กำลังดี`),n(7,`วิธีตรวจคำตอบของโจทย์${e.title}ที่ดีคือข้อใด`,[`แทนคำตอบกลับในเงื่อนไขเดิมและอธิบายความหมาย`,`ดูว่าตัวเลขมีขนาดใหญ่หรือไม่`,`เปลี่ยนเครื่องหมายคำตอบให้เป็นบวก`,`เลือกคำตอบที่เขียนสั้นที่สุด`],0,`การแทนกลับและตรวจบริบทช่วยพบทั้งความผิดพลาดเชิงพีชคณิตและความผิดพลาดเชิงความหมาย`,`ตรวจเฉพาะรูปคำตอบไม่ตรวจโจทย์เดิม`,`กำลังดี`),n(8,`ลำดับการเรียนรู้ที่เหมาะกับ${e.title}คือข้อใด`,[e.subtopics.join(` → `),`${e.subtopics[2]} → ข้ามคำจำกัดความ → ${e.subtopics[0]}`,`ทำโจทย์ท้าทายก่อนรู้ศัพท์`,`จำสูตรก่อนรู้ว่าหาปริมาณใด`],0,`เริ่มจาก ${e.subtopics[0]} แล้วค่อยเชื่อมไป ${e.subtopics[1]} และ ${e.subtopics[2]}`,`เริ่มจากขั้นตอนโดยไม่สร้างความหมาย`,`กำลังดี`),n(9,`ข้อความใดอธิบายเหตุผลทางคณิตศาสตร์ของ${e.title}ได้ดีที่สุด`,[e.summary,`เพราะสูตรนี้ใช้ในหนังสือเท่านั้น`,`เพราะคำตอบที่ยาวกว่าถูกเสมอ`,`เพราะภาพดูเหมือนจะเป็นเช่นนั้น`],0,e.summary,`อ้างแหล่งที่มาหรือภาพแทนเหตุผล`,`ท้าทาย`),n(10,`โจทย์ท้าทายเรื่อง${e.title}ควรเริ่มด้วยการทำสิ่งใด`,[`กำหนดข้อมูล สิ่งที่ต้องหา และเงื่อนไขก่อนเลือกวิธี`,`ลองสูตรทุกสูตรพร้อมกัน`,`ตัดข้อมูลที่ดูยากออก`,`เดาคำตอบแล้วปรับโจทย์ให้เข้ากัน`],0,`การกำหนดข้อมูลและ ${e.condition} ทำให้เลือกวิธีที่ตรวจสอบได้`,`แก้เชิงสัญลักษณ์โดยไม่รู้ความหมายของตัวแปร`,`ท้าทาย`)]}var Gs=[...Vs,...Hs].map(e=>({...e,progress:0,lessons:Us(e),exercises:Ws(e)})),Ks=Gs.flatMap(e=>e.exercises),qs=Gs.filter(e=>e.educationLevel===`มัธยมศึกษาตอนต้น`),Js=Gs.filter(e=>e.educationLevel===`มัธยมศึกษาตอนปลาย`);Gs.length,qs.length,Js.length,Gs.reduce((e,t)=>e+t.lessons.length,0),Ks.length;function Ys(e,t,n,r){return e.offerings.filter(e=>(t===`ทั้งหมด`||e.grade===t)&&(n===`ทั้งหมด`||e.semester===n)&&(r===`ทั้งหมด`||e.course===r))}function Xs(e){return`${e.grade} • ${e.semester.replace(`ภาคเรียนที่ `,`ภาค `)} • ${e.course.replace(`คณิตศาสตร์`,``)}`}var Zs=`question-bank-v1`,Qs=`commumathy-exercise-session-v2`,$s=`commumathy-exercise-sessions-v2`,ec=`commumathy-exercise-recent-v2`,tc=`commumathy-exercise-performance-v2`,nc=`2026-10-14T00:00:00.000Z`;function rc(e){let t=2166136261;for(let n=0;n<e.length;n+=1)t^=e.charCodeAt(n),t=Math.imul(t,16777619);return t>>>0}function ic(e){let t=e>>>0;return()=>{t+=1831565813;let e=Math.imul(t^t>>>15,1|t);return e^=e+Math.imul(e^e>>>7,61|e),((e^e>>>14)>>>0)/4294967296}}function ac(e,t,n){return Math.floor(e()*(n-t+1))+t}function oc(e,t){let n=Math.abs(e),r=Math.abs(t);for(;r;)[n,r]=[r,n%r];return n||1}function sc(e,t){if(t===0)return`undefined`;let n=oc(e,t),r=e/n,i=t/n;return i===1?String(r):`${r}/${i}`}function cc(e){return Number.isInteger(e)?String(e):e.toFixed(2).replace(/0+$/,``).replace(/\.$/,``)}function lc(e,t,n){let r=[];for(let n of[e,...t])n&&!r.includes(n)&&r.push(n);for(;r.length<4;)r.push(`ตัวเลือก ${r.length+1}`);let i=r.slice(0,4).map((e,t)=>t),a=ic(n);for(let e=i.length-1;e>0;--e){let t=Math.floor(a()*(e+1));[i[e],i[t]]=[i[t],i[e]]}let o=i.map(e=>r[e]);return{choices:o,correctChoice:o.indexOf(e)}}function qmmExerciseGeneratorType(chapterId) {
+  const chapterRoutes = {
+    "m1-integers": "integers",
+    "m1-geometric-construction": "construction",
+    "m1-exponents": "exponents",
+    "m1-decimals-fractions": "fractions",
+    "m1-2d-3d-figures": "geometry",
+    "m1-linear-equation": "algebra",
+    "m1-ratio-proportion-percent": "ratio",
+    "m1-graphs-linear": "function",
+    "m1-statistics-1": "statistics",
+    "m2-pythagorean": "pythagorean",
+    "m2-real-numbers-intro": "numbers",
+    "m2-prisms-cylinders": "solids",
+    "m2-transformations": "transformations",
+    "m2-exponent-properties": "exponents",
+    "m2-polynomials": "polynomial",
+    "m2-statistics-2": "statistics",
+    "m2-congruence": "congruence",
+    "m2-parallel-lines": "parallel-lines",
+    "m2-geometric-reasoning": "geometry-reasoning",
+    "m2-quadratic-factoring": "factoring",
+    "m3-linear-inequality": "inequality",
+    "m3-higher-degree-factoring": "factoring",
+    "m3-quadratic-equation": "quadratic",
+    "m3-similarity": "similarity",
+    "m3-quadratic-graphs": "quadratic-function",
+    "m3-statistics-3": "statistics",
+    "m3-linear-systems": "systems",
+    "m3-circles": "circles",
+    "m3-pyramids-cones-spheres": "solids",
+    "m3-probability": "probability",
+    "m3-trig-ratios": "trigonometry",
+    "upper-sets": "sets",
+    "upper-logic": "logic",
+    "upper-real-numbers": "numbers",
+    "upper-relations-functions": "function",
+    "upper-exponential-log": "exponential-log",
+    "upper-analytic-geometry": "analytic-geometry",
+    "upper-trig-functions": "trig-functions",
+    "upper-matrices": "matrices",
+    "upper-vectors": "vectors",
+    "upper-complex": "complex",
+    "upper-counting": "counting",
+    "upper-probability": "probability",
+    "upper-sequences-series": "sequence",
+    "upper-calculus": "calculus",
+    "upper-statistics-meaning": "statistics",
+    "upper-qualitative-data": "qualitative-data",
+    "upper-quantitative-data": "quantitative-data",
+    "upper-random-variables": "random-variable",
+  };
+  return chapterRoutes[String(chapterId ?? "").toLowerCase()] ?? "mixed-review";
+}
+function uc(e){return qmmExerciseGeneratorType(e)}
+function qmmGenerateVariedExercise(chapter, index, seed, generatorType, selectedSubtopic) {
+  const id = String(chapter?.id ?? "unknown-chapter");
+  const type = generatorType || qmmExerciseGeneratorType(id);
+  const subtopics = Array.isArray(chapter?.subtopics) ? chapter.subtopics : [];
+  const topic = String(selectedSubtopic || subtopics[index % Math.max(1, subtopics.length)] || chapter?.title || id);
+  const position = Math.max(0, Number(index) || 0);
+  let state = 2166136261;
+  for (const char of `${id}:${position}`) state = Math.imul(state ^ char.charCodeAt(0), 16777619) >>> 0;
+  const random = () => {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    return state / 4294967296;
+  };
+  const int = (min, max) => Math.floor(random() * (max - min + 1)) + min;
+  const choose = (items) => items[Math.floor(random() * items.length)];
+  const gcd = (a, b) => {
+    a = Math.abs(a); b = Math.abs(b);
+    while (b) [a, b] = [b, a % b];
+    return a || 1;
+  };
+  const fraction = (numerator, denominator) => {
+    const sign = denominator < 0 ? -1 : 1;
+    const d = Math.abs(denominator) || 1;
+    const n = numerator * sign;
+    const factor = gcd(n, d);
+    const reducedN = n / factor;
+    const reducedD = d / factor;
+    return reducedD === 1 ? String(reducedN) : `${reducedN}/${reducedD}`;
+  };
+  const signed = (value) => value < 0 ? `− ${Math.abs(value)}` : `+ ${value}`;
+  const answer = (prompt, correct, distractors, hint, working, parameters = {}) => {
+    const correctText = String(correct);
+    const options = [];
+    for (const value of [correctText, ...distractors.map(String)]) {
+      if (value && !options.includes(value)) options.push(value);
+    }
+    let fallback = 1;
+    while (options.length < 4) {
+      const fractionMatch = correctText.match(/^(-?\d+)\/(\d+)$/);
+      const numericMatch = correctText.match(/-?\d+(?:\.\d+)?/);
+      const candidate = fractionMatch
+        ? `${Number(fractionMatch[1]) + fallback}/${fractionMatch[2]}`
+        : numericMatch
+          ? correctText.replace(numericMatch[0], String(Number(numericMatch[0]) + fallback))
+          : `ข้อมูลไม่เพียงพอ (${fallback})`;
+      if (!options.includes(candidate)) options.push(candidate);
+      fallback += 1;
+    }
+    const choices = options.slice(0, 4);
+    for (let i = choices.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(random() * (i + 1));
+      [choices[i], choices[j]] = [choices[j], choices[i]];
+    }
+    return {
+      prompt,
+      choices,
+      correctChoice: choices.indexOf(correctText),
+      correctAnswer: correctText,
+      hint: String(hint),
+      solution: `${working} ดังนั้นคำตอบคือ ${correctText}`,
+      parameters,
+    };
+  };
+  const variant = position % 4;
+
+  switch (type) {
+    case "integers": {
+      const a = int(8, 32), b = int(3, 18), c = int(2, 9);
+      if (variant === 0) {
+        const value = a - b;
+        return answer(`จงหาผลลัพธ์ของ ${a} + (−${b})`, value, [a + b, b - a, -(a + b)], "การบวกจำนวนลบเทียบได้กับการลบค่าสัมบูรณ์", `${a} + (−${b}) = ${value}`, { a, b });
+      }
+      if (variant === 1) {
+        const value = -a * b;
+        return answer(`จงหาผลคูณของ (−${a}) × ${b}`, value, [a * b, -(a + b), a - b], "จำนวนลบคูณจำนวนบวกได้ผลลัพธ์เป็นจำนวนลบ", `(−${a}) × ${b} = ${value}`, { a, b });
+      }
+      if (variant === 2) {
+        const divisor = int(2, 8), quotient = int(3, 12), dividend = divisor * quotient;
+        return answer(`จงหาค่า |−${dividend}| ÷ ${divisor}`, quotient, [dividend, -quotient, quotient + divisor], `ค่าสัมบูรณ์ของจำนวนลบเป็นจำนวนบวก`, `|−${dividend}| = ${dividend} และ ${dividend} ÷ ${divisor} = ${quotient}`, { dividend, divisor });
+      }
+      const value = b - a;
+      return answer(`จงหาผลลัพธ์ของ ${b} − ${a}`, value, [a - b, a + b, -(a + b)], "เมื่อลบจำนวนที่มากกว่า ผลต่างจะติดลบ", `${b} − ${a} = ${value}`, { a, b });
+    }
+    case "fractions": {
+      if (variant === 0) {
+        const d = int(4, 12), a = int(1, d - 2), b = int(1, d - a);
+        const value = fraction(a + b, d);
+        return answer(`จงหาผลบวก ${a}/${d} + ${b}/${d} และตอบเป็นเศษส่วนอย่างต่ำ`, value, [fraction(a + b, d + 1), fraction(a + b + 1, d), fraction(Math.abs(a - b), d)], "ตัวส่วนเท่ากัน จึงบวกเฉพาะตัวเศษแล้วทอนเศษส่วน", `${a}/${d} + ${b}/${d} = ${a + b}/${d} = ${value}`, { a, b, denominator: d });
+      }
+      if (variant === 1) {
+        const a = int(1, 5), b = int(a + 1, 9), c = int(1, 5), d = int(c + 1, 9);
+        const value = fraction(a * c, b * d);
+        return answer(`จงคำนวณ ${a}/${b} × ${c}/${d}`, value, [fraction(a + c, b + d), fraction(a * d, b * c), fraction(a * c + 1, b * d)], "คูณตัวเศษกับตัวเศษ และตัวส่วนกับตัวส่วน", `(${a} × ${c})/(${b} × ${d}) = ${a * c}/${b * d} = ${value}`, { a, b, c, d });
+      }
+      if (variant === 2) {
+        const a = int(1, 5), b = int(a + 1, 8), c = int(1, 4), d = int(c + 2, 9);
+        const value = fraction(a * d, b * c);
+        return answer(`จงคำนวณ ${a}/${b} ÷ ${c}/${d}`, value, [fraction(a * c, b * d), fraction(a * b, c * d), fraction(a * d + 1, b * c)], "การหารเศษส่วนให้คูณด้วยส่วนกลับของเศษส่วนตัวหลัง", `${a}/${b} × ${d}/${c} = ${a * d}/${b * c} = ${value}`, { a, b, c, d });
+      }
+      const leftTenths = int(11, 69), rightHundredths = int(1, 99);
+      const left = (leftTenths / 10).toFixed(1), right = (rightHundredths / 100).toFixed(2);
+      const value = Number((leftTenths / 10 + rightHundredths / 100).toFixed(2));
+      return answer(`จงหาผลบวก ${left} + ${right}`, value, [Number((value + 0.1).toFixed(2)), Number((value - 0.1).toFixed(2)), Number((leftTenths / 10 - rightHundredths / 100).toFixed(2))], "จัดตำแหน่งทศนิยมให้ตรงกัน แล้วบวกทีละหลัก", `${left} + ${right} = ${value}`, { left, right });
+    }
+    case "ratio": {
+      if (variant === 0) {
+        const a = int(2, 5), b = int(3, 7), scale = int(2, 6);
+        return answer(`อัตราส่วนแป้งต่อน้ำเป็น ${a}:${b} ถ้าใช้แป้ง ${a * scale} ถ้วย ต้องใช้น้ำกี่ถ้วยเพื่อคงอัตราส่วนเดิม?`, b * scale, [b + scale, a * scale, b * (scale - 1)], `หาตัวคูณที่เปลี่ยนจาก ${a} เป็น ${a * scale} แล้วคูณทั้งสองส่วนด้วยตัวคูณเดียวกัน`, `${a * scale} ÷ ${a} = ${scale}; ดังนั้นน้ำ ${b} × ${scale} = ${b * scale} ถ้วย`, { a, b, scale });
+      }
+      if (variant === 1) {
+        const percent = choose([10, 20, 25, 30, 40, 50]), base = int(4, 20) * 20;
+        const value = base * percent / 100;
+        return answer(`${percent}% ของ ${base} มีค่าเท่าใด?`, value, [base * percent, base / percent, base - value], `เปลี่ยน ${percent}% เป็น ${percent}/100 แล้วคูณด้วยจำนวนตั้งต้น`, `${percent}/100 × ${base} = ${value}`, { percent, base });
+      }
+      if (variant === 2) {
+        const base = int(5, 18) * 10, percent = choose([10, 20, 25, 50]);
+        const value = base + base * percent / 100;
+        return answer(`สินค้าเดิมราคา ${base} บาท ปรับราคาเพิ่ม ${percent}% ราคาใหม่เป็นกี่บาท?`, value, [base * percent / 100, base - base * percent / 100, base + percent], `คำนวณส่วนที่เพิ่มก่อน แล้วบวกกับราคาเดิม`, `เพิ่ม ${percent}/100 × ${base} = ${base * percent / 100} บาท; ราคาใหม่ = ${base} + ${base * percent / 100} = ${value}`, { base, percent });
+      }
+      const units = int(2, 8), unitPrice = int(5, 20) * 5, total = units * unitPrice;
+      return answer(`ส้ม ${units} ผล ราคา ${total} บาท ราคาเฉลี่ยต่อผลเป็นเท่าใด?`, unitPrice, [total + units, total - units, total / (units + 1)], "หารราคารวมด้วยจำนวนผลไม้", `${total} ÷ ${units} = ${unitPrice} บาทต่อผล`, { units, total });
+    }
+    case "algebra": {
+      if (variant === 0) {
+        const a = int(2, 9), x = int(-5, 12), b = int(-12, 15), c = a * x + b;
+        return answer(`จงแก้สมการ ${a}x ${signed(b)} = ${c}`, x, [x + 1, x - 1, c - b], `ย้ายค่าคงที่ไปอีกข้าง แล้วหารด้วย ${a}`, `${a}x = ${c - b}; x = (${c - b}) ÷ ${a} = ${x}`, { a, b, c, x });
+      }
+      if (variant === 1) {
+        const a = int(2, 7), x = int(1, 9), b = int(2, 8), c = a * (x + b);
+        return answer(`จงหาค่า x จาก ${a}(x + ${b}) = ${c}`, x, [x + b, c / a, x - b], `หารทั้งสองข้างด้วย ${a} ก่อน แล้วจึงลบ ${b}`, `x + ${b} = ${c / a}; x = ${c / a} − ${b} = ${x}`, { a, b, c, x });
+      }
+      if (variant === 2) {
+        const a = int(2, 8), b = int(1, 12), x = int(2, 9), c = a * x + b;
+        const correct = `${a}x + ${b} = ${c}`;
+        return answer(`จำนวนหนึ่งคูณด้วย ${a} แล้วบวก ${b} ได้ ${c} สมการใดแทนข้อความนี้?`, correct, [`${a}(x + ${b}) = ${c}`, `${a}x − ${b} = ${c}`, `x + ${a} + ${b} = ${c}`], "คำว่า ‘คูณด้วย’ หมายถึงคูณตัวแปรก่อน แล้วจึงบวกค่าคงที่", `แทนจำนวนที่ไม่ทราบด้วย x จะได้ ${correct}`, { a, b, x, c });
+      }
+      const a = int(2, 8), b = int(-10, 12), x = int(2, 9), c = a * x + b;
+      const correct = b < 0 ? `บวก ${Math.abs(b)} ทั้งสองข้าง แล้วหารด้วย ${a}` : `ลบ ${b} ทั้งสองข้าง แล้วหารด้วย ${a}`;
+      return answer(`เริ่มแก้สมการ ${a}x ${signed(b)} = ${c} ควรทำขั้นตอนใดก่อน?`, correct, [`หารด้วย ${a} ก่อนโดยไม่จัดการค่าคงที่`, `คูณค่าคงที่ ${b} กับ ${a}`, `เปลี่ยนเครื่องหมายเฉพาะข้างซ้าย`], "ย้อนการบวกหรือลบค่าคงที่โดยทำเหมือนกันทั้งสองข้าง", `${a}x ${signed(b)} = ${c}; ${correct} จะได้ x = ${x}`, { a, b, c, x });
+    }
+    case "polynomial": {
+      if (variant === 0) {
+        const a = int(1, 6), b = int(1, 8), c = int(1, 6), d = int(1, 8);
+        const correct = `${a + c}x² + ${b + d}x`;
+        return answer(`จงบวกพหุนาม (${a}x² + ${b}x) + (${c}x² + ${d}x)`, correct, [`${a + c}x⁴ + ${b + d}x²`, `${a + b + c + d}x`, `${a - c}x² + ${b - d}x`], "รวมเฉพาะพจน์ที่มีตัวแปรและเลขชี้กำลังเหมือนกัน", `${a}x² + ${c}x² = ${a + c}x² และ ${b}x + ${d}x = ${b + d}x`, { a, b, c, d });
+      }
+      if (variant === 1) {
+        const a = int(2, 7), b = int(2, 8), c = int(1, 9), correct = `${a * b}x² + ${a * c}x`;
+        return answer(`จงกระจายพจน์ ${a}x(${b}x + ${c})`, correct, [`${a + b}x² + ${c}x`, `${a * b}x + ${a * c}`, `${a * (b + c)}x²`], `คูณ ${a}x เข้าไปในแต่ละพจน์ในวงเล็บ`, `${a}x × ${b}x = ${a * b}x² และ ${a}x × ${c} = ${a * c}x`, { a, b, c });
+      }
+      if (variant === 2) {
+        const a = int(1, 5), b = int(-5, 7), c = int(-8, 10), x = int(-3, 5), value = a * x * x + b * x + c;
+        return answer(`กำหนด P(x) = ${a}x² ${signed(b)}x ${signed(c)} จงหา P(${x})`, value, [a * x + b + c, -value, value + x], `แทน x ด้วย ${x} โดยใส่วงเล็บ แล้วยกกำลังและคูณตามลำดับ`, `P(${x}) = ${a}(${x})² ${signed(b)}(${x}) ${signed(c)} = ${value}`, { a, b, c, x });
+      }
+      const a = int(2, 9), b = int(1, 8), c = int(2, 9), d = int(1, 8), correct = `${a + c}x ${signed(b + d)}`;
+      return answer(`จงยุบพจน์ ${a}x ${signed(b)} + ${c}x ${signed(d)}`, correct, [`${a + c + b + d}x`, `${a - c}x ${signed(b - d)}`, `${a + c}x² ${signed(b + d)}`], "รวมสัมประสิทธิ์ของ x และรวมค่าคงที่แยกกัน", `(${a} + ${c})x ${signed(b + d)} = ${correct}`, { a, b, c, d });
+    }
+    case "factoring": {
+      if (id === "m3-higher-degree-factoring") {
+        const a = int(2, 8);
+        if (variant === 0) return answer(`แยกตัวประกอบ x³ − ${a ** 3}`, `(x − ${a})(x² + ${a}x + ${a ** 2})`, [`(x − ${a})(x² − ${a}x + ${a ** 2})`, `(x − ${a})³`, `(x − ${a ** 2})(x + ${a})`], "ใช้ผลต่างกำลังสาม a³ − b³ = (a − b)(a² + ab + b²)", `x³ − ${a ** 3} = (x − ${a})(x² + ${a}x + ${a ** 2})`, { a, identity: "difference-of-cubes" });
+        if (variant === 1) return answer(`แยกตัวประกอบ x³ + ${a ** 3}`, `(x + ${a})(x² − ${a}x + ${a ** 2})`, [`(x + ${a})(x² + ${a}x + ${a ** 2})`, `(x + ${a})³`, `(x − ${a})(x² + ${a}x + ${a ** 2})`], "ใช้ผลบวกกำลังสาม a³ + b³ = (a + b)(a² − ab + b²)", `x³ + ${a ** 3} = (x + ${a})(x² − ${a}x + ${a ** 2})`, { a, identity: "sum-of-cubes" });
+        if (variant === 2) {
+          const b = int(2, 8), coefficient = int(2, 7);
+          return answer(`แยกตัวประกอบ ${coefficient}x³ + ${coefficient * b}x²`, `${coefficient}x²(x + ${b})`, [`${coefficient}x(x² + ${b})`, `${coefficient}x²(x − ${b})`, `x²(${coefficient}x + ${b})`], `ดึงตัวประกอบร่วมมาก ${coefficient}x² ออกก่อน`, `${coefficient}x³ + ${coefficient * b}x² = ${coefficient}x²(x + ${b})`, { b, coefficient });
+        }
+        const b = int(2, 8);
+        return answer(`แยกตัวประกอบ x³ + ${a}x² + ${b}x + ${a * b}`, `(x + ${a})(x² + ${b})`, [`(x + ${a})(x² − ${b})`, `(x − ${a})(x² + ${b})`, `(x + ${b})(x² + ${a})`], "จัดกลุ่มเป็น x²(x + a) + b(x + a) แล้วดึงตัวประกอบร่วม", `x³ + ${a}x² + ${b}x + ${a * b} = x²(x + ${a}) + ${b}(x + ${a}) = (x + ${a})(x² + ${b})`, { a, b, method: "grouping" });
+      }
+      if (variant === 0) {
+        const a = int(1, 6), b = int(2, 8), sum = a + b, product = a * b, correct = `(x + ${a})(x + ${b})`;
+        return answer(`แยกตัวประกอบ x² + ${sum}x + ${product}`, correct, [`(x + ${sum})(x + ${product})`, `(x − ${a})(x − ${b})`, `(x + ${product})(x + 1)`], "หาจำนวนสองจำนวนที่บวกกันได้สัมประสิทธิ์ของ x และคูณกันได้พจน์คงที่", `(x + ${a})(x + ${b}) = x² + ${sum}x + ${product}`, { a, b, sum, product });
+      }
+      if (variant === 1) {
+        const a = int(2, 5), b = int(1, 5), c = int(2, 5), d = int(1, 5);
+        const first = a * c, middle = a * d + b * c, last = b * d, correct = `(${a}x + ${b})(${c}x + ${d})`;
+        return answer(`แยกตัวประกอบ ${first}x² + ${middle}x + ${last}`, correct, [`(${a}x + ${d})(${c}x + ${b})`, `(${a}x + ${b + 1})(${c}x + ${d})`, `(${a}x − ${b})(${c}x − ${d})`], "หาคู่ตัวประกอบของพจน์ต้นและพจน์ท้าย แล้วตรวจว่าพจน์กลางรวมกันได้สัมประสิทธิ์ที่กำหนด", `(${a}x + ${b})(${c}x + ${d}) = ${first}x² + ${middle}x + ${last}`, { a, b, c, d });
+      }
+      if (variant === 2) {
+        const a = int(2, 12), correct = `(x − ${a})(x + ${a})`;
+        return answer(`แยกตัวประกอบ x² − ${a * a}`, correct, [`(x − ${a})²`, `(x + ${a})²`, `(x − ${a * a})(x + 1)`], "ใช้ผลต่างกำลังสอง A² − B² = (A − B)(A + B)", `x² − ${a}² = (x − ${a})(x + ${a})`, { a });
+      }
+      const a = int(2, 7), b = int(1, 6), sum = a + b, product = a * b, correct = `(x − ${a})(x − ${b})`;
+      return answer(`จงแยกตัวประกอบ x² − ${sum}x + ${product}`, correct, [`(x + ${a})(x + ${b})`, `(x − ${sum})(x − ${product})`, `(x − ${a})(x + ${b})`], "หาจำนวนสองจำนวนที่คูณได้พจน์คงที่และบวกได้สัมประสิทธิ์ของ x", `(x − ${a})(x − ${b}) = x² − ${sum}x + ${product}`, { a, b, sum, product });
+    }
+    case "inequality": {
+      if (variant === 0) {
+        const a = int(2, 8), root = int(-6, 12), b = int(-10, 10), c = a * root + b;
+        return answer(`แก้อสมการ ${a}x ${signed(b)} < ${c}`, `x < ${root}`, [`x > ${root}`, `x < ${c}`, `x ≤ ${root}`], "ทำเหมือนสมการ แต่คงเครื่องหมายอสมการไว้เมื่อหารด้วยจำนวนบวก", `${a}x < ${c - b}; หารด้วย ${a} ได้ x < ${root}`, { a, b, c, root });
+      }
+      if (variant === 1) {
+        const a = int(2, 7), root = int(-4, 10), b = int(-8, 10), c = a * root + b;
+        return answer(`แก้อสมการ ${a}x ${signed(b)} ≥ ${c}`, `x ≥ ${root}`, [`x ≤ ${root}`, `x ≥ ${c}`, `x > ${root}`], "ย้ายค่าคงที่และหารด้วยสัมประสิทธิ์บวก โดยไม่กลับเครื่องหมาย", `${a}x ≥ ${c - b}; x ≥ ${root}`, { a, b, c, root });
+      }
+      if (variant === 2) {
+        const a = int(2, 8), root = int(-3, 9), b = int(-8, 10), c = -a * root + b;
+        return answer(`แก้อสมการ −${a}x ${signed(b)} ≤ ${c}`, `x ≥ ${root}`, [`x ≤ ${root}`, `x ≥ ${-root}`, `x > ${root}`], "เมื่อหารอสมการด้วยจำนวนลบ ต้องกลับทิศเครื่องหมาย", `−${a}x ≤ ${c - b}; หารด้วย −${a} แล้วกลับเครื่องหมาย ได้ x ≥ ${root}`, { a, b, c, root });
+      }
+      const low = int(-5, 0), width = int(3, 8), high = low + width, offset = int(1, 6);
+      return answer(`ถ้า ${low + offset} < x + ${offset} ≤ ${high + offset} ช่วงคำตอบของ x คือข้อใด?`, `${low} < x ≤ ${high}`, [`${low} ≤ x < ${high}`, `x ≤ ${low} หรือ x > ${high}`, `${low} < x < ${high}`], "ลบจำนวนเดียวกันจากทุกส่วนของอสมการ", `ลบ ${offset} ทุกส่วน จะได้ ${low} < x ≤ ${high}`, { low, high, offset });
+    }
+    case "quadratic": {
+      const r1 = int(-7, 4), r2 = int(r1 + 1, 9), sum = r1 + r2, product = r1 * r2;
+      const middle = sum >= 0 ? `− ${sum}` : `+ ${Math.abs(sum)}`;
+      const correct = `{${r1}, ${r2}}`;
+      return answer(`จงหาคำตอบของสมการ x² ${middle}x ${signed(product)} = 0`, correct, [`{${-r1}, ${-r2}}`, `{${r1 + 1}, ${r2 + 1}}`, `{${product}, ${sum}}`], "หาคู่จำนวนที่ผลบวกและผลคูณสอดคล้องกับสัมประสิทธิ์ แล้วตรวจราก", `(x − ${r1})(x − ${r2}) = 0 จึงได้ x = ${r1} หรือ x = ${r2}`, { r1, r2, sum, product });
+    }
+    case "function": {
+      if (variant === 0) {
+        const a = int(2, 8), b = int(-7, 10), x = int(-5, 7), y = a * x + b;
+        return answer(`กำหนด f(x) = ${a}x ${signed(b)} จงหา f(${x})`, y, [a + x + b, a * (x + b), y + 1], "แทน x ด้วยค่าที่กำหนด แล้วคำนวณตามลำดับ", `f(${x}) = ${a}(${x}) ${signed(b)} = ${y}`, { a, b, x });
+      }
+      if (variant === 1) {
+        const x1 = int(-4, 2), dx = int(2, 5), slope = int(-4, 6), y1 = int(-8, 8), x2 = x1 + dx, y2 = y1 + slope * dx;
+        return answer(`เส้นตรงผ่านจุด (${x1}, ${y1}) และ (${x2}, ${y2}) มีความชันเท่าใด?`, slope, [y2 - y1, dx, -slope], "ความชัน = (ผลต่าง y) ÷ (ผลต่าง x)", `(${y2} − ${y1}) ÷ (${x2} − ${x1}) = ${slope}`, { x1, y1, x2, y2 });
+      }
+      if (variant === 2) {
+        const a = int(1, 7), b = int(-9, 12);
+        return answer(`กราฟเส้นตรง y = ${a}x ${signed(b)} ตัดแกน y ที่ค่าใด?`, b, [a, -b, a + b], "จุดตัดแกน y คือค่า y เมื่อ x = 0", `แทน x = 0 จะได้ y = ${b}`, { a, b });
+      }
+      const step = int(2, 5), start = int(-5, 7), x = int(2, 8), y = start + step * x;
+      return answer(`ตารางของฟังก์ชันเชิงเส้นมี f(0) = ${start} และเพิ่มครั้งละ ${step} เมื่อ x เพิ่ม 1 จงหา f(${x})`, y, [start + step, start * x, y - step], "ฟังก์ชันเชิงเส้นเปลี่ยนแปลงด้วยผลต่างคงที่", `f(${x}) = ${start} + ${step}(${x}) = ${y}`, { start, step, x });
+    }
+    case "quadratic-function": {
+      if (variant === 0) {
+        const a = int(1, 4), b = int(-5, 5), c = int(-8, 8), x = int(-3, 4), value = a * x * x + b * x + c;
+        return answer(`ถ้า f(x) = ${a}x² ${signed(b)}x ${signed(c)} จงหา f(${x})`, value, [a * x + b + c, value + x, -value], "แทนค่า x แล้วคำนวณเลขชี้กำลังสองก่อน", `f(${x}) = ${a}(${x})² ${signed(b)}(${x}) ${signed(c)} = ${value}`, { a, b, c, x });
+      }
+      if (variant === 1) {
+        const a = int(1, 4), h = int(-5, 5), b = -2 * a * h;
+        return answer(`พาราโบลา y = ${a}x² ${signed(b)}x + 1 มีแกนสมมาตรเป็นเส้นตรงใด?`, `x = ${h}`, [`x = ${-h}`, `y = ${h}`, `x = ${b}`], "แกนสมมาตรของ ax² + bx + c คือ x = −b/(2a)", `x = −(${b})/(2×${a}) = ${h}`, { a, b, h });
+      }
+      if (variant === 2) {
+        const r1 = int(-5, 2), r2 = int(r1 + 1, 6), sum = r1 + r2, product = r1 * r2;
+        return answer(`กราฟ y = (x − ${r1})(x − ${r2}) ตัดแกน x ที่จุดใด?`, `(${r1}, 0) และ (${r2}, 0)`, [`(0, ${product})`, `(${sum}, 0)`, `(−${r1}, 0) และ (−${r2}, 0)`], "จุดตัดแกน x เกิดเมื่อ y = 0 จึงให้แต่ละตัวประกอบเท่ากับศูนย์", `x − ${r1} = 0 หรือ x − ${r2} = 0 ได้ x = ${r1}, ${r2}`, { r1, r2, sum, product });
+      }
+      const a = int(1, 5), opensUp = random() > 0.5, coefficient = opensUp ? a : -a;
+      return answer(`กราฟ y = ${coefficient}x² + 2x − 3 มีลักษณะหงายหรือคว่ำ?`, opensUp ? "หงาย" : "คว่ำ", [opensUp ? "คว่ำ" : "หงาย", "เป็นเส้นตรง", "เป็นวงกลม"], "พิจารณาเครื่องหมายของสัมประสิทธิ์หน้า x²", `สัมประสิทธิ์หน้า x² คือ ${coefficient} ${opensUp ? "เป็นบวก กราฟจึงหงาย" : "เป็นลบ กราฟจึงคว่ำ"}`, { coefficient });
+    }
+    case "statistics": {
+      const base = int(8, 35), step = int(1, 5);
+      if (variant === 0) {
+        const values = [base - 2 * step, base - step, base, base + step, base + 2 * step];
+        return answer(`ค่าเฉลี่ยของข้อมูล ${values.join(", ")} เท่ากับเท่าใด?`, base, [base - step, base + step, values.reduce((sum, value) => sum + value, 0)], "บวกข้อมูลทั้งหมดแล้วหารด้วยจำนวนข้อมูล", `ผลรวม = ${values.reduce((sum, value) => sum + value, 0)}; หาร 5 ได้ ${base}`, { values });
+      }
+      if (variant === 1) {
+        const values = [base - 2 * step, base - step, base, base + step, base + 2 * step];
+        return answer(`มัธยฐานของข้อมูลเรียงลำดับ ${values.join(", ")} คือเท่าใด?`, base, [values[1], values[3], values[0]], "เมื่อมีข้อมูล 5 ค่า มัธยฐานคือค่าลำดับที่ 3", `ค่าตรงกลางของข้อมูลที่เรียงแล้วคือ ${base}`, { values });
+      }
+      if (variant === 2) {
+        const values = [base, base + step, base + 2 * step, base + 3 * step, base + 5 * step], range = 5 * step;
+        return answer(`พิสัยของข้อมูล ${values.join(", ")} มีค่าเท่าใด?`, range, [values[4], values[0], values[4] + values[0]], `พิสัย = ค่าสูงสุด − ค่าต่ำสุด`, `${values[4]} − ${values[0]} = ${range}`, { values });
+      }
+      const mode = base, values = [base, base + step, base, base + 2 * step, base, base + 3 * step];
+      return answer(`ฐานนิยมของข้อมูล ${values.join(", ")} คือเท่าใด?`, mode, [base + step, base + 2 * step, base + 3 * step], "ฐานนิยมคือค่าที่ปรากฏบ่อยที่สุด", `${mode} ปรากฏ 3 ครั้ง มากกว่าค่าอื่น`, { values });
+    }
+    case "probability": {
+      if (variant === 0) {
+        const total = int(8, 16), favorable = int(2, total - 2), value = fraction(favorable, total);
+        return answer(`กล่องมีบัตร ${total} ใบ เป็นบัตรที่ต้องการ ${favorable} ใบ สุ่มหยิบ 1 ใบ โอกาสได้บัตรที่ต้องการเป็นเท่าใด?`, value, [fraction(total, favorable), fraction(total - favorable, total), fraction(favorable + 1, total)], "ความน่าจะเป็น = จำนวนผลลัพธ์ที่ต้องการ ÷ จำนวนผลลัพธ์ทั้งหมด", `P = ${favorable}/${total} = ${value}`, { favorable, total });
+      }
+      if (variant === 1) {
+        const red = int(2, 8), blue = int(2, 9), total = red + blue, value = fraction(blue, total);
+        return answer(`ถุงมีลูกบอลสีแดง ${red} ลูกและสีน้ำเงิน ${blue} ลูก ความน่าจะเป็นที่จะหยิบได้สีแดงคือเท่าใด?`, fraction(red, total), [value, fraction(red, blue), fraction(1, total)], "นับจำนวนลูกบอลสีแดงเป็นผลลัพธ์ที่ต้องการ", `P(สีแดง) = ${red}/${total} = ${fraction(red, total)}`, { red, blue, total });
+      }
+      if (variant === 2) {
+        return answer("โยนเหรียญเที่ยงตรง 2 เหรียญพร้อมกัน ความน่าจะเป็นที่จะออกหัวพอดี 1 เหรียญเป็นเท่าใด?", "1/2", ["1/4", "3/4", "1"], "ผลลัพธ์ทั้งหมดคือ HH, HT, TH, TT", "ได้หัวพอดี 1 เหรียญใน HT และ TH รวม 2 จาก 4 ผลลัพธ์ จึงเป็น 2/4 = 1/2", { outcomes: 4, favorable: 2 });
+      }
+      const red = int(2, 5), blue = int(2, 6), total = red + blue, value = fraction(red * red, total * total);
+      return answer(`ถุงมีลูกบอลสีแดง ${red} ลูกและสีน้ำเงิน ${blue} ลูก หยิบ 2 ครั้งโดยใส่คืนทุกครั้ง ความน่าจะเป็นที่ได้สีแดงทั้งสองครั้งคือเท่าใด?`, value, [fraction(red, total), fraction(blue * blue, total * total), fraction(red * blue, total * total)], `เมื่อใส่คืน โอกาสได้สีแดงแต่ละครั้งเท่ากับ ${red}/${total} และเป็นอิสระกัน`, `${red}/${total} × ${red}/${total} = ${value}`, { red, blue, total });
+    }
+    case "trigonometry":
+    case "trig-functions": {
+      if (variant === 0 || variant === 1 || variant === 2) {
+        const angle = choose([30, 45, 60]);
+        const table = variant === 0
+          ? { 30: "1/2", 45: "√2/2", 60: "√3/2" }
+          : variant === 1
+            ? { 30: "√3/2", 45: "√2/2", 60: "1/2" }
+            : { 30: "√3/3", 45: "1", 60: "√3" };
+        const functionName = variant === 0 ? "sin" : variant === 1 ? "cos" : "tan";
+        const value = table[angle];
+        return answer(`จงหาค่า ${functionName}(${angle}°)`, value, ["0", "1/2", "√3/2", "1"].filter((option) => option !== value).slice(0, 3), "ใช้ตารางอัตราส่วนตรีโกณมิติของมุมพิเศษ", `${functionName}(${angle}°) = ${value}`, { functionName, angle });
+      }
+      if (type === "trig-functions") return answer("สำหรับมุม θ ใด ๆ ค่า sin²θ + cos²θ เท่ากับเท่าใด?", 1, [0, 2, "tan θ"], "ใช้เอกลักษณ์พื้นฐานของฟังก์ชันตรีโกณมิติ", "เอกลักษณ์ sin²θ + cos²θ = 1 เป็นจริงสำหรับทุกมุม θ", { identity: "pythagorean-trigonometric" });
+      const triples = [[3, 4, 5], [5, 12, 13], [8, 15, 17]];
+      const [opposite, adjacent, hypotenuse] = choose(triples);
+      const value = fraction(opposite, hypotenuse);
+      return answer(`สามเหลี่ยมมุมฉากมีด้านตรงข้ามมุม θ ยาว ${opposite} และด้านตรงข้ามมุมฉากยาว ${hypotenuse} จงหา sin θ`, value, [fraction(adjacent, hypotenuse), fraction(opposite, adjacent), fraction(hypotenuse, opposite)], "sin θ = ด้านตรงข้ามมุม ÷ ด้านตรงข้ามมุมฉาก", `sin θ = ${opposite}/${hypotenuse} = ${value}`, { opposite, adjacent, hypotenuse });
+    }
+    case "geometry": {
+      if (id === "m1-2d-3d-figures") {
+        if (variant === 0) return answer("ปริซึมฐานสามเหลี่ยมมีหน้าทั้งหมดกี่หน้า?", 5, [4, 6, 3], "ปริซึมฐาน n เหลี่ยมมีหน้า n ด้านและฐานอีก 2 หน้า", "ปริซึมฐานสามเหลี่ยมมี 3 + 2 = 5 หน้า", { solid: "triangular-prism" });
+        if (variant === 1) return answer("ทรงสี่เหลี่ยมมุมฉากมีจุดยอดกี่จุด?", 8, [6, 10, 12], "นับมุมทั้ง 4 จุดของฐานบนและฐานล่าง", "มีฐานสี่เหลี่ยม 2 ฐาน แต่ละฐานมี 4 จุดยอด รวม 8 จุด", { solid: "rectangular-prism" });
+        if (variant === 2) return answer("ข้อใดเป็นสมบัติของรูปสี่เหลี่ยมจัตุรัส?", "มีด้านเท่ากัน 4 ด้านและมุมฉาก 4 มุม", ["มีด้านเท่ากัน 2 ด้านเท่านั้น", "มีมุมฉากเพียง 2 มุม", "ไม่มีด้านขนานกัน"], "รูปสี่เหลี่ยมจัตุรัสมีทั้งด้านเท่ากันและมุมฉาก", "สี่เหลี่ยมจัตุรัสมีด้านทั้งสี่ยาวเท่ากันและมุมภายในทุกมุมเป็น 90°", { figure: "square" });
+        return answer("ทรงกระบอกมีฐานวงกลมกี่ฐาน และมีผิวข้างกี่ผิว?", "ฐานวงกลม 2 ฐาน และผิวข้าง 1 ผิว", ["ฐานวงกลม 1 ฐาน และผิวข้าง 2 ผิว", "ฐานวงกลม 3 ฐาน และไม่มีผิวข้าง", "ฐานวงกลม 2 ฐาน และไม่มีผิวข้าง"], "พิจารณาหน้าตัดวงกลมด้านบนและด้านล่าง รวมทั้งผิวโค้งรอบด้าน", "ทรงกระบอกมีวงกลมเป็นฐาน 2 ฐานและมีผิวข้างโค้ง 1 ผิว", { solid: "cylinder" });
+      }
+      if (variant === 0) {
+        const a = int(35, 75), b = int(25, 85), c = 180 - a - b;
+        return answer(`สามเหลี่ยมมีมุม ${a}° และ ${b}° มุมที่สามมีขนาดเท่าใด?`, `${c}°`, [`${180 - a}°`, `${180 - b}°`, `${a + b}°`], "ผลรวมมุมภายในสามเหลี่ยมเท่ากับ 180°", `180° − ${a}° − ${b}° = ${c}°`, { a, b, c });
+      }
+      if (variant === 1) {
+        const length = int(5, 18), width = int(3, 12), area = length * width;
+        return answer(`รูปสี่เหลี่ยมผืนผ้ากว้าง ${width} ซม. ยาว ${length} ซม. มีพื้นที่เท่าใด?`, `${area} ตร.ซม.`, [`${2 * (length + width)} ตร.ซม.`, `${length + width} ตร.ซม.`, `${area + length} ตร.ซม.`], "พื้นที่สี่เหลี่ยมผืนผ้า = กว้าง × ยาว", `${width} × ${length} = ${area} ตร.ซม.`, { length, width });
+      }
+      if (variant === 2) {
+        const side = int(4, 15), perimeter = 4 * side;
+        return answer(`สี่เหลี่ยมจัตุรัสยาวด้านละ ${side} ซม. มีความยาวรอบรูปเท่าใด?`, `${perimeter} ซม.`, [`${side * side} ซม.`, `${2 * side} ซม.`, `${perimeter + side} ซม.`], "รอบรูปสี่เหลี่ยมจัตุรัส = 4 × ความยาวด้าน", `4 × ${side} = ${perimeter} ซม.`, { side });
+      }
+      const base = int(4, 14), height = int(3, 12), area = base * height / 2;
+      return answer(`สามเหลี่ยมมีฐาน ${base} ซม. และสูง ${height} ซม. มีพื้นที่เท่าใด?`, `${area} ตร.ซม.`, [`${base * height} ตร.ซม.`, `${base + height} ตร.ซม.`, `${2 * area} ตร.ซม.`], "พื้นที่สามเหลี่ยม = ½ × ฐาน × สูง", `½ × ${base} × ${height} = ${area} ตร.ซม.`, { base, height });
+    }
+    case "pythagorean": {
+      const triples = [[3, 4, 5], [5, 12, 13], [8, 15, 17]];
+      const [a, b, c] = choose(triples), scale = int(1, 4);
+      if (variant === 0) return answer(`สามเหลี่ยมมุมฉากมีด้านประกอบมุมฉากยาว ${a * scale} และ ${b * scale} หน่วย ด้านตรงข้ามมุมฉากยาวเท่าใด?`, c * scale, [a * scale + b * scale, c * scale - scale, c * scale + scale], "ใช้ทฤษฎีพีทาโกรัส c² = a² + b²", `c = √((${a * scale})² + (${b * scale})²) = ${c * scale}`, { a: a * scale, b: b * scale });
+      if (variant === 1) return answer(`ด้านตรงข้ามมุมฉากยาว ${c * scale} หน่วย และอีกด้านยาว ${a * scale} หน่วย ด้านที่เหลือยาวเท่าใด?`, b * scale, [c * scale - a * scale, a * scale, b * scale + scale], "ใช้ a² = c² − b²", `√((${c * scale})² − (${a * scale})²) = ${b * scale}`, { a: a * scale, c: c * scale });
+      if (variant === 2) return answer(`จุด A(0, 0) และ B(${a * scale}, ${b * scale}) อยู่บนระนาบพิกัด ระยะ AB เท่าใด?`, c * scale, [a * scale + b * scale, c * scale - scale, c * scale + scale], "ระยะระหว่างจุดหาได้ด้วยทฤษฎีพีทาโกรัส", `AB = √((${a * scale})² + (${b * scale})²) = ${c * scale}`, { dx: a * scale, dy: b * scale });
+      return answer(`ถ้าด้านของสามเหลี่ยมมุมฉากเป็น ${a * scale}, ${b * scale}, ${c * scale} หน่วย ด้านใดเป็นด้านตรงข้ามมุมฉาก?`, c * scale, [a * scale, b * scale, a * scale + b * scale], "ด้านตรงข้ามมุมฉากเป็นด้านที่ยาวที่สุดและสอดคล้องกับ c² = a² + b²", `${a * a * scale * scale} + ${b * b * scale * scale} = ${c * c * scale * scale}; ด้านตรงข้ามมุมฉากยาว ${c * scale}`, { a: a * scale, b: b * scale, c: c * scale });
+    }
+    case "construction": {
+      const angle = choose([60, 72, 84, 96, 120]);
+      if (variant % 2 === 0) return answer(`เมื่อสร้างเส้นแบ่งครึ่งมุม ${angle}° มุมแต่ละส่วนมีขนาดเท่าใด?`, `${angle / 2}°`, [`${angle}°`, `${180 - angle}°`, `${angle / 3}°`], "เส้นแบ่งครึ่งมุมแบ่งมุมเดิมออกเป็นสองมุมที่เท่ากัน", `${angle}° ÷ 2 = ${angle / 2}°`, { angle });
+      if (variant === 1) return answer("จุดทุกจุดบนเส้นแบ่งครึ่งตั้งฉากของส่วนของเส้นตรงมีสมบัติใด?", "อยู่ห่างจากปลายทั้งสองของส่วนของเส้นตรงเท่ากัน", ["อยู่บนส่วนของเส้นตรงเสมอ", "ทำมุม 45° กับเส้นตรงทุกเส้น", "อยู่ห่างจากปลายด้านหนึ่งเป็นสองเท่า"], "เส้นแบ่งครึ่งตั้งฉากเป็นตำแหน่งของจุดที่ห่างจากปลายทั้งสองเท่ากัน", "ตามนิยาม ระยะจากจุดบนเส้นแบ่งครึ่งตั้งฉากไปยังปลายทั้งสองเท่ากัน", { construction: "perpendicular-bisector" });
+      return answer("การสร้างมุม 60° ด้วยวงเวียนและสันตรงอาศัยรูปใดเป็นหลัก?", "สามเหลี่ยมด้านเท่า", ["สามเหลี่ยมมุมฉาก", "สี่เหลี่ยมจัตุรัส", "วงกลมสองวงที่ไม่มีจุดตัด"], "รัศมีเท่ากันทำให้ได้ด้านทั้งสามยาวเท่ากัน", "สร้างสามเหลี่ยมด้านเท่าซึ่งแต่ละมุมภายในมีขนาด 60°", { construction: "equilateral-triangle" });
+    }
+    case "solids": {
+      if (id === "m2-prisms-cylinders") {
+        if (variant === 0) {
+          const l = int(3, 10), w = int(2, 8), h = int(2, 9), volume = l * w * h;
+          return answer(`ปริซึมสี่เหลี่ยมมุมฉากยาว ${l} ซม. กว้าง ${w} ซม. สูง ${h} ซม. มีปริมาตรเท่าใด?`, `${volume} ลบ.ซม.`, [`${l * w + h} ลบ.ซม.`, `${2 * (l * w + l * h + w * h)} ลบ.ซม.`, `${l + w + h} ลบ.ซม.`], "ปริมาตรปริซึม = พื้นที่ฐาน × สูง", `${l} × ${w} × ${h} = ${volume} ลบ.ซม.`, { l, w, h });
+        }
+        if (variant === 1) {
+          const base = int(2, 8) * 2, triangleHeight = int(2, 8), length = int(2, 8);
+          const baseArea = base * triangleHeight / 2, volume = baseArea * length;
+          return answer(`ปริซึมฐานสามเหลี่ยมมีฐานสามเหลี่ยม ${base} ซม. สูง ${triangleHeight} ซม. และยาว ${length} ซม. มีปริมาตรเท่าใด?`, `${volume} ลบ.ซม.`, [`${baseArea + length} ลบ.ซม.`, `${base * triangleHeight * length} ลบ.ซม.`, `${volume / 2} ลบ.ซม.`], "หาพื้นที่สามเหลี่ยมฐานก่อน แล้วคูณด้วยความยาวปริซึม", `พื้นที่ฐาน = ½ × ${base} × ${triangleHeight} = ${baseArea}; ปริมาตร = ${baseArea} × ${length} = ${volume}`, { base, triangleHeight, length, baseArea });
+        }
+        if (variant === 2) {
+          const r = int(2, 6), h = int(2, 9), coefficient = r * r * h;
+          return answer(`ทรงกระบอกรัศมี ${r} ซม. สูง ${h} ซม. มีปริมาตรเท่าใดในรูปของ π?`, `${coefficient}π ลบ.ซม.`, [`${2 * r * h}π ลบ.ซม.`, `${r * h}π ลบ.ซม.`, `${r * r + h}π ลบ.ซม.`], "ปริมาตรทรงกระบอก = πr²h", `π × ${r}² × ${h} = ${coefficient}π ลบ.ซม.`, { r, h });
+        }
+        const r = int(2, 6), h = int(2, 9), coefficient = 2 * r * (r + h);
+        return answer(`ทรงกระบอกรัศมี ${r} ซม. สูง ${h} ซม. มีพื้นที่ผิวทั้งหมดเท่าใดในรูปของ π?`, `${coefficient}π ตร.ซม.`, [`${r * (r + h)}π ตร.ซม.`, `${2 * r * h}π ตร.ซม.`, `${r * r + h}π ตร.ซม.`], "พื้นที่ผิวทั้งหมด = พื้นที่ผิวข้าง + พื้นที่ฐานวงกลมสองฐาน = 2πr(h + r)", `2π(${r})(${h} + ${r}) = ${coefficient}π ตร.ซม.`, { r, h });
+      }
+      if (id === "m3-pyramids-cones-spheres") {
+        if (variant === 0) {
+          const baseArea = int(2, 10) * 3, h = int(2, 9), volume = baseArea * h / 3;
+          return answer(`พีระมิดมีพื้นที่ฐาน ${baseArea} ตร.ซม. และสูง ${h} ซม. มีปริมาตรเท่าใด?`, `${volume} ลบ.ซม.`, [`${baseArea * h} ลบ.ซม.`, `${baseArea + h} ลบ.ซม.`, `${baseArea * h / 2} ลบ.ซม.`], "ปริมาตรพีระมิด = ⅓ × พื้นที่ฐาน × สูง", `⅓ × ${baseArea} × ${h} = ${volume} ลบ.ซม.`, { baseArea, h });
+        }
+        if (variant === 1) {
+          const r = int(1, 3) * 3, h = int(2, 9), coefficient = r * r * h / 3;
+          return answer(`กรวยรัศมี ${r} ซม. สูง ${h} ซม. มีปริมาตรเท่าใดในรูปของ π?`, `${coefficient}π ลบ.ซม.`, [`${r * r * h}π ลบ.ซม.`, `${r * h}π ลบ.ซม.`, `${coefficient * 2}π ลบ.ซม.`], "ปริมาตรกรวย = ⅓πr²h", `⅓π × ${r}² × ${h} = ${coefficient}π ลบ.ซม.`, { r, h });
+        }
+        if (variant === 2) {
+          const r = int(1, 3) * 3, coefficient = 4 * r * r * r / 3;
+          return answer(`ทรงกลมรัศมี ${r} ซม. มีปริมาตรเท่าใดในรูปของ π?`, `${coefficient}π ลบ.ซม.`, [`${4 * r * r}π ลบ.ซม.`, `${r * r * r}π ลบ.ซม.`, `${coefficient / 2}π ลบ.ซม.`], "ปริมาตรทรงกลม = ⁴⁄₃πr³", `⁴⁄₃π(${r})³ = ${coefficient}π ลบ.ซม.`, { r });
+        }
+        return answer("กรวยและทรงกระบอกมีพื้นที่ฐานและความสูงเท่ากัน ปริมาตรกรวยเป็นกี่เท่าของทรงกระบอก?", "หนึ่งในสาม", ["หนึ่งในสอง", "เท่ากัน", "สามเท่า"], "สูตรปริมาตรกรวยคือ ⅓πr²h ส่วนทรงกระบอกคือ πr²h", "เมื่อฐานและสูงเท่ากัน ปริมาตรกรวย = ⅓ × ปริมาตรทรงกระบอก", { relationship: "cone-to-cylinder" });
+      }
+      if (variant === 0) {
+        const l = int(3, 10), w = int(2, 8), h = int(2, 9), volume = l * w * h;
+        return answer(`ปริซึมสี่เหลี่ยมมุมฉากยาว ${l} ซม. กว้าง ${w} ซม. สูง ${h} ซม. มีปริมาตรเท่าใด?`, `${volume} ลบ.ซม.`, [`${l * w + h} ลบ.ซม.`, `${2 * (l * w + l * h + w * h)} ลบ.ซม.`, `${l + w + h} ลบ.ซม.`], "ปริมาตรปริซึม = พื้นที่ฐาน × สูง", `${l} × ${w} × ${h} = ${volume} ลบ.ซม.`, { l, w, h });
+      }
+      if (variant === 1) {
+        const r = int(2, 6), h = int(2, 9), coefficient = r * r * h;
+        return answer(`ทรงกระบอกรัศมี ${r} ซม. สูง ${h} ซม. มีปริมาตรเท่าใดในรูปของ π?`, `${coefficient}π ลบ.ซม.`, [`${2 * r * h}π ลบ.ซม.`, `${r * h}π ลบ.ซม.`, `${r * r + h}π ลบ.ซม.`], "ปริมาตรทรงกระบอก = πr²h", `π × ${r}² × ${h} = ${coefficient}π ลบ.ซม.`, { r, h });
+      }
+      if (variant === 2) {
+        const baseArea = int(2, 10) * 3, h = int(2, 9), volume = baseArea * h / 3;
+        return answer(`พีระมิดมีพื้นที่ฐาน ${baseArea} ตร.ซม. และสูง ${h} ซม. มีปริมาตรเท่าใด?`, `${volume} ลบ.ซม.`, [`${baseArea * h} ลบ.ซม.`, `${baseArea + h} ลบ.ซม.`, `${baseArea * h / 2} ลบ.ซม.`], "ปริมาตรพีระมิด = ⅓ × พื้นที่ฐาน × สูง", `⅓ × ${baseArea} × ${h} = ${volume} ลบ.ซม.`, { baseArea, h });
+      }
+      const r = choose([3, 6, 9]), coefficient = 4 * r * r * r / 3;
+      return answer(`ทรงกลมรัศมี ${r} ซม. มีปริมาตรเท่าใดในรูปของ π?`, `${coefficient}π ลบ.ซม.`, [`${4 * r * r}π ลบ.ซม.`, `${r * r * r}π ลบ.ซม.`, `${coefficient / 2}π ลบ.ซม.`], "ปริมาตรทรงกลม = ⁴⁄₃πr³", `⁴⁄₃π(${r})³ = ${coefficient}π ลบ.ซม.`, { r });
+    }
+    case "transformations": {
+      const x = int(-8, 8) || 3, y = int(-8, 8) || 4;
+      if (variant === 0) {
+        const dx = int(-5, 5), dy = int(-5, 5), correct = `(${x + dx}, ${y + dy})`;
+        return answer(`เลื่อนจุด P(${x}, ${y}) ด้วยเวกเตอร์ (${dx}, ${dy}) จะได้จุดใด?`, correct, [`(${x - dx}, ${y - dy})`, `(${-x + dx}, ${y + dy})`, `(${x + dy}, ${y + dx})`], "บวกพิกัดเวกเตอร์กับพิกัดจุดทีละแกน", `P' = (${x} + ${dx}, ${y} + ${dy}) = ${correct}`, { x, y, dx, dy });
+      }
+      if (variant === 1) return answer(`สะท้อนจุด P(${x}, ${y}) กับแกน x ได้พิกัดใด?`, `(${x}, ${-y})`, [`(${-x}, ${y})`, `(${-x}, ${-y})`, `(${y}, ${x})`], "การสะท้อนกับแกน x เปลี่ยนเครื่องหมายพิกัด y เท่านั้น", `P' = (${x}, −${y}) = (${x}, ${-y})`, { x, y, axis: "x" });
+      if (variant === 2) return answer(`สะท้อนจุด P(${x}, ${y}) กับแกน y ได้พิกัดใด?`, `(${-x}, ${y})`, [`(${x}, ${-y})`, `(${-x}, ${-y})`, `(${y}, ${x})`], "การสะท้อนกับแกน y เปลี่ยนเครื่องหมายพิกัด x เท่านั้น", `P' = (−${x}, ${y}) = (${-x}, ${y})`, { x, y, axis: "y" });
+      return answer(`หมุนจุด P(${x}, ${y}) รอบจุดกำเนิดทวนเข็มนาฬิกา 90° ได้พิกัดใด?`, `(${-y}, ${x})`, [`(${y}, ${-x})`, `(${-x}, ${-y})`, `(${x}, ${-y})`], "การหมุนทวนเข็ม 90° ใช้กฎ (x, y) → (−y, x)", `(${x}, ${y}) → (−${y}, ${x})`, { x, y, angle: 90 });
+    }
+    case "congruence": {
+      if (variant === 0) return answer("สามเหลี่ยมสองรูปมีด้านคู่สมนัยเท่ากันทั้งสามคู่ ใช้เกณฑ์ใดสรุปว่าสามเหลี่ยมเท่ากันทุกประการ?", "ด้าน-ด้าน-ด้าน (SSS)", ["มุม-มุม-มุม (AAA)", "ด้าน-ด้าน-มุมที่มุมไม่อยู่ระหว่างด้าน (SSA)", "มุมเดียวเท่ากัน"], "เกณฑ์ SSS ใช้ด้านที่สมนัยกันทั้งสามคู่", "ด้านคู่สมนัยเท่ากัน 3 คู่ จึงใช้เกณฑ์ SSS", { criterion: "SSS" });
+      if (variant === 1) return answer("มีด้านหนึ่งและมุมประกบสองมุมของสามเหลี่ยมคู่หนึ่งเท่ากับของอีกคู่ ใช้เกณฑ์ใด?", "มุม-ด้าน-มุม (ASA)", ["ด้าน-ด้าน-ด้าน (SSS)", "มุม-มุม-มุม (AAA)", "ด้าน-ด้าน-มุมที่มุมไม่อยู่ระหว่างด้าน (SSA)"], "ASA คือมุมสองมุมและด้านที่อยู่ระหว่างมุมทั้งสอง", "ข้อมูลตรงกับเกณฑ์ ASA", { criterion: "ASA" });
+      if (variant === 2) return answer("เกณฑ์ใดใช้ด้านสองคู่และมุมที่อยู่ระหว่างด้านนั้นเพื่อพิสูจน์ความเท่ากันทุกประการ?", "ด้าน-มุม-ด้าน (SAS)", ["มุม-มุม-มุม (AAA)", "ด้าน-ด้าน-ด้าน (SSS)", "มุม-มุมเท่านั้น"], "SAS ต้องเป็นมุมที่อยู่ระหว่างด้านคู่ที่กำหนด", "ข้อมูลตรงกับเกณฑ์ SAS", { criterion: "SAS" });
+      return answer("ข้อมูลด้าน-ด้าน-มุมที่มุมไม่อยู่ระหว่างด้าน (SSA) เพียงอย่างเดียวรับประกันว่าสามเหลี่ยมเท่ากันทุกประการหรือไม่?", "ไม่รับประกัน", ["รับประกันเสมอ", "รับประกันเฉพาะสามเหลี่ยมด้านเท่า", "รับประกันเมื่อมีมุมฉากเท่านั้น"], "กรณี SSA อาจสร้างสามเหลี่ยมได้มากกว่าหนึ่งรูป", "SSA ไม่ใช่เกณฑ์ความเท่ากันทุกประการทั่วไป เพราะอาจเกิดกรณีกำกวม", { criterion: "SSA" });
+    }
+    case "parallel-lines": {
+      const angle = int(35, 75), supplement = 180 - angle;
+      if (variant === 0) return answer(`เมื่อเส้นขนานสองเส้นถูกตัดด้วยเส้นตัด มุมสมนัยกับมุม ${angle}° มีขนาดเท่าใด?`, `${angle}°`, [`${supplement}°`, `${angle / 2}°`, `${180 - 2 * angle}°`], "มุมสมนัยของเส้นขนานมีขนาดเท่ากัน", `มุมสมนัย = ${angle}°`, { angle, relation: "corresponding" });
+      if (variant === 1) return answer(`เส้นขนานสองเส้นถูกตัดด้วยเส้นตัด มุมแย้งภายในคู่หนึ่งมีมุม ${angle}° อีกมุมมีขนาดเท่าใด?`, `${angle}°`, [`${supplement}°`, `${angle + 90}°`, `${angle / 2}°`], "มุมแย้งภายในของเส้นขนานมีขนาดเท่ากัน", `มุมแย้งภายใน = ${angle}°`, { angle, relation: "alternate-interior" });
+      if (variant === 2) return answer(`มุมภายในด้านเดียวกันของเส้นตัดมีมุมหนึ่ง ${angle}° อีกมุมมีขนาดเท่าใด?`, `${supplement}°`, [`${angle}°`, `${180 + angle}°`, `${90 - angle}°`], "มุมภายในด้านเดียวกันรวมกันได้ 180°", `180° − ${angle}° = ${supplement}°`, { angle, relation: "same-side-interior" });
+      return answer(`ถ้ามุมหนึ่งมีขนาด ${angle}° มุมตรงข้ามกันที่จุดตัดมีขนาดเท่าใด?`, `${angle}°`, [`${supplement}°`, `${angle / 2}°`, `${2 * angle}°`], "มุมตรงข้ามกันมีขนาดเท่ากัน", `มุมตรงข้าม = ${angle}°`, { angle, relation: "vertical" });
+    }
+    case "geometry-reasoning": {
+      const b = int(25, 60), a = b + int(10, 55);
+      if (variant === 0) return answer(`สามเหลี่ยมมีมุม ${a}° และ ${b}° มุมภายในที่เหลือเป็นเท่าใด?`, `${180 - a - b}°`, [`${180 - a}°`, `${180 - b}°`, `${a + b}°`], "มุมภายในสามเหลี่ยมรวม 180°", `180° − ${a}° − ${b}° = ${180 - a - b}°`, { a, b });
+      if (variant === 1) return answer(`รูปสี่เหลี่ยมมีมุมสามมุม ${a}°, ${b}° และ 90° มุมที่สี่มีขนาดเท่าใด?`, `${360 - a - b - 90}°`, [`${180 - a - b}°`, `${360 - a - b}°`, `${a + b + 90}°`], "มุมภายในรูปสี่เหลี่ยมรวม 360°", `360° − ${a}° − ${b}° − 90° = ${360 - a - b - 90}°`, { a, b });
+      if (variant === 2) return answer(`มุมภายนอกของสามเหลี่ยมเท่ากับ ${a}° และมุมภายในที่ไม่ประชิดมุมหนึ่งเท่ากับ ${b}° อีกมุมหนึ่งมีขนาดเท่าใด?`, `${a - b}°`, [`${a + b}°`, `${180 - a}°`, `${180 - b}°`], "มุมภายนอกเท่ากับผลบวกของมุมภายในที่ไม่ประชิดสองมุม", `${a}° = ${b}° + มุมที่หา; มุมที่หา = ${a - b}°`, { exterior: a, interior: b });
+      const angle = int(35, 80);
+      return answer(`มุมประชิดบนเส้นตรงมุมหนึ่งมีขนาด ${angle}° อีกมุมมีขนาดเท่าใด?`, `${180 - angle}°`, [`${angle}°`, `${90 - angle}°`, `${180 + angle}°`], "มุมบนเส้นตรงรวมกัน 180°", `180° − ${angle}° = ${180 - angle}°`, { angle });
+    }
+    case "similarity": {
+      if (variant === 0) {
+        const small = int(2, 8), scale = int(2, 5);
+        return answer(`รูปสามเหลี่ยมคล้ายกันมีอัตราส่วนด้านรูปใหญ่ต่อรูปเล็กเป็น ${scale}:1 ด้านยาว ${small} หน่วยในรูปเล็กจะเป็นเท่าใดในรูปใหญ่?`, small * scale, [small + scale, small * (scale + 1), scale], "คูณความยาวด้านด้วยอัตราส่วนการขยาย", `${small} × ${scale} = ${small * scale}`, { small, scale });
+      }
+      if (variant === 1) {
+        const a = int(3, 8), b = int(2, 6), scale = int(2, 4);
+        return answer(`รูปสามเหลี่ยมสองรูปคล้ายกัน มีด้านคู่สมนัย ${a} หน่วยและ ${a * scale} หน่วย อีกด้านของรูปเล็กยาว ${b} หน่วย ด้านคู่สมนัยของรูปใหญ่ยาวเท่าใด?`, b * scale, [b + scale, a * scale, b * scale + 1], "ด้านคู่สมนัยคูณด้วยตัวคูณสเกลเดียวกัน", `${a * scale} ÷ ${a} = ${scale}; ${b} × ${scale} = ${b * scale}`, { a, b, scale });
+      }
+      if (variant === 2) {
+        const scale = int(2, 5), area = int(2, 12);
+        return answer(`รูปคล้ายกันมีอัตราส่วนความยาวด้านของรูปใหญ่ต่อรูปเล็ก ${scale}:1 พื้นที่รูปเล็กเป็น ${area} ตร.หน่วย พื้นที่รูปใหญ่เท่าใด?`, area * scale * scale, [area * scale, area + scale, area * scale * 2], "อัตราส่วนพื้นที่เป็นกำลังสองของอัตราส่วนความยาว", `${area} × ${scale}² = ${area * scale * scale} ตร.หน่วย`, { scale, area });
+      }
+      const a = int(2, 8), b = int(2, 7), scale = int(2, 5);
+      return answer(`รูปสามเหลี่ยมคล้ายกันมีด้าน ${a} หน่วยสมนัยกับด้าน ${a * scale} หน่วย อีกด้านของรูปเล็กยาว ${b} หน่วย ด้านสมนัยของรูปใหญ่ยาวเท่าใด?`, b * scale, [b + scale, a * scale, b * scale + 1], `หาอัตราส่วน ${a * scale}/${a} แล้วใช้กับอีกด้าน`, `ตัวคูณสเกล = ${a * scale}/${a} = ${scale}; ${b} × ${scale} = ${b * scale}`, { a, b, scale });
+    }
+    case "systems": {
+      const y = int(1, 8), x = y + int(1, 7);
+      if (variant === 0) {
+        const sum = x + y, diff = x - y;
+        return answer(`แก้ระบบสมการ x + y = ${sum} และ x − y = ${diff} ได้คู่ลำดับ (x, y) ใด?`, `(${x}, ${y})`, [`(${y}, ${x})`, `(${sum}, ${diff})`, `(${x + 1}, ${y - 1})`], "บวกสมการเพื่อกำจัด y แล้วแทนค่ากลับหา y", `บวกสมการได้ 2x = ${2 * x} จึง x = ${x}; ดังนั้น y = ${y}`, { x, y, sum, diff });
+      }
+      if (variant === 1) {
+        const a = int(2, 5), b = int(1, 4), difference = x - y, total = a * x + b * y;
+        return answer(`แก้ระบบ ${a}x + ${b}y = ${total} และ x − y = ${difference} ได้คู่ลำดับ (x, y) ใด?`, `(${x}, ${y})`, [`(${y}, ${x})`, `(${x + 1}, ${y - 1})`, `(${x - 1}, ${y + 1})`], `แทน x = y + ${difference} ในสมการแรก แล้วแก้หา y`, `แทนค่าได้ ${a}(y + ${difference}) + ${b}y = ${total}; แก้สมการจะได้ x = ${x}, y = ${y}`, { a, b, x, y, difference, total });
+      }
+      const sum = x + y, doubled = 2 * x + y;
+      return answer(`ระบบ x + y = ${sum} และ 2x + y = ${doubled} มีคำตอบ (x, y) ใด?`, `(${x}, ${y})`, [`(${y}, ${x})`, `(${sum}, ${doubled})`, `(${x - 1}, ${y + 1})`], "ลบสมการแรกออกจากสมการที่สองเพื่อหา x", `สมการที่สองลบสมการแรกได้ x = ${doubled - sum} = ${x}; จึง y = ${sum} − ${x} = ${y}`, { x, y, sum, doubled });
+    }
+    case "circles": {
+      const r = int(2, 12);
+      if (variant === 0) return answer(`วงกลมรัศมี ${r} ซม. มีเส้นรอบวงเท่าใดในรูปของ π?`, `${2 * r}π ซม.`, [`${r}π ซม.`, `${r * r}π ซม.`, `${4 * r}π ซม.`], "เส้นรอบวง = 2πr", `2π × ${r} = ${2 * r}π ซม.`, { r });
+      if (variant === 1) return answer(`วงกลมรัศมี ${r} ซม. มีพื้นที่เท่าใดในรูปของ π?`, `${r * r}π ตร.ซม.`, [`${2 * r}π ตร.ซม.`, `${r}π ตร.ซม.`, `${2 * r * r}π ตร.ซม.`], "พื้นที่วงกลม = πr²", `π × ${r}² = ${r * r}π ตร.ซม.`, { r });
+      if (variant === 2) return answer(`วงกลมมีเส้นผ่านศูนย์กลาง ${2 * r} ซม. รัศมียาวเท่าใด?`, `${r} ซม.`, [`${2 * r} ซม.`, `${r * 2}π ซม.`, `${r + 1} ซม.`], "รัศมีมีความยาวครึ่งหนึ่งของเส้นผ่านศูนย์กลาง", `${2 * r} ÷ 2 = ${r} ซม.`, { diameter: 2 * r, r });
+      const angle = choose([45, 60, 90, 120, 180]), arc = fraction(angle, 360);
+      return answer(`มุมที่จุดศูนย์กลางของภาควงกลมเป็น ${angle}° คิดเป็นเศษส่วนเท่าใดของวงกลมเต็ม?`, arc, [fraction(angle, 180), fraction(360, angle), fraction(360 - angle, 360)], "สัดส่วนของภาควงกลม = มุมที่จุดศูนย์กลาง ÷ 360°", `${angle}/360 = ${arc}`, { angle });
+    }
+    case "sets": {
+      const a = int(3, 6), b = a + int(2, 6), c = b + int(2, 6);
+      if (variant === 0) return answer(`กำหนด A = {1, 2, ${a}, ${b}} และ B = {2, ${b}, ${c}} จงหา A ∩ B`, `{2, ${b}}`, [`{1, ${a}, ${c}}`, `{1, 2, ${a}, ${b}, ${c}}`, `{${a}, ${c}}`], "อินเตอร์เซกชันคือสมาชิกที่อยู่ในทั้งสองเซต", `สมาชิกที่ซ้ำกันใน A และ B คือ 2 และ ${b}`, { a, b, c });
+      if (variant === 1) return answer(`กำหนด A = {1, 2, ${a}} และ B = {2, ${b}} จงหา A ∪ B`, `{1, 2, ${a}, ${b}}`, [`{2}`, `{1, ${a}}`, `{1, 2, ${a}, ${b}, ${b}}`], "ยูเนียนรวมสมาชิกของทั้งสองเซตโดยไม่นับซ้ำ", `รวมสมาชิกไม่ซ้ำได้ {1, 2, ${a}, ${b}}`, { a, b });
+      if (variant === 2) {
+        const sizeA = int(5, 12), sizeB = int(4, 10), overlap = int(1, Math.min(sizeA, sizeB) - 1);
+        return answer(`ถ้า n(A) = ${sizeA}, n(B) = ${sizeB} และ n(A ∩ B) = ${overlap} แล้ว n(A ∪ B) เท่ากับเท่าใด?`, sizeA + sizeB - overlap, [sizeA + sizeB, sizeA + sizeB + overlap, sizeA * sizeB], "ใช้ n(A ∪ B) = n(A) + n(B) − n(A ∩ B)", `${sizeA} + ${sizeB} − ${overlap} = ${sizeA + sizeB - overlap}`, { sizeA, sizeB, overlap });
+      }
+      return answer(`กำหนดเอกภพสัมพัทธ์ U = {1, 2, 3, 4, 5, 6} และ A = {2, 4, 6} ส่วนเติมเต็มของ A คือข้อใด?`, "{1, 3, 5}", ["{2, 4, 6}", "{1, 2, 3}", "{4, 5, 6}"], "ส่วนเติมเต็มคือสมาชิกใน U ที่ไม่อยู่ใน A", "นำ 2, 4, 6 ออกจาก U เหลือ {1, 3, 5}", { universe: [1, 2, 3, 4, 5, 6], set: [2, 4, 6] });
+    }
+    case "logic": {
+      const n = 2 * int(2, 9);
+      if (variant === 0) return answer(`ข้อความ “ถ้า n หารด้วย 4 ลงตัว แล้ว n เป็นจำนวนคู่” เป็นจริงหรือเท็จ?`, "จริง", ["เท็จ", "จริงเฉพาะเมื่อ n = 0", "สรุปไม่ได้"], "จำนวนที่หารด้วย 4 ลงตัวเขียนเป็น 4k ได้ และ 4k = 2(2k)", `ถ้า n = 4k จะได้ n = 2(2k) จึงเป็นจำนวนคู่ ข้อความเป็นจริง`, { n, statement: "divisible by 4 implies even" });
+      if (variant === 1) return answer("นิเสธของข้อความ ‘ทุกจำนวนจริงเป็นจำนวนบวก’ คือข้อใด?", "มีจำนวนจริงอย่างน้อยหนึ่งจำนวนที่ไม่เป็นจำนวนบวก", ["ทุกจำนวนจริงไม่เป็นจำนวนบวก", "ไม่มีจำนวนจริงที่เป็นจำนวนบวก", "ทุกจำนวนบวกเป็นจำนวนจริง"], "นิเสธของ ‘ทุก’ คือ ‘มีอย่างน้อยหนึ่งที่ไม่…’", "มีตัวอย่างเช่น 0 หรือ −1 ซึ่งไม่เป็นจำนวนบวก", { rule: "negation of universal" });
+      if (variant === 2) return answer("นิเสธของ p ∧ q ตามกฎของเดอมอร์แกนคือข้อใด?", "¬p ∨ ¬q", ["¬p ∧ ¬q", "p ∨ q", "p ∧ ¬q"], "เดอมอร์แกน: นิเสธของ ‘และ’ เปลี่ยนเป็น ‘หรือ’ และนิเสธแต่ละข้อความ", "¬(p ∧ q) ≡ ¬p ∨ ¬q", { rule: "De Morgan" });
+      return answer("ถ้า p เป็นเท็จ ประพจน์เงื่อนไข p → q มีค่าความจริงเป็นอย่างไร?", "จริง", ["เท็จ", "ขึ้นกับ q", "นิยามไม่ได้"], "ประพจน์ p → q เป็นเท็จเฉพาะกรณี p จริงและ q เท็จ", "เมื่อ p เป็นเท็จ เงื่อนไข p → q เป็นจริง", { p: false });
+    }
+    case "numbers": {
+      if (variant === 0) {
+        const square = int(2, 10) ** 2;
+        return answer(`√${square} จัดเป็นจำนวนชนิดใด?`, "จำนวนตรรกยะ", ["จำนวนอตรรกยะ", "จำนวนจินตภาพ", "ไม่ใช่จำนวนจริง"], "หารากที่สองของจำนวนกำลังสองสมบูรณ์ได้เป็นจำนวนเต็ม", `√${square} = ${Math.sqrt(square)} ซึ่งเขียนเป็นเศษส่วนได้`, { radicand: square });
+      }
+      if (variant === 1) {
+        const value = int(-30, 30) || -7;
+        return answer(`ค่าสัมบูรณ์ของ ${value} เท่ากับเท่าใด?`, Math.abs(value), [value, -Math.abs(value), Math.abs(value) + 1], "ค่าสัมบูรณ์คือระยะห่างจากศูนย์ จึงไม่ติดลบ", `|${value}| = ${Math.abs(value)}`, { value });
+      }
+      if (variant === 2) {
+        const value = int(2, 12);
+        return answer(`√(${value}²) มีค่าเท่าใด?`, value, [-value, value * value, value + 1], "รากที่สองหลักเป็นค่าที่ไม่ติดลบ", `√(${value}²) = |${value}| = ${value}`, { value });
+      }
+      const value = choose([Math.sqrt(2), Math.sqrt(3), Math.PI]);
+      const label = value === Math.PI ? "π" : value === Math.sqrt(2) ? "√2" : "√3";
+      return answer(`จำนวน ${label} เป็นจำนวนตรรกยะหรืออตรรกยะ?`, "อตรรกยะ", ["ตรรกยะ", "จำนวนเต็ม", "จำนวนธรรมชาติ"], "จำนวนอตรรกยะเขียนเป็นเศษส่วนของจำนวนเต็มสองจำนวนไม่ได้", `${label} เป็นจำนวนอตรรกยะ`, { value: label });
+    }
+    case "exponents": {
+      const base = choose([2, 3, 5]), m = int(2, 5), n = int(1, 4);
+      if (variant === 0) return answer(`จงเขียน ${base}^${m} × ${base}^${n} ในรูปเลขยกกำลังอย่างง่าย`, `${base}^${m + n}`, [`${base}^${m * n}`, `${base}^${m - n}`, `${base * 2}^${m + n}`], "เมื่อคูณเลขยกกำลังฐานเดียวกัน ให้นำเลขชี้กำลังมาบวกกัน", `${base}^${m} × ${base}^${n} = ${base}^(${m} + ${n}) = ${base}^${m + n}`, { base, m, n });
+      if (variant === 1) return answer(`จงเขียน (${base}^${m})^${n} ในรูปเลขยกกำลังอย่างง่าย`, `${base}^${m * n}`, [`${base}^${m + n}`, `${base + m}^${n}`, `${base}^${m - n}`], "เมื่อยกกำลังของเลขยกกำลัง ให้นำเลขชี้กำลังมาคูณกัน", `(${base}^${m})^${n} = ${base}^(${m}×${n}) = ${base}^${m * n}`, { base, m, n });
+      if (variant === 2) return answer(`จงหาค่าของ ${base}^${m}`, base ** m, [base * m, base + m, base ** (m - 1)], "เลขชี้กำลังบอกจำนวนครั้งที่นำฐานมาคูณกัน", `${base}^${m} = ${Array(m).fill(base).join(" × ")} = ${base ** m}`, { base, m });
+      return answer(`จงเขียน ${base}^0 ให้อยู่ในรูปจำนวน`, 1, [0, base, -1], "จำนวนที่ไม่เป็นศูนย์ยกกำลังศูนย์มีค่าเท่ากับ 1", `${base}^0 = 1`, { base, exponent: 0 });
+    }
+    case "exponential-log": {
+      const base = choose([2, 3, 5]), exponent = int(2, 5), value = base ** exponent;
+      if (variant === 0) return answer(`จงหาค่า x เมื่อ ${base}^x = ${value}`, exponent, [value, exponent + 1, exponent - 1], `เขียน ${value} ให้อยู่ในรูปกำลังของ ${base}`, `${value} = ${base}^${exponent} ดังนั้น x = ${exponent}`, { base, exponent, value });
+      if (variant === 1) return answer(`จงหาค่า log_${base}(${value})`, exponent, [value, base + exponent, exponent - 1], "log_b(a) คือเลขชี้กำลังที่ทำให้ b ยกกำลังนั้นได้ a", `${base}^${exponent} = ${value} จึง log_${base}(${value}) = ${exponent}`, { base, exponent, value });
+      if (variant === 2) return answer(`จงยุบ ${base}^${exponent} × ${base}^2 ให้อยู่ในรูปเลขยกกำลัง`, `${base}^${exponent + 2}`, [`${base}^${exponent * 2}`, `${base}^${exponent - 2}`, `${base * 2}^${exponent}`], "เมื่อนำเลขยกกำลังฐานเดียวกันมาคูณ ให้บวกเลขชี้กำลัง", `${base}^${exponent} × ${base}² = ${base}^${exponent + 2}`, { base, exponent });
+      return answer(`ถ้า log_${base}(x) = ${exponent} แล้ว x มีค่าเท่าใด?`, value, [base * exponent, exponent, base ** (exponent - 1)], "เปลี่ยนรูปล็อกเป็นเลขยกกำลัง: x = ฐาน^ค่า log", `x = ${base}^${exponent} = ${value}`, { base, exponent, value });
+    }
+    case "analytic-geometry": {
+      const x1 = int(-8, 2), y1 = int(-8, 2), [dx, dy, distance] = choose([[3, 4, 5], [5, 12, 13], [8, 15, 17]]), x2 = x1 + dx, y2 = y1 + dy;
+      if (variant === 0) return answer(`จุดกึ่งกลางของ A(${x1}, ${y1}) และ B(${x2}, ${y2}) คือจุดใด?`, `(${(x1 + x2) / 2}, ${(y1 + y2) / 2})`, [`(${x1 + x2}, ${y1 + y2})`, `(${dx}, ${dy})`, `(${(x2 - x1) / 2}, ${(y2 - y1) / 2})`], "หาค่าเฉลี่ยพิกัด x และค่าเฉลี่ยพิกัด y", `((${x1}+${x2})/2, (${y1}+${y2})/2) = (${(x1 + x2) / 2}, ${(y1 + y2) / 2})`, { x1, y1, x2, y2 });
+      if (variant === 1) return answer(`ระยะระหว่าง A(${x1}, ${y1}) และ B(${x2}, ${y2}) เท่าใด?`, distance, [dx + dy, Math.abs(dx - dy), distance + 1], "ใช้สูตรระยะทาง √((x₂−x₁)²+(y₂−y₁)²)", `√(${dx}² + ${dy}²) = ${distance}`, { x1, y1, x2, y2, dx, dy, distance });
+      if (variant === 2) return answer(`ความชันของเส้นตรงผ่าน A(${x1}, ${y1}) และ B(${x2}, ${y2}) เท่ากับเท่าใด?`, fraction(dy, dx), [fraction(dx, dy), String(dy), String(dx)], "ความชัน = (y₂−y₁)/(x₂−x₁)", `(${y2}−${y1})/(${x2}−${x1}) = ${dy}/${dx} = ${fraction(dy, dx)}`, { x1, y1, x2, y2 });
+      return answer(`เส้นตรงผ่านจุด (${x1}, ${y1}) มีความชัน ${fraction(dy, dx)} จงหาค่า y-intercept เมื่อใช้รูป y = mx + b`, fraction(y1 * dx - dy * x1, dx), [String(y1), String(y2), fraction(y1 * dx + dy * x1, dx)], "แทนจุดลงใน y = mx + b แล้วแก้หา b", `b = ${y1} − (${fraction(dy, dx)})(${x1}) = ${fraction(y1 * dx - dy * x1, dx)}`, { x1, y1, slope: fraction(dy, dx) });
+    }
+    case "matrices": {
+      const a = int(1, 5), b = int(1, 5), c = int(1, 5), d = int(1, 5), e = int(1, 5), f = int(1, 5), g = int(1, 5), h = int(1, 5);
+      if (variant === 0) return answer(`จงหาผลบวก [[${a}, ${b}], [${c}, ${d}]] + [[${e}, ${f}], [${g}, ${h}]]`, `[[${a + e}, ${b + f}], [${c + g}, ${d + h}]]`, [`[[${a * e}, ${b * f}], [${c * g}, ${d * h}]]`, `[[${a + f}, ${b + e}], [${c + h}, ${d + g}]]`, `[[${a + e}, ${b + f}]]`], "บวกสมาชิกตำแหน่งเดียวกันของเมทริกซ์", `บวกแต่ละตำแหน่ง ได้ [[${a + e}, ${b + f}], [${c + g}, ${d + h}]]`, { A: [[a, b], [c, d]], B: [[e, f], [g, h]] });
+      if (variant === 1) {
+        const det = a * d - b * c;
+        return answer(`ดีเทอร์มิแนนต์ของ [[${a}, ${b}], [${c}, ${d}]] มีค่าเท่าใด?`, det, [a * d + b * c, a + d - b - c, a * c - b * d], "สำหรับ 2×2 ใช้ ad − bc", `${a}×${d} − ${b}×${c} = ${det}`, { A: [[a, b], [c, d]] });
+      }
+      if (variant === 2) {
+        const k = int(2, 5);
+        return answer(`จงหา ${k} × [[${a}, ${b}], [${c}, ${d}]]`, `[[${k * a}, ${k * b}], [${k * c}, ${k * d}]]`, [`[[${a + k}, ${b + k}], [${c + k}, ${d + k}]]`, `[[${a * k}, ${b}, ${c * k}, ${d}]]`, `[[${a}, ${b}], [${c}, ${d}]]`], "คูณสเกลาร์กับสมาชิกทุกตำแหน่ง", `คูณทุกช่องด้วย ${k} ได้ [[${k * a}, ${k * b}], [${k * c}, ${k * d}]]`, { k, A: [[a, b], [c, d]] });
+      }
+      const sum = a * e + b * g;
+      return answer(`สมาชิกแถว 1 คอลัมน์ 1 ของ [[${a}, ${b}], [${c}, ${d}]] × [[${e}, ${f}], [${g}, ${h}]] เท่ากับเท่าใด?`, sum, [a * e + b * f, a + e, a * g + b * h], "คูณสมาชิกแถวที่ 1 ของเมทริกซ์แรกกับสมาชิกคอลัมน์ที่ 1 ของเมทริกซ์ที่สองแล้วบวก", `${a}×${e} + ${b}×${g} = ${sum}`, { A: [[a, b], [c, d]], B: [[e, f], [g, h]] });
+    }
+    case "vectors": {
+      const x = int(1, 8), y = int(1, 8), a = int(1, 7), b = int(1, 7);
+      if (variant === 0) return answer(`กำหนด u = (${x}, ${y}) และ v = (${a}, ${b}) จงหา u + v`, `(${x + a}, ${y + b})`, [`(${x + b}, ${y + a})`, `(${x - a}, ${y - b})`, `(${x * a}, ${y * b})`], "บวกองค์ประกอบพิกัดที่อยู่ตำแหน่งเดียวกัน", `u + v = (${x}+${a}, ${y}+${b}) = (${x + a}, ${y + b})`, { u: [x, y], v: [a, b] });
+      if (variant === 1) {
+        const p = choose([[3, 4], [5, 12], [8, 15]]), magnitude = Math.sqrt(p[0] ** 2 + p[1] ** 2);
+        return answer(`เวกเตอร์ v = (${p[0]}, ${p[1]}) มีขนาดเท่าใด?`, magnitude, [p[0] + p[1], Math.abs(p[1] - p[0]), magnitude + 1], "ขนาดเวกเตอร์ (a,b) = √(a²+b²)", `|v| = √(${p[0]}² + ${p[1]}²) = ${magnitude}`, { vector: p });
+      }
+      if (variant === 2) return answer(`ผลคูณจุดของ u = (${x}, ${y}) และ v = (${a}, ${b}) เท่ากับเท่าใด?`, x * a + y * b, [x * a - y * b, (x + y) * (a + b), x + a + y + b], "คูณองค์ประกอบที่ตรงกันแล้วบวกผลคูณ", `${x}×${a} + ${y}×${b} = ${x * a + y * b}`, { u: [x, y], v: [a, b] });
+      const k = int(2, 5);
+      return answer(`ถ้า v = (${x}, ${y}) แล้ว ${k}v เท่ากับเวกเตอร์ใด?`, `(${k * x}, ${k * y})`, [`(${x + k}, ${y + k})`, `(${x}, ${k * y})`, `(${k + x}, ${k + y})`], "คูณสเกลาร์กับทุกองค์ประกอบของเวกเตอร์", `${k}(${x}, ${y}) = (${k * x}, ${k * y})`, { vector: [x, y], scalar: k });
+    }
+    case "complex": {
+      const a = int(1, 7), b = int(1, 7), c = int(1, 7), d = int(1, 7);
+      if (variant === 0) return answer(`จงบวก (${a} + ${b}i) + (${c} + ${d}i)`, `${a + c} + ${b + d}i`, [`${a + b} + ${c + d}i`, `${a - c} + ${b - d}i`, `${a * c} + ${b * d}i`], "บวกส่วนจริงกับส่วนจริง และส่วนจินตภาพกับส่วนจินตภาพ", `(${a}+${c}) + (${b}+${d})i = ${a + c} + ${b + d}i`, { a, b, c, d });
+      if (variant === 1) return answer(`จงคูณ (${a} + ${b}i)(${c} + ${d}i)`, `${a * c - b * d} + ${a * d + b * c}i`, [`${a * c + b * d} + ${a * d - b * c}i`, `${a + c} + ${b + d}i`, `${a * c} + ${b * d}i`], "กระจายพจน์และใช้ i² = −1", `ได้ ${a * c} + ${a * d}i + ${b * c}i + ${b * d}i² = ${a * c - b * d} + ${a * d + b * c}i`, { a, b, c, d });
+      if (variant === 2) {
+        const p = choose([[3, 4], [5, 12], [8, 15]]);
+        return answer(`มอดูลัสของจำนวนเชิงซ้อน ${p[0]} + ${p[1]}i เท่ากับเท่าใด?`, Math.sqrt(p[0] ** 2 + p[1] ** 2), [p[0] + p[1], p[1] - p[0], p[0] * p[1]], "|a+bi| = √(a²+b²)", `√(${p[0]}² + ${p[1]}²) = ${Math.sqrt(p[0] ** 2 + p[1] ** 2)}`, { a: p[0], b: p[1] });
+      }
+      return answer(`สังยุคของ ${a} + ${b}i คือข้อใด?`, `${a} − ${b}i`, [`−${a} + ${b}i`, `${b} + ${a}i`, `${a} + ${b}i`], "สังยุคเปลี่ยนเครื่องหมายของส่วนจินตภาพ", `สังยุคของ ${a} + ${b}i คือ ${a} − ${b}i`, { a, b });
+    }
+    case "counting": {
+      if (variant === 0) {
+        const shirts = int(3, 8), pants = int(2, 6);
+        return answer(`มีเสื้อ ${shirts} แบบและกางเกง ${pants} แบบ จัดชุดเสื้อกับกางเกงได้กี่แบบ?`, shirts * pants, [shirts + pants, shirts * pants - 1, shirts ** pants], "หลักการคูณ: จำนวนทางเลือกแต่ละขั้นนำมาคูณกัน", `${shirts} × ${pants} = ${shirts * pants} แบบ`, { shirts, pants });
+      }
+      if (variant === 1) {
+        const n = int(4, 7), value = [1, 1, 2, 6, 24, 120, 720, 5040][n];
+        return answer(`จัดเรียงหนังสือที่แตกต่างกัน ${n} เล่มบนชั้นได้กี่วิธี?`, value, [n * n, n * (n - 1), value / n], "การเรียงสิ่งของต่างกัน n ชิ้นมี n! วิธี", `${n}! = ${value}`, { n });
+      }
+      if (variant === 2) {
+        const n = int(5, 9), k = int(2, Math.min(4, n - 1));
+        let value = 1;
+        for (let i = 1; i <= k; i += 1) value = value * (n - k + i) / i;
+        return answer(`เลือกตัวแทน ${k} คนจากนักเรียน ${n} คนโดยไม่สนลำดับ ได้กี่วิธี?`, value, [n ** k, n * k, value * k], "ใช้จำนวนวิธีเลือก C(n,k) เพราะไม่สนลำดับ", `C(${n},${k}) = ${value}`, { n, k });
+      }
+      const n = int(5, 9), k = 3, value = n * (n - 1) * (n - 2);
+      return answer(`เลือกประธาน รองประธาน และเลขานุการจากคน ${n} คน ได้กี่วิธี?`, value, [n ** 3, n * (n - 1) / 2, n + (n - 1) + (n - 2)], "ตำแหน่งต่างกันจึงสนลำดับ: n × (n−1) × (n−2)", `${n} × ${n - 1} × ${n - 2} = ${value}`, { n, positions: k });
+    }
+    case "sequence": {
+      if (variant === 0) {
+        const first = int(1, 10), difference = int(2, 7), n = int(5, 12), value = first + (n - 1) * difference;
+        return answer(`ลำดับเลขคณิตมีพจน์แรก ${first} และผลต่างร่วม ${difference} พจน์ที่ ${n} เท่ากับเท่าใด?`, value, [first + n * difference, first * n, value - difference], "ใช้ aₙ = a₁ + (n−1)d", `${first} + (${n}−1)×${difference} = ${value}`, { first, difference, n });
+      }
+      if (variant === 1) {
+        const first = int(1, 5), ratio = int(2, 4), n = int(4, 7), value = first * ratio ** (n - 1);
+        return answer(`ลำดับเรขาคณิตมีพจน์แรก ${first} และอัตราส่วนร่วม ${ratio} พจน์ที่ ${n} มีค่าเท่าใด?`, value, [first * ratio * n, first + ratio ** n, value / ratio], "ใช้ aₙ = a₁rⁿ⁻¹", `${first} × ${ratio}^${n - 1} = ${value}`, { first, ratio, n });
+      }
+      if (variant === 2) {
+        const first = int(1, 8), difference = int(1, 5), n = int(4, 10), last = first + (n - 1) * difference, sum = n * (first + last) / 2;
+        return answer(`ผลบวก n พจน์แรกของลำดับเลขคณิตที่มี a₁=${first}, d=${difference}, n=${n} เท่ากับเท่าใด?`, sum, [n * last, n * first, first + last], "ใช้ Sₙ = n(a₁+aₙ)/2", `aₙ = ${last}; Sₙ = ${n}(${first}+${last})/2 = ${sum}`, { first, difference, n, last });
+      }
+      const first = int(1, 14), difference = int(2, 8), value = first + 3 * difference;
+      return answer(`ลำดับเลขคณิตเริ่ม ${first}, ${first + difference}, ${first + 2 * difference}, … พจน์ถัดไปคือเท่าใด?`, value, [first + 2 * difference, value + difference, first * difference], "ผลต่างระหว่างพจน์ติดกันคงที่", `ผลต่างร่วม = ${difference}; พจน์ถัดไป = ${first + 2 * difference} + ${difference} = ${value}`, { first, difference });
+    }
+    case "calculus": {
+      if (variant === 0) {
+        const a = int(2, 7), power = int(2, 5), x = int(1, 5), value = a * power * x ** (power - 1);
+        return answer(`ถ้า f(x) = ${a}x^${power} จงหา f'(${x})`, value, [a * x ** power, a * (power - 1) * x, a * power * x ** power], "ใช้กฎกำลัง: d/dx(axⁿ) = anxⁿ⁻¹", `f'(x) = ${a * power}x^${power - 1}; f'(${x}) = ${value}`, { a, power, x });
+      }
+      if (variant === 1) {
+        const a = int(2, 7), b = int(-6, 8), x = int(1, 6), value = 2 * a * x + b;
+        return answer(`อนุพันธ์ของ f(x) = ${a}x² ${signed(b)}x ที่ x=${x} มีค่าเท่าใด?`, value, [a * x * x + b * x, 2 * a + b, 2 * a * x - b], "หาอนุพันธ์ทีละพจน์ก่อน แล้วแทน x", `f'(x) = ${2 * a}x ${signed(b)}; f'(${x}) = ${value}`, { a, b, x });
+      }
+      if (variant === 2) {
+        const a = int(2, 6), b = int(1, 8), c = int(-7, 9), x = int(-2, 5), value = a * x * x + b * x + c;
+        return answer(`จงหา lim(x→${x}) [${a}x² + ${b}x ${signed(c)}]`, value, [a * x + b + c, value + x, -value], "พหุนามต่อเนื่อง จึงแทนค่า x ได้โดยตรง", `แทน x=${x}: ${a}(${x})² + ${b}(${x}) ${signed(c)} = ${value}`, { a, b, c, x });
+      }
+      const a = int(2, 8), value = fraction(a, 3);
+      return answer(`∫ ${a}x² dx เท่ากับข้อใด?`, `${value}x³ + C`, [`${a}x³ + C`, `${2 * a}x + C`, `${value}x² + C`], "ใช้กฎปริพันธ์กำลัง: ∫xⁿdx = xⁿ⁺¹/(n+1) + C", `${a} × x³/3 = ${value}x³ + C`, { coefficient: a, power: 2 });
+    }
+    case "qualitative-data": {
+      if (variant === 0) return answer("ข้อมูล ‘สีที่ชอบ’ เป็นข้อมูลเชิงคุณภาพระดับใด?", "นามบัญญัติ", ["อันดับ", "อันตรภาค", "อัตราส่วน"], "สีเป็นกลุ่มประเภทที่ไม่มีลำดับมากน้อย", "หมวดสีไม่มีลำดับ จึงเป็นข้อมูลนามบัญญัติ", { variable: "สีที่ชอบ" });
+      if (variant === 1) return answer("ระดับความพึงพอใจ ‘น้อย ปานกลาง มาก’ เป็นข้อมูลเชิงคุณภาพระดับใด?", "อันดับ", ["นามบัญญัติ", "อัตราส่วน", "ข้อมูลต่อเนื่อง"], "คำตอบมีลำดับจากน้อยไปมาก", "ระดับความพึงพอใจเรียงลำดับได้ จึงเป็นข้อมูลอันดับ", { variable: "ความพึงพอใจ" });
+      if (variant === 2) return answer("กราฟชนิดใดเหมาะสำหรับเปรียบเทียบจำนวนผู้ชอบหมวดหมู่สีต่าง ๆ?", "แผนภูมิแท่ง", ["ฮิสโตแกรม", "แผนภาพกล่อง", "กราฟเส้นต่อเนื่อง"], "ข้อมูลเป็นหมวดหมู่แยกจากกัน จึงเปรียบเทียบด้วยแท่ง", "แผนภูมิแท่งแสดงความถี่ของแต่ละหมวดหมู่ได้ชัดเจน", { variable: "หมวดหมู่" });
+      return answer("ข้อใดเป็นตัวแปรเชิงคุณภาพ?", "ประเภทวิชาที่นักเรียนชอบ", ["ส่วนสูงของนักเรียน", "เวลาที่ใช้ทำข้อสอบ", "จำนวนหนังสือที่อ่าน"], "ตัวแปรเชิงคุณภาพบอกประเภทหรือหมวดหมู่", "ประเภทวิชาที่ชอบเป็นหมวดหมู่ ไม่ใช่ค่าที่วัดเป็นจำนวน", { category: "qualitative" });
+    }
+    case "quantitative-data": {
+      if (variant === 0) return answer("จำนวนพี่น้องของนักเรียนเป็นข้อมูลเชิงปริมาณชนิดใด?", "ไม่ต่อเนื่อง", ["ต่อเนื่อง", "นามบัญญัติ", "อันดับ"], "จำนวนพี่น้องนับเป็นจำนวนเต็มแยกค่าได้", "จำนวนพี่น้องเป็นข้อมูลเชิงปริมาณไม่ต่อเนื่อง", { variable: "จำนวนพี่น้อง" });
+      if (variant === 1) {
+        const values = [int(5, 15), int(16, 25), int(26, 35), int(36, 45)], mean = values.reduce((s, x) => s + x, 0) / values.length;
+        return answer(`ค่าเฉลี่ยของข้อมูล ${values.join(", ")} เท่ากับเท่าใด?`, mean, [values[0], values[3], mean + 2], "รวมค่าตัวเลขแล้วหารด้วยจำนวนข้อมูล", `(${values.join("+")}) ÷ 4 = ${mean}`, { values });
+      }
+      if (variant === 2) return answer("ข้อมูลส่วนสูงของนักเรียนจัดเป็นข้อมูลเชิงปริมาณชนิดใด?", "ต่อเนื่อง", ["ไม่ต่อเนื่อง", "นามบัญญัติ", "อันดับ"], "ส่วนสูงวัดได้ละเอียดต่อเนื่องในช่วงหนึ่ง", "ส่วนสูงสามารถมีค่าได้ต่อเนื่อง เช่น 160.2 ซม.", { variable: "ส่วนสูง" });
+      const low = int(8, 20), high = low + int(10, 30);
+      return answer(`ชุดข้อมูลมีค่าน้อยสุด ${low} และค่ามากสุด ${high} พิสัยเป็นเท่าใด?`, high - low, [high + low, high, low], "พิสัย = ค่าสูงสุด − ค่าต่ำสุด", `${high} − ${low} = ${high - low}`, { low, high });
+    }
+    case "random-variable": {
+      if (variant === 0) return answer("ตัวแปรสุ่ม X มีค่า 0 ด้วยความน่าจะเป็น 1/4 และค่า 4 ด้วยความน่าจะเป็น 3/4 ค่า E(X) เท่าใด?", 3, [1, 2, 4], "คาดหมาย = Σ[x·P(x)]", `E(X) = 0(1/4) + 4(3/4) = 3`, { values: [0, 4], probabilities: [0.25, 0.75] });
+      if (variant === 1) return answer("ทอดลูกเต๋าเที่ยงตรง 1 ลูก ให้ X เป็นแต้มที่ได้ ค่า E(X) เท่าใด?", "3.5", ["3", "4", "6"], "ค่าเฉลี่ยของแต้ม 1 ถึง 6 คือผลรวม ÷ 6", `E(X) = (1+2+3+4+5+6)/6 = 21/6 = 3.5`, { outcomes: [1, 2, 3, 4, 5, 6] });
+      if (variant === 2) {
+        const p = choose([0.2, 0.25, 0.4, 0.6]), reward = int(10, 50) * 10, expected = Number((p * reward).toFixed(2));
+        return answer(`เกมให้รางวัล ${reward} คะแนนด้วยโอกาส ${p} และ 0 คะแนนในกรณีอื่น ค่าคาดหมายของคะแนนเป็นเท่าใด?`, expected, [reward, Number((reward * (1 - p)).toFixed(2)), expected + 10], "คูณแต่ละผลลัพธ์ด้วยความน่าจะเป็นแล้วบวกกัน", `E(X) = ${reward}×${p} + 0×${1 - p} = ${expected}`, { p, reward });
+      }
+      return answer("ตัวแปรสุ่ม X มี P(X=0)=0.2 และ P(X=1)=0.3 ความน่าจะเป็นที่เหลือสำหรับ X=2 เท่ากับเท่าใด?", 0.5, [0.2, 0.3, 0.8], "ผลรวมความน่าจะเป็นทั้งหมดต้องเท่ากับ 1", `P(X=2) = 1 − 0.2 − 0.3 = 0.5`, { probabilities: [0.2, 0.3] });
+    }
+    case "mixed-review":
+    default: {
+      const a = int(3, 20), b = int(2, 12), value = a * b;
+      return answer(`ทบทวนเรื่อง ${topic}: ถ้ามี ${a} กลุ่ม กลุ่มละ ${b} หน่วย จะมีทั้งหมดกี่หน่วย?`, value, [a + b, value - b, a * (b + 1)], "จำนวนกลุ่ม × จำนวนหน่วยต่อกลุ่ม", `${a} × ${b} = ${value}`, { topic, a, b });
+    }
+  }
+}
+function qmmRenderExerciseDiagram(runtime, question) {
+  if (!question || typeof question !== "object") return null;
+
+  const jsx = runtime.jsx;
+  const jsxs = runtime.jsxs;
+  const element = (type, props = {}, children) =>
+    children === undefined
+      ? jsx(type, props)
+      : jsxs(type, { ...props, children });
+  const id = String(question.chapterId ?? question.id ?? "");
+  const prompt = String(question.prompt ?? "");
+  const p = question.parameters && typeof question.parameters === "object" ? question.parameters : {};
+  const num = (value, fallback = 0) => Number.isFinite(Number(value)) ? Number(value) : fallback;
+  const label = (x, y, value, className = "diagram-label", anchor = "middle") =>
+    element("text", { x, y, className, textAnchor: anchor, dominantBaseline: "middle" }, String(value));
+  const line = (x1, y1, x2, y2, className = "diagram-stroke") =>
+    element("line", { x1, y1, x2, y2, className });
+  const path = (d, className = "diagram-stroke") => element("path", { d, className });
+  const circle = (cx, cy, r, className = "diagram-stroke") => element("circle", { cx, cy, r, className });
+  const polygon = (points, className = "diagram-stroke") =>
+    element("polygon", { points: points.map(([x, y]) => `${x},${y}`).join(" "), className });
+  const figure = (ariaLabel, children) => element(
+    "div",
+    { className: "qb-exercise-figure", role: "img", "aria-label": ariaLabel },
+    element("svg", { viewBox: "0 0 360 210", "aria-hidden": "true", focusable: "false" }, [
+      element("defs", {}, element("marker", { id: "qmm-arrowhead", markerWidth: 8, markerHeight: 8, refX: 7, refY: 4, orient: "auto", markerUnits: "strokeWidth" }, element("path", { d: "M0 0 L8 4 L0 8 z", className: "diagram-arrow" }))),
+      ...children,
+    ]),
+  );
+  const coordinatePlane = (points, ariaLabel, extra = [], segments = []) => {
+    const extent = Math.max(6, ...points.flatMap((point) => [Math.abs(num(point.x)), Math.abs(num(point.y))]));
+    const scaleX = Math.min(12, 132 / extent), scaleY = Math.min(9, 76 / extent);
+    const mapX = (x) => 180 + num(x) * scaleX;
+    const mapY = (y) => 105 - num(y) * scaleY;
+    const grid = [];
+    for (let x = -10; x <= 10; x += 5) grid.push(line(mapX(x), 20, mapX(x), 190, x === 0 ? "diagram-axis" : "diagram-grid"));
+    for (let y = -10; y <= 10; y += 5) grid.push(line(45, mapY(y), 315, mapY(y), y === 0 ? "diagram-axis" : "diagram-grid"));
+    grid.push(label(322, mapY(0), "x", "diagram-axis-label", "start"));
+    grid.push(label(mapX(0), 14, "y", "diagram-axis-label"));
+    for (const point of points) {
+      const x = mapX(point.x), y = mapY(point.y);
+      grid.push(circle(x, y, 5, point.className ?? "diagram-point"));
+      grid.push(label(x + (point.labelDx ?? 0), y + (point.labelDy ?? -14), `${point.name}(${point.x}, ${point.y})`, "diagram-point-label"));
+    }
+    for (const [x1, y1, x2, y2, className] of segments) grid.push(line(mapX(x1), mapY(y1), mapX(x2), mapY(y2), className));
+    return figure(ariaLabel, [...grid, ...extra]);
+  };
+
+  if (id === "m1-geometric-construction") {
+    if (p.construction === "equilateral-triangle") {
+      return figure("รูปสามเหลี่ยมด้านเท่าสำหรับการสร้างมุม 60 องศา", [
+        polygon([[180, 35], [75, 175], [285, 175]], "diagram-shape diagram-blue"),
+        label(180, 68, "60°", "diagram-accent-label"),
+        label(115, 164, "ด้านเท่ากัน", "diagram-small-label"),
+        label(245, 164, "ด้านเท่ากัน", "diagram-small-label"),
+      ]);
+    }
+    if (p.construction === "perpendicular-bisector") {
+      return figure("เส้นแบ่งครึ่งตั้งฉากและจุดที่อยู่ห่างจากปลายทั้งสองเท่ากัน", [
+        line(85, 145, 275, 145), line(180, 48, 180, 184, "diagram-blue"),
+        line(180, 48, 230, 95, "diagram-dash"), circle(180, 95, 5, "diagram-point-accent"),
+        circle(85, 145, 4, "diagram-point"), circle(275, 145, 4, "diagram-point"),
+        label(85, 168, "A"), label(275, 168, "B"), label(180, 74, "P", "diagram-accent-label"),
+        label(129, 124, "PA"), label(231, 124, "PB"),
+      ]);
+    }
+    const angle = num(p.angle, 60);
+    return figure(`มุม ${angle} องศาที่ถูกแบ่งครึ่ง`, [
+      line(70, 165, 292, 165), line(90, 165, 215, 55), line(90, 165, 215, 110, "diagram-blue"),
+      path("M128 165 A38 38 0 0 0 118 140", "diagram-accent"),
+      label(146, 139, `${angle}°`, "diagram-accent-label"),
+      label(193, 116, `${angle / 2}°`, "diagram-small-label"), label(193, 147, `${angle / 2}°`, "diagram-small-label"),
+    ]);
+  }
+
+  if (id === "m1-2d-3d-figures") {
+    if (p.figure === "square") return figure("รูปสี่เหลี่ยมจัตุรัสที่มีด้านเท่ากันและมุมฉาก", [
+      element("rect", { x: 110, y: 35, width: 140, height: 140, className: "diagram-shape diagram-blue" }),
+      label(180, 28, "ด้านเท่ากัน 4 ด้าน", "diagram-accent-label"), label(180, 190, "มุมทั้งสี่ = 90°", "diagram-small-label"),
+    ]);
+    if (p.solid === "cylinder") return figure("รูปทรงกระบอกที่มีฐานวงกลมสองฐานและผิวข้าง", [
+      element("ellipse", { cx: 180, cy: 58, rx: 78, ry: 24, className: "diagram-shape diagram-blue" }),
+      line(102, 58, 102, 151), line(258, 58, 258, 151),
+      element("path", { d: "M102 151 A78 24 0 0 0 258 151", className: "diagram-stroke" }),
+      element("path", { d: "M102 151 A78 24 0 0 1 258 151", className: "diagram-dash" }),
+      label(180, 106, "ผิวข้าง 1 ผิว", "diagram-accent-label"),
+      label(180, 34, "ฐานวงกลม", "diagram-small-label"), label(180, 184, "ฐานวงกลม", "diagram-small-label"),
+    ]);
+    if (p.solid === "triangular-prism") return figure("รูปปริซึมฐานสามเหลี่ยม", [
+      polygon([[85, 150], [130, 65], [175, 150]], "diagram-shape diagram-blue"),
+      polygon([[175, 150], [220, 65], [265, 150]], "diagram-shape diagram-muted"),
+      line(85, 150, 175, 150, "diagram-blue"), line(130, 65, 220, 65, "diagram-blue"), line(175, 150, 265, 150, "diagram-blue"),
+      label(180, 185, "ฐานสามเหลี่ยม 2 หน้า + ผิวข้าง 3 หน้า", "diagram-small-label"),
+    ]);
+    return figure("รูปทรงสี่เหลี่ยมมุมฉาก", [
+      polygon([[80, 75], [220, 75], [220, 165], [80, 165]], "diagram-shape diagram-blue"),
+      polygon([[125, 40], [265, 40], [265, 130], [220, 165], [220, 75]], "diagram-shape diagram-muted"),
+      line(80, 75, 125, 40, "diagram-blue"), line(220, 165, 265, 130, "diagram-blue"), line(80, 165, 125, 130, "diagram-dash"),
+      label(180, 190, "มีจุดยอด 8 จุด", "diagram-small-label"),
+    ]);
+  }
+
+  if (id === "m2-pythagorean" || id === "m3-trig-ratios") {
+    if (id === "m2-pythagorean" && prompt.includes("จุด A(")) {
+      const dx = num(p.dx, 3), dy = num(p.dy, 4);
+      return coordinatePlane([{ x: 0, y: 0, name: "A", labelDx: 32, labelDy: 14 }, { x: dx, y: dy, name: "B" }], "ระนาบพิกัดแสดงจุด A และ B พร้อมสามเหลี่ยมมุมฉากสำหรับหาระยะ", [
+      ], [[0, 0, dx, 0, "diagram-dash"], [dx, 0, dx, dy, "diagram-dash"], [0, 0, dx, dy, "diagram-blue"]]);
+    }
+    const a = num(p.a ?? p.opposite ?? p.base, 3);
+    const c = num(p.c ?? p.hypotenuse, Math.hypot(a, num(p.b ?? p.adjacent, 4)));
+    const b = num(p.b ?? p.adjacent, Math.sqrt(Math.max(0, c * c - a * a)));
+    const specialAngle = id === "m3-trig-ratios" ? num(p.angle) : 0;
+    const specialSides = specialAngle === 30 ? ["1", "√3", "2"] : specialAngle === 45 ? ["1", "1", "√2"] : specialAngle === 60 ? ["√3", "1", "2"] : null;
+    const opposite = num(p.opposite, a), adjacent = num(p.adjacent, b), hypotenuse = num(p.hypotenuse, c);
+    const vertical = specialAngle ? 120 : 140 * a / Math.max(a, b);
+    const horizontal = specialAngle ? 120 / Math.tan(specialAngle * Math.PI / 180) : 190 * b / Math.max(a, b);
+    const sideLabels = specialSides ?? [String(opposite), String(adjacent), String(hypotenuse)];
+    return figure("สามเหลี่ยมมุมฉากพร้อมป้ายกำกับความยาวด้าน", [
+      polygon([[75, 165], [75, 165 - vertical], [75 + horizontal, 165]], "diagram-shape diagram-blue"),
+      element("rect", { x: 75, y: 145, width: 20, height: 20, className: "diagram-right-angle" }),
+      label(57, 105, id === "m3-trig-ratios" ? `ข้าม ${sideLabels[0]}` : `a = ${a}`, "diagram-accent-label", "end"),
+      label(75 + horizontal / 2, 183, id === "m3-trig-ratios" ? `ชิด ${sideLabels[1]}` : `b = ${b}`, "diagram-accent-label"),
+      label(75 + horizontal / 2 - 8, 165 - vertical / 2, id === "m3-trig-ratios" ? `ฉาก ${sideLabels[2]}` : `c = ${c}`, "diagram-accent-label"),
+      label(97, 153, "90°", "diagram-small-label", "start"),
+      ...(specialAngle ? [label(75 + horizontal - 12, 150, `θ=${specialAngle}°`, "diagram-accent-label", "end")] : []),
+    ]);
+  }
+
+  if (id === "m1-geometry" || id === "m2-geometric-reasoning") {
+    if (Number.isFinite(Number(p.length)) && Number.isFinite(Number(p.width))) {
+      return figure("รูปสี่เหลี่ยมผืนผ้าพร้อมป้ายกำกับความยาวและความกว้าง", [
+        element("rect", { x: 78, y: 48, width: 205, height: 110, className: "diagram-shape diagram-blue" }),
+        label(180, 35, `ยาว ${p.length} ซม.`, "diagram-accent-label"), label(302, 103, `กว้าง ${p.width} ซม.`, "diagram-accent-label", "start"),
+      ]);
+    }
+    const a = num(p.a, 55), b = num(p.b, 65);
+    return figure("รูปสามเหลี่ยมแสดงมุมภายในและมุมภายนอก", [
+      polygon([[75, 160], [180, 45], [285, 160]], "diagram-shape diagram-blue"),
+      line(180, 45, 315, 160, "diagram-dash"),
+      label(116, 145, `${a}°`, "diagram-accent-label"), label(244, 145, `${b}°`, "diagram-accent-label"),
+      label(180, 78, "?", "diagram-accent-label"), label(318, 160, "มุมภายนอก", "diagram-small-label", "end"),
+    ]);
+  }
+
+  if (id === "m2-prisms-cylinders" || id === "m3-pyramids-cones-spheres") {
+    if (id === "m2-prisms-cylinders") {
+      if (Number.isFinite(Number(p.base))) return figure("ปริซึมฐานสามเหลี่ยมพร้อมระบุความยาวฐานและความสูง", [
+        polygon([[72, 150], [122, 60], [172, 150]], "diagram-shape diagram-blue"),
+        polygon([[182, 150], [232, 60], [282, 150]], "diagram-shape diagram-muted"),
+        line(72, 150, 182, 150, "diagram-blue"), line(122, 60, 232, 60, "diagram-blue"), line(172, 150, 282, 150, "diagram-blue"),
+        label(122, 174, `ฐาน ${p.base}`, "diagram-small-label"), label(300, 106, `ยาว ${p.length}`, "diagram-small-label", "start"),
+      ]);
+      if (Number.isFinite(Number(p.l))) return figure("ปริซึมสี่เหลี่ยมมุมฉากพร้อมระบุความยาว ความกว้าง และความสูง", [
+        polygon([[78, 78], [222, 78], [222, 162], [78, 162]], "diagram-shape diagram-blue"),
+        polygon([[122, 42], [266, 42], [266, 126], [222, 162], [222, 78]], "diagram-shape diagram-muted"),
+        line(78, 78, 122, 42, "diagram-blue"), line(78, 162, 122, 126, "diagram-dash"), line(122, 126, 266, 126, "diagram-dash"),
+        label(150, 182, `ยาว ${p.l}`, "diagram-small-label"), label(68, 116, `กว้าง ${p.w}`, "diagram-small-label", "end"), label(240, 95, `สูง ${p.h}`, "diagram-small-label", "start"),
+      ]);
+      const r = num(p.r, 4), h = num(p.h, 5);
+      return figure(`ทรงกระบอกรัศมี ${r} และสูง ${h}`, [
+        element("ellipse", { cx: 180, cy: 55, rx: 78, ry: 24, className: "diagram-shape diagram-blue" }),
+        line(102, 55, 102, 153), line(258, 55, 258, 153),
+        element("path", { d: "M102 153 A78 24 0 0 0 258 153", className: "diagram-stroke" }),
+        element("path", { d: "M102 153 A78 24 0 0 1 258 153", className: "diagram-dash" }),
+        line(180, 55, 250, 55, "diagram-accent"), label(218, 43, `r=${r}`, "diagram-accent-label"),
+        label(273, 105, `h=${h}`, "diagram-accent-label", "start"),
+      ]);
+    }
+    if (Number.isFinite(Number(p.baseArea))) return figure(`พีระมิดมีพื้นที่ฐาน ${p.baseArea} และความสูง ${p.h}`, [
+      polygon([[90, 145], [180, 178], [270, 145], [180, 115]], "diagram-shape diagram-blue"),
+      line(180, 42, 90, 145), line(180, 42, 180, 178, "diagram-blue"), line(180, 42, 270, 145), line(180, 42, 180, 115, "diagram-dash"),
+      line(180, 42, 180, 128, "diagram-accent"), label(198, 82, `สูง ${p.h}`, "diagram-accent-label", "start"),
+      label(180, 164, `พื้นที่ฐาน ${p.baseArea}`, "diagram-small-label"),
+    ]);
+    if (p.relationship === "cone-to-cylinder") return figure("กรวยและทรงกระบอกที่มีพื้นที่ฐานและความสูงเท่ากัน", [
+      element("ellipse", { cx: 105, cy: 65, rx: 50, ry: 16, className: "diagram-shape diagram-blue" }), line(55, 65, 55, 151), line(155, 65, 155, 151),
+      element("path", { d: "M55 151 A50 16 0 0 0 155 151", className: "diagram-stroke" }),
+      line(245, 42, 195, 151), line(245, 42, 295, 151), element("path", { d: "M195 151 A50 16 0 0 0 295 151", className: "diagram-stroke" }),
+      label(105, 183, "ทรงกระบอก", "diagram-small-label"), label(245, 183, "กรวย = ⅓", "diagram-accent-label"),
+    ]);
+    if (prompt.includes("กรวย")) {
+      const r = num(p.r, 3), h = num(p.h, 4);
+      return figure(`กรวยรัศมี ${r} และสูง ${h}`, [
+        line(180, 35, 99, 158), line(180, 35, 261, 158),
+        element("path", { d: "M99 158 A81 24 0 0 0 261 158", className: "diagram-stroke" }),
+        element("path", { d: "M99 158 A81 24 0 0 1 261 158", className: "diagram-dash" }),
+        line(180, 35, 180, 158, "diagram-dash"), line(180, 158, 240, 158, "diagram-accent"),
+        label(206, 146, `r=${r}`, "diagram-accent-label"), label(191, 98, `h=${h}`, "diagram-small-label", "start"),
+      ]);
+    }
+    if (prompt.includes("ทรงกลม")) return figure(`ทรงกลมรัศมี ${p.r}`, [
+      circle(180, 105, 68, "diagram-shape diagram-blue"),
+      element("ellipse", { cx: 180, cy: 105, rx: 68, ry: 22, className: "diagram-dash" }),
+      element("path", { d: "M180 105 L236 67", className: "diagram-accent" }),
+      label(219, 73, `r=${p.r}`, "diagram-accent-label"),
+    ]);
+    return figure("กรวยและทรงกระบอกที่มีพื้นที่ฐานและความสูงเท่ากัน", [
+      element("ellipse", { cx: 105, cy: 65, rx: 50, ry: 16, className: "diagram-shape diagram-blue" }), line(55, 65, 55, 151), line(155, 65, 155, 151),
+      element("path", { d: "M55 151 A50 16 0 0 0 155 151", className: "diagram-stroke" }),
+      line(245, 42, 195, 151), line(245, 42, 295, 151), element("path", { d: "M195 151 A50 16 0 0 0 295 151", className: "diagram-stroke" }),
+      label(105, 183, "ทรงกระบอก", "diagram-small-label"), label(245, 183, "กรวย = ⅓", "diagram-accent-label"),
+    ]);
+  }
+
+  if (id === "m2-transformations") {
+    const x = num(p.x), y = num(p.y);
+    let tx = x, ty = y;
+    if (p.axis === "x") ty = -y;
+    else if (p.axis === "y") tx = -x;
+    else if (Number.isFinite(Number(p.dx))) { tx = x + num(p.dx); ty = y + num(p.dy); }
+    else if (Number.isFinite(Number(p.angle))) { tx = -y; ty = x; }
+    return coordinatePlane([
+      { x, y, name: "P", className: "diagram-point" },
+      { x: tx, y: ty, name: "P′", className: "diagram-point-accent", labelDy: 18 },
+    ], "ระนาบพิกัดแสดงจุดเดิมและจุดหลังการแปลง", [], [[x, y, tx, ty, "diagram-accent diagram-dash"]]);
+  }
+
+  if (id === "m2-congruence" || id === "m3-similarity") {
+    const scale = num(p.scale, 2);
+    const congruent = id === "m2-congruence";
+    const left = [[68, 150], [118, 55], [168, 150]];
+    const factor = congruent ? 1 : Math.max(1, Math.min(1.5, scale / 3));
+    const right = [[205, 150], [205 + 50 * factor, 150 - 95 * factor], [205 + 100 * factor, 150]];
+    const labels = congruent ? `เกณฑ์ ${p.criterion ?? "SSS"}` : `อัตราส่วน ${scale}:1`;
+    return figure(congruent ? "แผนภาพเปรียบเทียบสามเหลี่ยมสองรูปเพื่อพิจารณาความเท่ากันทุกประการ" : "แผนภาพสามเหลี่ยมคล้ายที่มีสเกลต่างกัน", [
+      polygon(left, "diagram-shape diagram-blue"), polygon(right, "diagram-shape diagram-accent"),
+      line(78, 128, 88, 128, "diagram-mark"), line(218, 128, 228, 128, "diagram-mark"),
+      line(98, 91, 106, 96, "diagram-mark"), line(238, 90, 246, 95, "diagram-mark"),
+      label(180, 185, labels, "diagram-accent-label"),
+    ]);
+  }
+
+  if (id === "m2-parallel-lines") {
+    const angle = num(p.angle, 60);
+    return figure(`เส้นขนานถูกตัดด้วยเส้นตัด และมุมที่กำหนดคือ ${angle} องศา`, [
+      line(54, 58, 306, 58), line(54, 152, 306, 152),
+      line(105, 190, 255, 20, "diagram-blue"),
+      path("M171 58 A22 22 0 0 1 188 74", "diagram-accent"),
+      path("M204 152 A22 22 0 0 0 220 136", "diagram-accent"),
+      label(206, 43, `${angle}°`, "diagram-accent-label"), label(243, 138, "?", "diagram-accent-label"),
+      path("M76 58 l10 -6 l0 12 z", "diagram-arrow"), path("M76 152 l10 -6 l0 12 z", "diagram-arrow"),
+      label(180, 190, "เส้นขนานสองเส้น + เส้นตัด", "diagram-small-label"),
+    ]);
+  }
+
+  if (id === "m3-circles") {
+    const r = num(p.r, 5);
+    const angle = num(p.angle, 0);
+    if (angle > 0) {
+      const radians = -angle * Math.PI / 180;
+      const x = 180 + 68 * Math.cos(radians), y = 105 + 68 * Math.sin(radians);
+      const large = angle > 180 ? 1 : 0;
+      return figure(`วงกลมแสดงภาควงกลมมุม ${angle} องศา`, [
+        circle(180, 105, 68, "diagram-shape diagram-blue"),
+        line(180, 105, 248, 105, "diagram-accent"), line(180, 105, x, y, "diagram-accent"),
+        path(`M248 105 A68 68 0 ${large} 0 ${x} ${y} L180 105 Z`, "diagram-sector"), circle(180, 105, 4, "diagram-point"),
+        label(218, 88, `${angle}°`, "diagram-accent-label"), label(212, 120, "r", "diagram-small-label"),
+      ]);
+    }
+    const diameter = num(p.diameter, 0);
+    return figure(diameter ? `วงกลมแสดงเส้นผ่านศูนย์กลาง ${diameter} เซนติเมตร` : `วงกลมแสดงรัศมี ${r} เซนติเมตร`, [
+      circle(180, 105, 68, "diagram-shape diagram-blue"), circle(180, 105, 4, "diagram-point"),
+      line(diameter ? 112 : 180, 105, 248, 105, "diagram-accent"),
+      label(diameter ? 180 : 215, 91, diameter ? `d=${diameter}` : `r=${r}`, "diagram-accent-label"),
+      label(180, 190, diameter ? "รัศมี = ครึ่งหนึ่งของเส้นผ่านศูนย์กลาง" : "เส้นรอบวงและพื้นที่ขึ้นกับรัศมี", "diagram-small-label"),
+    ]);
+  }
+
+  if (id === "upper-analytic-geometry") {
+    const x1 = num(p.x1), y1 = num(p.y1), x2 = num(p.x2, x1 + num(p.dx, 3)), y2 = num(p.y2, y1 + num(p.dy, 4));
+    return coordinatePlane([
+      { x: x1, y: y1, name: "A", className: "diagram-point" },
+      { x: x2, y: y2, name: "B", className: "diagram-point-accent" },
+    ], "ระนาบพิกัดแสดงจุด A และ B กับส่วนของเส้นตรงที่เชื่อมจุด", [
+    ], [[x1, y1, x2, y2, "diagram-blue"], [x1, y1, x2, y1, "diagram-dash"], [x2, y1, x2, y2, "diagram-dash"]]);
+  }
+
+  if (id === "m1-graphs-linear" || id === "m3-quadratic-graphs") {
+    let f;
+    let domain = [-4, 4];
+    if (id === "m1-graphs-linear") {
+      let a = num(p.a, num(p.step, 1)), b = num(p.b, num(p.start, 0));
+      if (Number.isFinite(Number(p.x1)) && Number.isFinite(Number(p.x2))) {
+        const dx = num(p.x2) - num(p.x1), dy = num(p.y2) - num(p.y1);
+        a = dx === 0 ? 0 : dy / dx;
+        b = num(p.y1) - a * num(p.x1);
+      }
+      f = (x) => a * x + b;
+    } else if (Number.isFinite(Number(p.r1)) && Number.isFinite(Number(p.r2))) {
+      f = (x) => (x - num(p.r1)) * (x - num(p.r2));
+      domain = [Math.min(num(p.r1), num(p.r2)) - 3, Math.max(num(p.r1), num(p.r2)) + 3];
+    } else {
+      const a = num(p.a ?? p.coefficient, 1), b = num(p.b), c = num(p.c);
+      if (Number.isFinite(Number(p.h)) && !Number.isFinite(Number(p.c))) {
+        domain = [num(p.h) - 4, num(p.h) + 4];
+        f = (x) => a * (x - num(p.h)) ** 2;
+      } else f = (x) => a * x * x + b * x + c;
+    }
+    const [minX, maxX] = domain;
+    const points = Array.from({ length: 33 }, (_, index) => {
+      const x = minX + (maxX - minX) * index / 32;
+      return [x, f(x)];
+    });
+    const ys = points.map((point) => point[1]).filter(Number.isFinite);
+    let minY = Math.min(0, ...ys), maxY = Math.max(0, ...ys);
+    if (maxY - minY < 1) { minY -= 1; maxY += 1; }
+    const padding = (maxY - minY) * 0.1;
+    minY -= padding; maxY += padding;
+    const mapX = (x) => 40 + (x - minX) / (maxX - minX) * 280;
+    const mapY = (y) => 178 - (y - minY) / (maxY - minY) * 150;
+    const graphPath = points.map(([x, y], index) => `${index ? "L" : "M"}${mapX(x).toFixed(1)} ${mapY(y).toFixed(1)}`).join(" ");
+    const yAxis = minX <= 0 && maxX >= 0 ? mapX(0) : 40;
+    const xAxis = minY <= 0 && maxY >= 0 ? mapY(0) : 178;
+    return figure(id === "m1-graphs-linear" ? "กราฟเส้นตรงของฟังก์ชันเชิงเส้น" : "กราฟพาราโบลาของฟังก์ชันกำลังสอง", [
+      line(40, 28, 40, 180, "diagram-grid"), line(320, 28, 320, 180, "diagram-grid"),
+      line(yAxis, 28, yAxis, 180, "diagram-axis"), line(40, xAxis, 320, xAxis, "diagram-axis"),
+      path(graphPath, "diagram-curve"), label(327, xAxis, "x", "diagram-axis-label", "start"), label(yAxis, 20, "y", "diagram-axis-label"),
+      label(180, 198, id === "m1-graphs-linear" ? "กราฟเส้นตรง" : "กราฟพาราโบลา", "diagram-small-label"),
+    ]);
+  }
+
+  if (id === "upper-vectors") {
+    const vector = Array.isArray(p.vector) ? p.vector : Array.isArray(p.u) ? p.u : [3, 2];
+    const x = num(vector[0]), y = num(vector[1]);
+    return coordinatePlane([{ x: 0, y: 0, name: "O", labelDx: -14, labelDy: 16 }, { x, y, name: "v", className: "diagram-point-accent" }], "ระนาบพิกัดแสดงเวกเตอร์จากจุดกำเนิด", [], [
+      [0, 0, x, y, "diagram-vector"],
+      ...(Array.isArray(p.v) ? [[0, 0, num(p.v[0]), num(p.v[1]), "diagram-blue diagram-dash"]] : []),
+    ]);
+  }
+
+  return null;
+}
+function QmmExerciseDiagram({question}){return qmmRenderExerciseDiagram(X,question)}
+function dc(e){return e<30?`easy`:e<75?`intermediate`:e<105?`advanced`:`challenge`}function fc(e){return[`concept`,`procedure`,`application`,`interpretation`,`error-analysis`,`reasoning`][e%6]}function pc(e,t,n,r){let i=ic(n),a=ac(i,2,9),o=ac(i,-8,12),s=ac(i,-12,12),c=a*o+s,l=t%6,u=`ข้อ ${t+1}: `;if(l===0||l===3){let e=String(o),t=lc(e,[String(o+1),String(o-1),String(c)],n+1);return{prompt:`${u}จงแก้สมการ ${a}x ${s>=0?`+`:`-`} ${Math.abs(s)} = ${c} แล้วหาค่า x`,...t,correctAnswer:e,hint:`กำจัดค่าคงที่ออกก่อน แล้วจึงหารด้วย ${a} ทั้งสองข้าง`,solution:`${a}x ${s>=0?`+`:`-`} ${Math.abs(s)} = ${c} → ${a}x = ${c-s} → x = ${o}`,parameters:{a,b:s,c,x:o}}}if(l===1){let e=`ลบ ${s} ออกจากทั้งสองข้าง`,t=lc(e,[`หารด้วย ${a} ก่อน`,`เปลี่ยน ${s} เป็น ${-s} เฉพาะข้างเดียว`,`คูณทั้งสองข้างด้วย ${s}`],n+2);return{prompt:`${u}สำหรับสมการ ${a}x ${s>=0?`+`:`-`} ${Math.abs(s)} = ${c} ขั้นตอนแรกที่ถูกต้องที่สุดคือข้อใด?`,...t,correctAnswer:e,hint:`กำจัดพจน์ที่ไม่มีตัวแปร x ออกก่อน`,solution:`ลบ ${s} ออกจากทั้งสองข้าง จะได้ ${a}x = ${c-s}`,parameters:{a,b:s,c}}}if(l===2){let e=ac(i,20,80),t=ac(i,4,12),r=ac(i,3,9),a=e+t*r,o=String(r),s=lc(o,[String(r+1),String(r-1),String(a-e)],n+3);return{prompt:`${u}บริการหนึ่งคิดค่าบริการเริ่มต้น ${e} บาท และคิดเพิ่มชิ้นละ ${t} บาท ถ้าจ่ายทั้งหมด ${a} บาท แสดงว่าซื้อสินค้ากี่ชิ้น?`,...s,correctAnswer:o,hint:`ตั้งสมการ ${e} + ${t}n = ${a}`,solution:`${e} + ${t}n = ${a} → ${t}n = ${a-e} → n = ${r}`,parameters:{base:e,rate:t,units:r,total:a}}}if(l===4){let e=`${a}x ${s>=0?`+`:`-`} ${Math.abs(s)} = ${c}`,t=lc(e,[`${a}x = ${c}`,`x ${s>=0?`+`:`-`} ${Math.abs(s)} = ${c}`,`${a}x ${s>=0?`-`:`+`} ${Math.abs(s)} = ${c}`],n+4);return{prompt:`${u}สมการใดแทน “จำนวน x จำนวนหนึ่ง เมื่อคูณด้วย ${a} แล้วบวกด้วย ${s} จะเท่ากับ ${c}”?`,...t,correctAnswer:e,hint:`ถอดความการดำเนินการตามลำดับที่เกิดขึ้น`,solution:`คูณ x ด้วย ${a} แล้วบวกด้วย ${s} จึงได้สมการ ${e}`,parameters:{a,b:s,c}}}let d=`ใช้การดำเนินการเดียวกันกับทั้งสองข้าง`,f=lc(d,[`ย้ายพจน์โดยไม่เปลี่ยนเครื่องหมาย`,`หารด้วยศูนย์`,`ละเลยสัมประสิทธิ์ของ x`],n+5);return{prompt:`${u}นักเรียนคนหนึ่งเปลี่ยนสมการ ${a}x ${s>=0?`+`:`-`} ${Math.abs(s)} = ${c} โดยเปลี่ยนเฉพาะข้างซ้ายเพียงข้างเดียว หลักการใดที่ถูกละเลย?`,...f,correctAnswer:d,hint:`สมการเปรียบเสมือนตาชั่งที่สมดุล`,solution:`ความเท่ากันจะยังคงเป็นจริงก็ต่อเมื่อใช้การดำเนินการที่สมมูลกับทั้งสองข้างของสมการ`,parameters:{a,b:s,c,subtopic:r}}}function mc(e,t,n){ic(n);let r=[[3,4,5],[5,12,13],[6,8,10],[8,15,17]],i=r[t%r.length],a=t+1,[o,s,c]=i.map(e=>e*a),l=t%5;if(e.id.includes(`pythagorean`)||l<2){let e=l%2==0?String(c):String(o);return{prompt:l%2==0?`สามเหลี่ยมมุมฉากมีด้านประกอบมุมฉากยาว ${o} และ ${s} หน่วย จงหาความยาวด้านตรงข้ามมุมฉาก`:`สามเหลี่ยมมุมฉากมีด้านตรงข้ามมุมฉากยาว ${c} หน่วย และด้านประกอบมุมฉากด้านหนึ่งยาว ${s} หน่วย จงหาความยาวด้านประกอบมุมฉากอีกด้าน`,...lc(e,l%2==0?[String(c+1),String(c-1),String(o+s)]:[String(o+1),String(s-1),String(c-s)],n+10),correctAnswer:e,hint:`ใช้ทฤษฎีบทพีทาโกรัส a² + b² = c²`,solution:l%2==0?`${o}² + ${s}² = ${o*o+s*s} = ${c}² ดังนั้น c = ${c}`:`${c}² - ${s}² = ${c*c-s*s} = ${o}² ดังนั้นด้านที่เหลือยาว ${o}`,parameters:{a:o,b:s,c}}}let u=4+t%19,d=3+Math.floor(t/19)%12,f=String(u*d),p=lc(f,[String(2*(u+d)),String(u+d),String(u*d+d)],n+11);return{prompt:`รูปสี่เหลี่ยมผืนผ้ามีความยาว ${u} ซม. และความกว้าง ${d} ซม. มีพื้นที่เท่าใด?`,...p,correctAnswer:f,hint:`พื้นที่รูปสี่เหลี่ยมผืนผ้า = ความยาว × ความกว้าง`,solution:`พื้นที่ = ${u} × ${d} = ${f} ตร.ซม.`,parameters:{length:u,width:d}}}function hc(e,t){let n=2+e%12,r=2+e*3%13,i=1+e*5%8,a=n+r+i,o=e%3==0?n:e%3==1?r:i,s=e%3==0?`สีแดง`:e%3==1?`สีน้ำเงิน`:`สีเขียว`,c=sc(o,a),l=lc(c,[sc(o+1,a),sc(a-o,a),sc(o,a+1)],t+20);return{prompt:`ในถุงมีลูกแก้วสีแดง ${n} ลูก สีน้ำเงิน ${r} ลูก และสีเขียว ${i} ลูก ความน่าจะเป็นที่จะสุ่มหยิบได้ลูกแก้ว${s}เป็นเท่าใด?`,...l,correctAnswer:c,hint:`จำนวนผลลัพธ์ที่สนใจ ÷ จำนวนผลลัพธ์ทั้งหมด`,solution:`มีลูกแก้วที่สนใจ ${o} ลูก จากทั้งหมด ${a} ลูก ดังนั้น P(${s}) = ${o}/${a} = ${c}`,parameters:{red:n,blue:r,green:i,total:a,target:o}}}function gc(e,t){let n=ic(t),r=2+e%30,i=[r,r+ac(n,1,7),r+ac(n,5,12),r+ac(n,13,22),r+ac(n,23,35)].sort((e,t)=>e-t),a=i.reduce((e,t)=>e+t,0)/i.length,o=e%3,s=o===0?cc(a):String(o===1?i[2]:i[4]-i[0]),c=o===0?`ค่าเฉลี่ย`:o===1?`มัธยฐาน`:`พิสัย`,l=lc(s,[String(i[0]),String(i[1]),String(i[4])],t+30);return{prompt:`จงหา${c}ของข้อมูลชุด {${i.join(`, `)}}`,...l,correctAnswer:s,hint:o===0?`นำค่าทั้งหมดมารวมกันแล้วหารด้วย 5`:o===1?`ใช้ค่าที่อยู่ตรงกลางหลังจากเรียงข้อมูลแล้ว`:`ค่าสูงสุด − ค่าต่ำสุด`,solution:o===0?`ค่าเฉลี่ย = (${i.join(` + `)}) ÷ 5 = ${s}`:o===1?`ค่าที่อยู่ตรงกลางหลังเรียงข้อมูลคือ ${s}`:`พิสัย = ${i[4]} − ${i[0]} = ${s}`,parameters:{values:i}}}function _c(e,t){let n=[2,3,5][Math.floor(e/64)%3],r=2+e%8,i=1+Math.floor(e/8)%8,a=String(n**(r+i)),o=lc(a,[String(n**r+n**i),String(n**(r*i)),String(n**(r+i-1))],t+40);return{prompt:`จงเขียน ${n}^${r} × ${n}^${i} ให้อยู่ในรูปเลขยกกำลังอย่างง่าย`,...o,correctAnswer:a,hint:`เมื่อฐานเท่ากัน ให้นำเลขชี้กำลังมาบวกกัน`,solution:`${n}^${r} × ${n}^${i} = ${n}^(${r}+${i}) = ${a}`,parameters:{base:n,exponentA:r,exponentB:i}}}function vc(e,t){let n=ic(t),r=ac(n,-5,7)||2,i=ac(n,-8,8),a=ac(n,-4,8),o=r*a+i,s=e%3,c=`ข้อ ${e+1}: `,l=String(s===0?o:s===1?r:i);return{prompt:s===0?`${c}กำหนด f(x) = ${r}x ${i>=0?`+`:`-`} ${Math.abs(i)} จงหา f(${a})`:s===1?`${c}ความชันของสมการ y = ${r}x ${i>=0?`+`:`-`} ${Math.abs(i)} มีค่าเท่าใด?`:`${c}จุดตัดแกน y ของสมการ y = ${r}x ${i>=0?`+`:`-`} ${Math.abs(i)} มีค่าเท่าใด?`,...lc(l,[String(o+1),String(r+1),String(i+1)],t+50),correctAnswer:l,hint:s===0?`แทนค่า x ที่กำหนดลงในฟังก์ชัน`:`เทียบกับรูปทั่วไป y = mx + b`,solution:s===0?`f(${a}) = ${r}(${a}) ${i>=0?`+`:`-`} ${Math.abs(i)} = ${o}`:s===1?`ในรูป y = mx + b ค่า m คือความชัน ดังนั้น m = ${r}`:`ในรูป y = mx + b ค่า b คือจุดตัดแกน y ดังนั้น b = ${i}`,parameters:{m:r,b:i,x:a,y:o}}}function yc(e,t){let n=ic(t),r=ac(n,-8,12),i=ac(n,2,9),a=ac(n,5,12),o=String(r+(a-1)*i),s=lc(o,[String(r+a*i),String(r+(a-2)*i),String(r*a+i)],t+60);return{prompt:`ลำดับที่ ${e+1}: ${r}, ${r+i}, ${r+2*i}, … พจน์ที่ ${a} มีค่าเท่าใด?`,...s,correctAnswer:o,hint:`ใช้สูตร aₙ = a₁ + (n − 1)d`,solution:`aₙ = ${r} + (${a}−1)(${i}) = ${o}`,parameters:{first:r,difference:i,n:a}}}function bc(e,t){let n=e%3==0?{angle:30,value:`1/2`}:e%3==1?{angle:45,value:`√2/2`}:{angle:60,value:`√3/2`},r=Math.floor(e/3)+1,i=n.value,a=lc(i,[`0`,`1`,`√3`,`2`],t+70);return{prompt:`สามเหลี่ยมมุมฉากมีด้านตรงข้ามมุมฉากยาว ${2*r} หน่วย และมีมุม ${n.angle}° จงหาค่า sin(${n.angle}°)`,...a,correctAnswer:i,hint:`ใช้ตารางค่าไซน์ของมุมพิเศษ`,solution:`อัตราส่วนของด้านไม่เปลี่ยนเมื่อขยายสเกล ดังนั้น sin(${n.angle}°) = ${i}`,parameters:{angle:n.angle,scale:r}}}function xc(e,t){let n=2+e%4,r=1+Math.floor(e/4)%10,i=1+Math.floor(e/40)%5,a=String(i*n*r**(n-1)),o=lc(a,[String(i*r**n),String((n-1)*r),String(i*n+r)],t+80);return{prompt:`กำหนด f(x) = ${i}x^${n} จงหาค่า f'(${r})`,...o,correctAnswer:a,hint:`หาอนุพันธ์ axⁿ จะได้ an·xⁿ⁻¹ แล้วแทนค่า x`,solution:`f'(x) = ${i*n}x^${n-1} ดังนั้น f'(${r}) = ${i*n}(${r})^${n-1} = ${a}`,parameters:{coefficient:i,power:n,x:r}}}function Sc(e,t){let n=e%2==0,r=n?`จริง`:`เท็จ`,i=2+2*(Math.floor(e/2)%20),a=n?`ถ้า n เป็นจำนวนคู่ แล้ว n² เป็นจำนวนคู่ (เช่น n = ${i})`:`ถ้า n² เป็นจำนวนคู่ แล้ว n เป็นจำนวนคี่ (ลอง n = ${i})`,o=lc(r,[`จริง`,`เท็จ`,`ไม่สามารถสรุปได้`],t+90);return{prompt:`กรณีที่ ${e+1}: จงประเมินประพจน์ “${a}” ว่าเป็นจริงหรือเท็จ`,...o,correctAnswer:r,hint:n?`เขียน n = 2k แล้วแทนค่า`:`ลองใช้ตัวอย่างจำนวนคู่ที่ให้ไว้เพื่อหักล้าง`,solution:n?`ถ้า n = 2k แล้ว n² = 4k² = 2(2k²) ซึ่งเป็นจำนวนคู่`:`ประพจน์นี้เป็นเท็จ: n = ${i} ให้กำลังสองเป็นจำนวนคู่ แต่ n ไม่ใช่จำนวนคี่`,parameters:{truth:n,witness:i}}}function Cc(e,t,n,selectedSubtopic){let r=ic(n),i=selectedSubtopic??e.subtopics[t%e.subtopics.length]??e.title,a=[`ตัวอย่างที่ทำไว้แล้ว`,`แผนภาพ`,`ตารางค่า`,`โจทย์ปัญหาเชิงบริบท`,`โครงร่างการพิสูจน์`,`ผลจากเครื่องคิดเลข`,`กราฟ`,`กรณีขอบเขต`,`คำอธิบายของเพื่อน`,`นิพจน์เชิงสัญลักษณ์`,`ชุดข้อมูล`,`แบบจำลอง`][t%12],o=t%2==0?`ใช้บทนิยามของ ${i} และตรวจ ${e.condition}`:`แปลข้อมูลที่โจทย์กำหนดให้เป็น ${e.focus}`,s=lc(o,[`เลือกสูตรโดยไม่ตรวจเงื่อนไข`,`เปลี่ยนโจทย์ให้คำนวณง่ายขึ้น`,`สมมติว่าค่าทุกค่าถูกต้อง`],n+100);return{prompt:`ใน${a}ที่ ${t+1} เมื่อต้องแก้ปัญหาเกี่ยวกับ ${i} วิธีใดน่าเชื่อถือทางคณิตศาสตร์ที่สุด?`,...s,correctAnswer:o,hint:`เริ่มจากบทนิยามของ ${i}`,solution:`${o} เพราะเงื่อนไขสำคัญคือ ${e.condition}`,parameters:{blueprint:t,subtopic:i,chapterId:e.id,token:ac(r,10,99)}}}function wc(e,t,n,r,i){return qmmGenerateVariedExercise(e,t,n,r,i)}
+function Tc(e,t){return`${e.id}|${t.grade}|${t.semester}|${t.course}`}var Ec=Gs.flatMap((e,t)=>e.offerings.map((n,r)=>({unitKey:Tc(e,n),unitId:`unit-${t+1}-${r+1}`,chapter:e,offering:n})));function Dc(e,t){let n=e.chapter.subtopics[t%e.chapter.subtopics.length]??e.chapter.title,r=dc(t),i=fc(t),a=uc(e.chapter.id),o=`qb-${e.unitId}-${String(t+1).padStart(3,`0`)}`,s=wc(e.chapter,t,rc(`${o}:prepared`),a,n);return{id:o,unitKey:e.unitKey,chapterId:e.chapter.id,subtopicId:n,gradeLevel:e.offering.grade,semester:e.offering.semester,courseType:e.offering.course,difficulty:r,questionType:i,...s,parametersSchema:Object.keys(s.parameters),parameterConstraints:[`ตัวส่วนทุกตัวไม่เป็นศูนย์`,`ค่าที่สุ่มได้ถูกตรวจสอบก่อนนำไปใช้`,`ตัวเลือกไม่ซ้ำกันและมีคำตอบที่ถูกต้องเพียงข้อเดียว`],generationStrategy:`ชุดคำสั่ง ${a} กับพิมพ์เขียวที่ออกแบบไว้ชุดที่ ${t%12+1}`,answerStrategy:`คำนวณคำตอบจากค่าพารามิเตอร์ที่บันทึกไว้ แล้วเทียบกับดัชนีตัวเลือกที่ผู้เรียนเลือก`,solutionStrategy:`แสดงวิธีทำแบบกำหนดได้จากพารามิเตอร์ชุดเดียวกับที่ใช้สร้างโจทย์`,answerFormat:`multiple-choice`,tags:[e.chapter.id,n,a,r,i],verificationStatus:`deterministically-validated`,createdAt:nc,updatedAt:nc,generator:a,baseIndex:t,provenance:`prepared-seed`}}var Oc=Ec.flatMap(e=>Array.from({length:120},(t,n)=>Dc(e,n)));function kc(e,t=rc(`${e.id}:variant`)){let n=wc(Ec.find(t=>t.unitKey===e.unitKey)?.chapter??Gs.find(t=>t.id===e.chapterId)??Gs[0],e.baseIndex+t%17,t,e.generator,e.subtopicId);return{instanceId:`${e.id}:instance:${t}`,preparedQuestionId:e.id,variantId:`${e.generator}-${t}`,seed:t,params:n.parameters,...n,difficulty:e.difficulty,questionType:e.questionType,chapterId:e.chapterId,subtopicId:e.subtopicId}}function Ac(e,t){if(typeof window>`u`)return t;try{return JSON.parse(window.localStorage.getItem(e)??``)}catch{return t}}function jc(e,t){typeof window<`u`&&window.localStorage.setItem(e,JSON.stringify(t))}function Mc(e,t){let n=e.slice(),r=ic(t);for(let e=n.length-1;e>0;--e){let t=Math.floor(r()*(e+1));[n[e],n[t]]=[n[t],n[e]]}return n}function Nc(e){return Oc.filter(t=>t.chapterId===e.chapterId&&t.gradeLevel===e.grade&&t.semester===e.semester&&(e.course===`all`||t.courseType===e.course)&&(e.subtopic===`all`||t.subtopicId===e.subtopic)&&(e.difficulty===`all`||t.difficulty===e.difficulty))}function Pc(e){return Ac(ec,{})[e]??[]}function Fc(e,t){let n=Ac(ec,{});n[e]=[...t,...n[e]??[]].filter((e,t,n)=>n.indexOf(e)===t).slice(0,240),jc(ec,n)}function Ic(e){return[e.chapterId,e.grade,e.semester,e.course,e.subtopic,e.difficulty].join(`|`)}function Lc(e,t){let n=Nc(e),r=new Set(Pc(Ic(e))),i=Mc(n.filter(e=>!r.has(e.id)),t),a=Mc(n,t+1),o=[];for(let t of i){if(o.length>=e.count)break;o.push(t)}let s=!1;if(o.length<e.count){s=i.length<e.count;let t=0;for(;o.length<e.count&&a.length>0;)o.push(a[t%a.length]),t+=1}return Fc(Ic(e),o.map(e=>e.id)),{selected:o,poolRestarted:s}}function Rc(){return rc(`${Date.now()}-${Math.random()}-${performance.now()}`)}function zc(e,t=`local-demo-user`){let n=Rc(),{selected:r,poolRestarted:i}=Lc(e,n),a=r.map((e,t)=>kc(e,rc(`${n}:${e.id}:${t}`))),o=new Date().toISOString(),s={id:`session-${Date.now()}-${n}`,userId:t,filters:e,questions:a,responses:a.map(()=>({selectedChoice:null,submitted:!1,correct:null})),currentIndex:0,score:0,startedAt:o,updatedAt:o,seed:n,engineVersion:Zs,poolRestarted:i};return Vc(s),s}function Bc(e=`local-demo-user`){let t=Ac(Qs,null);return t?.userId===e&&t.engineVersion===Zs?t:null}function Vc(e){let t={...e,updatedAt:new Date().toISOString()};jc(Qs,t),jc($s,[...Ac($s,[]).filter(e=>e.id!==t.id),t].slice(-20))}function Hc(e,t){return t!==null&&t===e.correctChoice}function Uc(e,t){let n=e.responses.flatMap((e,t)=>e.submitted&&!e.correct?[t]:[]);if(n.length===0)return null;if(t===`new`)return zc({...e.filters,count:[10,20,30,50].find(e=>e>=n.length)??10},e.userId);let r=n.map(t=>e.questions[t]),i={...e,id:`session-retry-${Date.now()}`,questions:r,responses:r.map(()=>({selectedChoice:null,submitted:!1,correct:null})),currentIndex:0,score:0,startedAt:new Date().toISOString(),completedAt:void 0};return Vc(i),i}function Wc(e){jc(tc,[...Ac(tc,[]),e].slice(-500))}function Gc(e,t=`local-demo-user`){let n=Ac(tc,[]).filter(n=>n.userId===t&&n.chapterId===e),r=n.filter(e=>e.correct).length;return{attempts:n.length,correct:r,accuracy:n.length?Math.round(r/n.length*100):0}}function Kc(e){return Ec.map(t=>{let n=e.filter(e=>e.unitKey===t.unitKey),r={easy:0,intermediate:0,advanced:0,challenge:0},i=new Set,a=0,o=0;for(let e of n){r[e.difficulty]+=1;let t=e.prompt.trim().toLowerCase();i.has(t)&&(a+=1),i.add(t),e.prompt&&e.solution&&e.choices.length===4&&e.correctChoice>=0&&e.correctChoice<e.choices.length&&e.choices[e.correctChoice]===e.correctAnswer&&(o+=1)}return{unitKey:t.unitKey,chapterId:t.chapter.id,chapterTitle:t.chapter.title,grade:t.offering.grade,semester:t.offering.semester,course:t.offering.course,preparedCount:n.length,validCount:o,duplicatePrompts:a,difficultyCounts:r,complete:n.length>=120&&o===n.length&&a===0}})}function qc(e=Oc){let t=Kc(e),n=[],r=[],i=new Set;for(let t of e)i.has(t.id)&&r.push(t.id),i.add(t.id),(!t.chapterId||!t.subtopicId||!t.prompt||t.choices.length!==4||t.choices.some(e=>!e)||t.choices[t.correctChoice]!==t.correctAnswer||t.verificationStatus!==`deterministically-validated`)&&n.push(t.id);for(let e of t)e.complete||n.push(`coverage:${e.unitKey}`);return{ok:n.length===0&&r.length===0,totalPrepared:e.length,totalUnits:t.length,completeUnits:t.filter(e=>e.complete).length,invalidRecords:n,duplicateRecords:r,coverage:t}}Kc(Oc);var Jc=qc(Oc),Yc=e((e=>{var t=Symbol.for(`react.transitional.element`),n=Symbol.for(`react.fragment`);function r(e,n,r){var i=null;if(r!==void 0&&(i=``+r),n.key!==void 0&&(i=``+n.key),`key`in n)for(var a in r={},n)a!==`key`&&(r[a]=n[a]);else r=n;return n=r.ref,{$$typeof:t,type:e,key:i,ref:n===void 0?null:n,props:r}}e.Fragment=n,e.jsx=r,e.jsxs=r})),X=e(((e,t)=>{t.exports=Yc()}))(),Xc={all:`ทุกระดับ`,easy:`พื้นฐาน`,intermediate:`กำลังดี`,advanced:`ท้าทาย`,challenge:`โจทย์คิดวิเคราะห์`};function Zc(e){let t=e??Gs[0],n=t.offerings[0];return{chapterId:t.id,grade:n?.grade??`ทั้งหมด`,semester:n?.semester??`ทั้งหมด`,course:n?.course??`all`,subtopic:`all`,difficulty:`all`,count:10}}function Qc(e){let t=e.offerings[0];return{chapterId:e.id,grade:t?.grade??`ทั้งหมด`,semester:t?.semester??`ทั้งหมด`,course:t?.course??`all`,subtopic:`all`,difficulty:`all`,count:10}}function $c({progress:e,setProgress:t,onLesson:n,activeChapter:r}){let[i,a]=(0,l.useState)(()=>Zc(r)),[o,s]=(0,l.useState)(()=>{let e=Bc();return e&&(!r||e.filters.chapterId===r.id)?e:null}),[c,u]=(0,l.useState)(!1),[d,f]=(0,l.useState)(!1);(0,l.useEffect)(()=>{r&&(a(e=>e.chapterId===r.id?e:Qc(r)),s(e=>e?.filters.chapterId===r.id?e:null))},[r]);let p=Gs.find(e=>e.id===i.chapterId)??Gs[0],m=(0,l.useMemo)(()=>Array.from(new Set(p.offerings.map(e=>e.grade))),[p]),h=(0,l.useMemo)(()=>Array.from(new Set(p.offerings.filter(e=>i.grade===`ทั้งหมด`||e.grade===i.grade).map(e=>e.semester))),[p,i.grade]),g=(0,l.useMemo)(()=>Array.from(new Set(p.offerings.filter(e=>(i.grade===`ทั้งหมด`||e.grade===i.grade)&&(i.semester===`ทั้งหมด`||e.semester===i.semester)).map(e=>e.course))),[p,i.grade,i.semester]),_=(0,l.useMemo)(()=>Nc(i).length,[i]),v=o?.questions[o.currentIndex],y=o?.responses[o.currentIndex],b=Gc(i.chapterId),x=o?.responses.filter(e=>e.submitted).length??0,S=o?.responses.filter(e=>e.submitted&&!e.correct).length??0,C=e=>{a(t=>({...t,...e})),s(null),u(!1),f(!1)},ee=()=>{let e=zc(i);s(e),u(!1),f(!1)},w=()=>{if(!o||!v||!y||y.selectedChoice===null||y.submitted)return;let e=Hc(v,y.selectedChoice),n=o.responses.slice();n[o.currentIndex]={...y,submitted:!0,correct:e,answeredAt:new Date().toISOString()};let r={...o,responses:n,score:o.score+ +!!e,updatedAt:new Date().toISOString()};Vc(r),s(r),Wc({userId:r.userId,sessionId:r.id,questionId:v.preparedQuestionId,chapterId:v.chapterId,subtopicId:v.subtopicId,difficulty:v.difficulty,questionType:v.questionType,correct:e,answeredAt:new Date().toISOString()}),t(t=>qmmRecordLearningActivity({...t,exerciseCorrect:t.exerciseCorrect+ +!!e,exerciseTotal:t.exerciseTotal+1,xp:t.xp+(e?15:5)},"exercise",p.title))},T=e=>{if(!o||!y||y.submitted)return;let t=o.responses.slice();t[o.currentIndex]={...y,selectedChoice:e};let n={...o,responses:t,updatedAt:new Date().toISOString()};Vc(n),s(n)},E=e=>{if(!o||e<0||e>=o.questions.length)return;let t={...o,currentIndex:e,updatedAt:new Date().toISOString()};Vc(t),s(t),u(!!t.responses[e]?.hintShown),f(!1)},D=()=>{if(!o||!y)return;u(!0);let e=o.responses.slice();e[o.currentIndex]={...y,hintShown:!0};let t={...o,responses:e,updatedAt:new Date().toISOString()};Vc(t),s(t)},te=()=>{if(o){if(o.currentIndex===o.questions.length-1){let e={...o,completedAt:new Date().toISOString(),updatedAt:new Date().toISOString()};Vc(e),s(e)}else E(o.currentIndex+1)}},ne=e=>{if(!o)return;let t=Uc(o,e);t&&(s(t),u(!1),f(!1))};if(o?.completedAt){let e=o.questions.length?Math.round(o.score/o.questions.length*100):0;return(0,X.jsxs)(`div`,{className:`question-bank-page`,children:[(0,X.jsxs)(`div`,{className:`qb-page-heading`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`span`,{className:`qb-eyebrow`,children:[(0,X.jsx)(ds,{size:13}),` สรุปการฝึก`]}),(0,X.jsx)(`h1`,{children:`ทำได้ดีมาก คุณฝึกครบแล้ว`}),(0,X.jsx)(`p`,{children:`คำถามและคำตอบของเซสชันนี้ถูกบันทึกไว้แล้ว สามารถทบทวนหรือสร้างชุดใหม่ได้ทันที`})]}),(0,X.jsxs)(`button`,{className:`outline-button`,onClick:()=>s(null),children:[(0,X.jsx)($a,{size:16}),` กลับไปตั้งค่า`]})]}),(0,X.jsxs)(`div`,{className:`qb-summary-card`,children:[(0,X.jsxs)(`div`,{className:`qb-summary-score`,children:[(0,X.jsxs)(`div`,{className:`qb-score-ring`,children:[(0,X.jsxs)(`strong`,{children:[e,`%`]}),(0,X.jsx)(`span`,{children:`ความถูกต้อง`})]}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{className:`qb-kicker`,children:p.title}),(0,X.jsxs)(`h2`,{children:[o.score,` / `,o.questions.length,` ข้อถูก`]}),(0,X.jsx)(`p`,{children:o.poolRestarted?`ชุดนี้ใช้คำถามจากพูลซ้ำหลังจากคำถามที่เข้าเงื่อนไขหมดแล้ว`:`ระบบหลีกเลี่ยงคำถามฐานที่เพิ่งทำไปแล้วให้เรียบร้อย`})]})]}),(0,X.jsxs)(`div`,{className:`qb-summary-stats`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:x}),(0,X.jsx)(`span`,{children:`ตอบแล้ว`})]}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:S}),(0,X.jsx)(`span`,{children:`ควรทบทวน`})]}),(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`strong`,{children:[`+`,o.score*15+(o.questions.length-o.score)*5]}),(0,X.jsx)(`span`,{children:`XP ที่ได้`})]})]})]}),(0,X.jsxs)(`div`,{className:`qb-summary-actions`,children:[(0,X.jsxs)(`button`,{className:`primary-button`,onClick:ee,children:[(0,X.jsx)(ls,{size:16}),` สร้างชุดใหม่`]}),S>0&&(0,X.jsxs)(X.Fragment,{children:[(0,X.jsxs)(`button`,{className:`outline-button`,onClick:()=>ne(`same`),children:[(0,X.jsx)($o,{size:16}),` ทำข้อที่ผิดซ้ำ`]}),(0,X.jsxs)(`button`,{className:`outline-button`,onClick:()=>ne(`new`),children:[(0,X.jsx)(ds,{size:16}),` สุ่มโจทย์ใหม่จากทักษะเดิม`]})]})]})]})}return(0,X.jsxs)(`div`,{className:`question-bank-page`,children:[(0,X.jsxs)(`div`,{className:`qb-page-heading`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`span`,{className:`qb-eyebrow`,children:[(0,X.jsx)(ds,{size:13}),` คลังโจทย์คณิตศาสตร์`]}),(0,X.jsx)(`h1`,{children:r?`แบบฝึกหัด: ${p.title}`:`แบบฝึกหัดแบบสุ่มและคงที่`}),(0,X.jsx)(`p`,{children:`เลือกบท ระดับ และจำนวนข้อ ระบบจะสุ่มโจทย์จากคลังที่ตรวจสอบคำตอบแล้ว และบันทึกเซสชันไว้เมื่อรีเฟรชหน้า`})]}),(0,X.jsxs)(`div`,{className:`qb-heading-actions`,children:[(0,X.jsxs)(`span`,{className:`qb-engine-badge`,children:[(0,X.jsx)(`span`,{className:`status-dot`}),` Engine v1`]}),o&&(0,X.jsxs)(`button`,{className:`outline-button`,onClick:()=>s(null),children:[(0,X.jsx)(ls,{size:15}),` ตั้งค่าใหม่`]})]})]}),(0,X.jsxs)(`div`,{className:`qb-layout`,children:[(0,X.jsxs)(`aside`,{className:`qb-sidebar`,children:[(0,X.jsxs)(`div`,{className:`qb-filter-card`,children:[(0,X.jsxs)(`div`,{className:`qb-card-title`,children:[(0,X.jsx)(ps,{size:17}),(0,X.jsx)(`strong`,{children:`ตั้งค่าการฝึก`})]}),(0,X.jsx)(`label`,{children:`บทเรียน`}),(0,X.jsxs)(`div`,{className:`qb-select-wrap`,children:[(0,X.jsxs)(`select`,{value:i.chapterId,onChange:e=>C(Qc(Gs.find(t=>t.id===e.target.value)??Gs[0])),children:[(0,X.jsx)(`option`,{value:``,children:`เลือกบท`}),Gs.map(e=>(0,X.jsx)(`option`,{value:e.id,children:e.title},e.id))]}),(0,X.jsx)(vo,{size:15})]}),(0,X.jsx)(`label`,{children:`ระดับชั้น`}),(0,X.jsx)(`div`,{className:`qb-pill-row`,children:m.map(e=>(0,X.jsx)(`button`,{className:i.grade===e?`active`:``,onClick:()=>C({grade:e,semester:`ทั้งหมด`,course:`all`}),children:e},e))}),(0,X.jsx)(`label`,{children:`ภาคเรียน`}),(0,X.jsx)(`div`,{className:`qb-pill-row`,children:[`ทั้งหมด`,...h].filter((e,t,n)=>n.indexOf(e)===t).map(e=>(0,X.jsx)(`button`,{className:i.semester===e?`active`:``,onClick:()=>C({semester:e}),children:e.replace(`ภาคเรียนที่ `,`ภาค `)},e))}),g.length>1&&(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(`label`,{children:`ประเภทวิชา`}),(0,X.jsxs)(`div`,{className:`qb-pill-row`,children:[(0,X.jsx)(`button`,{className:i.course===`all`?`active`:``,onClick:()=>C({course:`all`}),children:`ทั้งหมด`}),g.map(e=>(0,X.jsx)(`button`,{className:i.course===e?`active`:``,onClick:()=>C({course:e}),children:e.replace(`คณิตศาสตร์`,``)},e))]})]}),(0,X.jsx)(`label`,{children:`หัวข้อย่อย`}),(0,X.jsxs)(`div`,{className:`qb-select-wrap`,children:[(0,X.jsxs)(`select`,{value:i.subtopic,onChange:e=>C({subtopic:e.target.value}),children:[(0,X.jsx)(`option`,{value:`all`,children:`ทุกหัวข้อย่อย`}),p.subtopics.map(e=>(0,X.jsx)(`option`,{value:e,children:e},e))]}),(0,X.jsx)(vo,{size:15})]}),(0,X.jsx)(`label`,{children:`ระดับความยาก`}),(0,X.jsx)(`div`,{className:`qb-difficulty-grid`,children:[`all`,`easy`,`intermediate`,`advanced`,`challenge`].map(e=>(0,X.jsx)(`button`,{className:i.difficulty===e?`active`:``,onClick:()=>C({difficulty:e}),children:Xc[e]},e))}),(0,X.jsx)(`label`,{children:`จำนวนข้อ`}),(0,X.jsx)(`div`,{className:`qb-count-row`,children:[10,20,30,50].map(e=>(0,X.jsx)(`button`,{className:i.count===e?`active`:``,onClick:()=>C({count:e}),children:e},e))}),(0,X.jsxs)(`div`,{className:`qb-availability`,children:[(0,X.jsx)(`strong`,{children:_}),(0,X.jsx)(`span`,{children:`ข้อพร้อมใช้ตามตัวกรอง`})]}),(0,X.jsxs)(`button`,{className:`primary-button qb-start-button`,onClick:ee,children:[(0,X.jsx)(ds,{size:16}),` เริ่มฝึกแบบสุ่ม`]})]}),(0,X.jsxs)(`div`,{className:`qb-session-note`,children:[(0,X.jsx)(wo,{size:17}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`เซสชันคงที่`}),(0,X.jsx)(`p`,{children:`คำถามที่สร้างแล้วจะไม่เปลี่ยนเมื่อรีเฟรช และตอบต่อได้จากอุปกรณ์นี้`})]})]}),(0,X.jsxs)(`div`,{className:`qb-progress-note`,children:[(0,X.jsx)(Ds,{size:16}),(0,X.jsxs)(`span`,{children:[`บทนี้: `,b.attempts?`${b.accuracy}% จาก ${b.attempts} ครั้ง`:`ยังไม่มีประวัติการตอบ`]})]})]}),o?(0,X.jsxs)(`section`,{className:`qb-workspace`,children:[(0,X.jsxs)(`div`,{className:`qb-workspace-top`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`span`,{children:[`ข้อที่ `,o.currentIndex+1,` จาก `,o.questions.length]}),(0,X.jsx)(`div`,{className:`workspace-progress`,children:(0,X.jsx)(`span`,{style:{width:`${x/o.questions.length*100}%`}})})]}),(0,X.jsxs)(`span`,{className:`score-pill`,children:[(0,X.jsx)(Ds,{size:14}),` `,o.score,` ถูก`]})]}),o.poolRestarted&&(0,X.jsxs)(`div`,{className:`qb-restart-notice`,children:[(0,X.jsx)($o,{size:15}),` ตัวกรองนี้มีคำถามพร้อมใช้น้อยกว่าจำนวนที่เลือก ระบบจึงอนุญาตให้คำถามฐานกลับมาได้หลังพูลหมด`]}),v&&y&&(0,X.jsxs)(`div`,{className:`qb-question-card`,children:[(0,X.jsxs)(`div`,{className:`qb-question-meta`,children:[(0,X.jsx)(`span`,{className:`chip chip-indigo`,children:v.subtopicId}),(0,X.jsx)(`span`,{className:`qb-difficulty difficulty-${v.difficulty}`,children:Xc[v.difficulty]}),(0,X.jsx)(`span`,{className:`qb-question-type`,children:v.questionType})]}),(0,X.jsx)(`h2`,{children:v.prompt}),(0,X.jsx)(QmmExerciseDiagram,{question:v}),(0,X.jsx)(`div`,{className:`qb-answer-options`,children:v.choices.map((e,t)=>(0,X.jsxs)(`button`,{className:`qb-answer-option ${y.selectedChoice===t?`selected`:``} ${y.submitted&&t===v.correctChoice?`correct`:``} ${y.submitted&&y.selectedChoice===t&&t!==v.correctChoice?`incorrect`:``}`,onClick:()=>T(t),children:[(0,X.jsx)(`span`,{children:String.fromCharCode(65+t)}),(0,X.jsx)(`strong`,{children:e}),y.submitted&&t===v.correctChoice&&(0,X.jsx)(go,{size:17}),y.submitted&&y.selectedChoice===t&&t!==v.correctChoice&&(0,X.jsx)(Ts,{size:17})]},`${e}-${t}`))}),y.submitted&&(0,X.jsxs)(`div`,{className:`qb-feedback ${y.correct?`correct`:`incorrect`}`,children:[(0,X.jsx)(`div`,{className:`qb-feedback-icon`,children:y.correct?(0,X.jsx)(go,{size:18}):(0,X.jsx)(Ts,{size:18})}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:y.correct?`คำตอบถูกต้อง`:`คำตอบที่ถูกคือ ${v.correctAnswer}`}),(0,X.jsx)(`p`,{children:v.solution})]})]}),(0,X.jsxs)(`div`,{className:`qb-question-controls`,children:[(0,X.jsxs)(`button`,{className:`outline-button`,onClick:D,children:[(0,X.jsx)(Lo,{size:16}),` `,c?v.hint:`ดูคำใบ้`]}),y.submitted&&(0,X.jsxs)(`button`,{className:`outline-button`,onClick:()=>f(e=>!e),children:[(0,X.jsx)(so,{size:16}),` `,d?`ซ่อนวิธีทำ`:`ดูวิธีทำเต็ม`]}),(0,X.jsx)(`div`,{className:`qb-control-spacer`}),o.currentIndex>0&&(0,X.jsxs)(`button`,{className:`outline-button`,onClick:()=>E(o.currentIndex-1),children:[(0,X.jsx)($a,{size:16}),` ก่อนหน้า`]}),y.submitted?(0,X.jsxs)(`button`,{className:`primary-button`,onClick:te,children:[o.currentIndex===o.questions.length-1?`ดูสรุป`:`ข้อถัดไป`,` `,(0,X.jsx)(to,{size:16})]}):(0,X.jsxs)(`button`,{className:`primary-button`,disabled:y.selectedChoice===null,onClick:w,children:[`ตรวจคำตอบ `,(0,X.jsx)(go,{size:16})]})]}),d&&(0,X.jsxs)(`div`,{className:`qb-solution-panel`,children:[(0,X.jsx)(`strong`,{children:`คำอธิบาย`}),(0,X.jsx)(`p`,{children:v.solution})]})]}),(0,X.jsxs)(`div`,{className:`qb-questions-nav`,children:[(0,X.jsxs)(`div`,{className:`qb-nav-heading`,children:[(0,X.jsx)(`strong`,{children:`ทบทวนข้อในเซสชัน`}),(0,X.jsxs)(`span`,{children:[x,`/`,o.questions.length,` ตอบแล้ว`]})]}),(0,X.jsx)(`div`,{children:o.responses.map((e,t)=>(0,X.jsx)(`button`,{className:`${t===o.currentIndex?`current`:``} ${e.submitted?e.correct?`correct`:`incorrect`:``}`,onClick:()=>E(t),children:t+1},t))})]}),(0,X.jsxs)(`button`,{className:`related-lesson`,onClick:n,children:[(0,X.jsx)(`div`,{className:`related-icon`,children:(0,X.jsx)(so,{size:17})}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{children:`ทบทวนเนื้อหาที่เกี่ยวข้อง`}),(0,X.jsx)(`strong`,{children:p.title})]}),(0,X.jsx)(to,{size:17})]})]}):(0,X.jsxs)(`section`,{className:`qb-empty-workspace`,children:[(0,X.jsx)(`div`,{className:`qb-empty-icon`,children:(0,X.jsx)(ds,{size:27})}),(0,X.jsx)(`h2`,{children:`พร้อมเริ่มชุดฝึกของคุณแล้ว`}),(0,X.jsx)(`p`,{children:`ระบบจะแยกคำถามฐานออกจากตัวแปรสุ่ม และเก็บคำตอบ/วิธีทำของชุดนี้ไว้ให้กลับมาทบทวนได้`}),(0,X.jsxs)(`div`,{className:`qb-empty-facts`,children:[(0,X.jsxs)(`span`,{children:[(0,X.jsx)(`strong`,{children:Jc.completeUnits}),` / `,Jc.totalUnits,` หน่วยครบ 120 ข้อ`]}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(`strong`,{children:`4`}),` ระดับความยาก`]}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(`strong`,{children:Jc.ok?`ผ่าน`:`ตรวจสอบ`}),` QA คำตอบ`]})]}),(0,X.jsxs)(`button`,{className:`primary-button large-button`,onClick:ee,children:[`เริ่มฝึก `,i.count,` ข้อ `,(0,X.jsx)(to,{size:17})]})]})]})]})}var el={displayName:`พิมพ์ชนก`,grade:`ม.3`,bio:`กำลังฝึกทำความเข้าใจคณิตศาสตร์ให้มากขึ้น`,profilePicture:``,mathInterests:[],email:`pimchanok@example.com`,dailyReminder:!0,communityReplies:!0,weeklySummary:!1,showHints:!0,fullScreenMath:!1,difficulty:`กำลังดี`,theme:`ตามระบบ`,fontSize:`มาตรฐาน`},tl={completedLessons:[],bookmarks:[],xp:0,streak:0,exerciseCorrect:0,exerciseTotal:0,assessmentScore:null,activityDates:[],recentActivity:[]},nl=[{role:`tutor`,text:`สวัสดีค่ะ พิมพ์ชนก 👋 วันนี้อยากทำความเข้าใจคณิตศาสตร์เรื่องไหนเป็นพิเศษคะ? ฉันจะช่วยไล่เหตุผลไปทีละขั้น โดยยังไม่เฉลยทันทีถ้าคุณอยากลองคิดเองก่อน`,time:`09:41`},{role:`user`,text:`ช่วยอธิบายว่าทำไมการย้ายข้างในสมการถึงต้องเปลี่ยนเครื่องหมายหน่อยค่ะ`,time:`09:42`},{role:`tutor`,text:`ได้เลยค่ะ ลองนึกถึงสมการเหมือนตาชั่งที่สมดุลนะคะ
 
 จาก 2x + 3 = 11 ถ้าเราต้องการเอา +3 ออก เราจะ “ลบ 3” จากทั้งสองข้าง ไม่ใช่แค่ข้างเดียว:
 
 2x + 3 - 3 = 11 - 3
 จึงเหลือ 2x = 8
 
-คำว่า “ย้าย +3 ไปอีกข้างเป็น -3” เป็นเพียงวิธีเขียนสั้น ๆ ของการลบ 3 ทั้งสองข้างค่ะ ความเท่ากันจึงยังคงเดิม`,time:`09:42`}],rl=[{id:`reply-1`,kind:`reply`,title:`มีคนตอบคำถามของคุณ`,body:`มินตราช่วยต่อยอดเรื่องสมการเชิงเส้นแล้ว`,time:`12 นาทีที่แล้ว`,read:!1},{id:`streak-1`,kind:`streak`,title:`รักษาสตรีคไว้ได้อีกวัน`,body:`คุณเรียนต่อเนื่องมาแล้ว 5 วัน เก่งมาก!`,time:`วันนี้ 09:00`,read:!1},{id:`lesson-1`,kind:`lesson`,title:`บทเรียนใหม่ที่น่าลอง`,body:`ฟังก์ชันเชิงเส้นและกราฟพร้อมให้เรียนแล้ว`,time:`เมื่อวาน`,read:!0}],il=[{id:`home`,label:`หน้าหลัก`,icon:Mo},{id:`lessons`,label:`บทเรียน`,icon:so},{id:`exercises`,label:`แบบฝึกหัด`,icon:Yo},{id:`assessment`,label:`แบบประเมิน`,icon:zo},{id:`tutor`,label:`ติวเตอร์ AI`,icon:ds},{id:`community`,label:`ชุมชนการเรียนรู้`,icon:Cs},{id:`leaderboard`,label:`กระดานคะแนน`,icon:_s}];function al(e,t){try{return JSON.parse(localStorage.getItem(e)??``)}catch{return t}}function ol({formula:e,display:t=!1}){let n=e;try{n=Ia(e,{throwOnError:!1,displayMode:t,strict:`ignore`})}catch{}return(0,X.jsx)(`span`,{className:t?`math-display`:`math-inline`,dangerouslySetInnerHTML:{__html:n}})}function sl(){let[e,t]=(0,l.useState)(()=>al(`commumathy-page`,`home`)),[n,r]=(0,l.useState)(()=>al(`commumathy-settings`,null)?.theme??`ตามระบบ`),[i,a]=(0,l.useState)(Os[0]),[o,s]=(0,l.useState)(Gs[0]),[c,u]=(0,l.useState)(Gs[0].lessons[0]),[d,f]=(0,l.useState)(null),[p,m]=(0,l.useState)(()=>al(`commumathy-progress`,tl)),[h,g]=(0,l.useState)(()=>al(`commumathy-posts`,As)),[_,v]=(0,l.useState)(()=>al(`commumathy-tutor`,nl)),[y,b]=(0,l.useState)(()=>al(`commumathy-notifications`,rl)),[x,S]=(0,l.useState)(``),[C,ee]=(0,l.useState)(!1),[w,T]=(0,l.useState)(!1),E=(0,l.useRef)(null);(0,l.useEffect)(()=>{localStorage.setItem(`commumathy-progress`,JSON.stringify(p))},[p]),(0,l.useEffect)(()=>{localStorage.setItem(`commumathy-page`,JSON.stringify(e))},[e]),(0,l.useEffect)(()=>{localStorage.setItem(`commumathy-posts`,JSON.stringify(h))},[h]),(0,l.useEffect)(()=>{localStorage.setItem(`commumathy-tutor`,JSON.stringify(_))},[_]),(0,l.useEffect)(()=>{localStorage.setItem(`commumathy-notifications`,JSON.stringify(y))},[y]),(0,l.useEffect)(()=>{if(!w)return;let e=e=>{E.current&&!E.current.contains(e.target)&&T(!1)};return document.addEventListener(`mousedown`,e),()=>document.removeEventListener(`mousedown`,e)},[w]),(0,l.useEffect)(()=>{let e=window.matchMedia(`(prefers-color-scheme: dark)`),t=()=>{document.documentElement.dataset.theme=n===`มืด`||n===`ตามระบบ`&&e.matches?`มืด`:`สว่าง`};return t(),e.addEventListener(`change`,t),()=>e.removeEventListener(`change`,t)},[n]);let D=e=>{t(e),ee(!1),window.scrollTo({top:0,behavior:`smooth`})},te=e=>{r(e);let t=al(`commumathy-settings`,el);localStorage.setItem(`commumathy-settings`,JSON.stringify({...t,theme:e}))},ne=()=>te(n===`มืด`?`สว่าง`:`มืด`),re=e=>{a(e),D(`lesson-detail`)},ie=e=>{s(e),D(`curriculum-chapter`)},ae=(e,t)=>{s(e),u(t),D(`curriculum-lesson`)},oe=e=>{f(e),D(`exercises`)},se=e=>m(t=>({...t,bookmarks:t.bookmarks.includes(e)?t.bookmarks.filter(t=>t!==e):[...t.bookmarks,e]})),ce=()=>m(e=>({...e,completedLessons:e.completedLessons.includes(i.id)?e.completedLessons:[...e.completedLessons,i.id],xp:e.xp+(e.completedLessons.includes(i.id)?0:40)})),le=e=>m(t=>({...t,completedLessons:t.completedLessons.includes(e)?t.completedLessons:[...t.completedLessons,e],xp:t.xp+(t.completedLessons.includes(e)?0:40)})),ue=y.filter(e=>!e.read).length,de=e=>b(t=>t.map(t=>t.id===e?{...t,read:!0}:t)),fe=()=>b(e=>e.map(e=>({...e,read:!0}))),pe=(0,l.useMemo)(()=>{if(!x.trim())return[];let e=x.toLowerCase();return[...Os.map(e=>({kind:`lesson`,lesson:e})),...Gs.map(e=>({kind:`chapter`,chapter:e}))].filter(t=>(t.kind===`lesson`?`${t.lesson.title} ${t.lesson.subject} ${t.lesson.grade}`:`${t.chapter.title} ${t.chapter.englishTitle} ${t.chapter.offerings.map(e=>e.grade).join(` `)}`).toLowerCase().includes(e)).slice(0,7)},[x]);return(0,X.jsxs)(`div`,{className:`app-shell`,children:[(0,X.jsxs)(`aside`,{className:`sidebar ${C?`sidebar-open`:``}`,children:[(0,X.jsxs)(`div`,{className:`brand`,onClick:()=>D(`home`),role:`button`,tabIndex:0,children:[(0,X.jsx)(`div`,{className:`brand-mark`,children:(0,X.jsx)(`span`,{children:`∑`})}),(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`strong`,{children:[`Commu`,(0,X.jsx)(`span`,{children:`Mathy`})]}),(0,X.jsx)(`small`,{children:`เรียนคณิตให้เข้าใจ`})]})]}),(0,X.jsx)(`div`,{className:`sidebar-section-label`,children:`เมนูหลัก`}),(0,X.jsx)(`nav`,{className:`sidebar-nav`,children:il.map(({id:t,label:n,icon:r})=>(0,X.jsxs)(`button`,{className:`nav-item ${e===t||t===`lessons`&&[`lesson-detail`,`curriculum-chapter`,`curriculum-lesson`].includes(e)?`active`:``}`,onClick:()=>D(t),children:[(0,X.jsx)(r,{size:19,strokeWidth:e===t?2.4:1.8}),(0,X.jsx)(`span`,{children:n}),t===`tutor`&&(0,X.jsx)(`span`,{className:`nav-new`,children:`ใหม่`})]},t))}),(0,X.jsx)(`div`,{className:`sidebar-spacer`}),(0,X.jsxs)(`div`,{className:`sidebar-tip`,children:[(0,X.jsx)(`div`,{className:`tip-icon`,children:(0,X.jsx)(Lo,{size:17})}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`เคล็ดลับวันนี้`}),(0,X.jsx)(`p`,{children:`ลองอธิบายวิธีคิดของตัวเองเป็นคำพูด จะช่วยให้จำได้นานขึ้น`})]})]}),(0,X.jsxs)(`nav`,{className:`sidebar-nav sidebar-bottom`,children:[(0,X.jsxs)(`button`,{className:`nav-item ${e===`profile`?`active`:``}`,onClick:()=>D(`profile`),children:[(0,X.jsx)(xs,{size:19}),(0,X.jsx)(`span`,{children:`โปรไฟล์ของฉัน`})]}),(0,X.jsxs)(`button`,{className:`nav-item ${e===`settings`?`active`:``}`,onClick:()=>D(`settings`),children:[(0,X.jsx)(ss,{size:19}),(0,X.jsx)(`span`,{children:`ตั้งค่า`})]})]}),(0,X.jsxs)(`div`,{className:`mini-profile`,children:[(0,X.jsx)(`div`,{className:`avatar avatar-indigo`,children:`พช`}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`พิมพ์ชนก`}),(0,X.jsx)(`small`,{children:`ม.3 • นักสำรวจ`})]}),(0,X.jsx)(Eo,{size:17})]})]}),C&&(0,X.jsx)(`div`,{className:`sidebar-overlay`,onClick:()=>ee(!1)}),(0,X.jsxs)(`main`,{className:`main-area`,children:[(0,X.jsxs)(`header`,{className:`topbar`,children:[(0,X.jsx)(`button`,{className:`mobile-menu-button`,onClick:()=>ee(!0),"aria-label":`เปิดเมนู`,children:(0,X.jsx)(Vo,{size:22})}),(0,X.jsxs)(`div`,{className:`breadcrumbs`,children:[(0,X.jsx)(`span`,{children:`CommuMathy`}),(0,X.jsx)(bo,{size:14}),` `,(0,X.jsx)(`strong`,{children:cl(e)})]}),(0,X.jsxs)(`div`,{className:`topbar-actions`,children:[(0,X.jsxs)(`div`,{className:`global-search`,children:[(0,X.jsx)(rs,{size:17}),(0,X.jsx)(`input`,{value:x,onChange:e=>S(e.target.value),placeholder:`ค้นหาบทเรียน แบบฝึกหัด...`,"aria-label":`ค้นหา`}),x&&(0,X.jsx)(`button`,{onClick:()=>S(``),children:(0,X.jsx)(Ts,{size:15})}),pe.length>0&&(0,X.jsx)(`div`,{className:`search-dropdown`,children:pe.map(e=>e.kind===`lesson`?(0,X.jsxs)(`button`,{onClick:()=>{re(e.lesson),S(``)},children:[(0,X.jsx)(`div`,{className:`course-icon ${e.lesson.color}`,children:e.lesson.icon}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:e.lesson.title}),(0,X.jsxs)(`small`,{children:[e.lesson.grade,` • `,e.lesson.subject]})]}),(0,X.jsx)(bo,{size:15})]},e.lesson.id):(0,X.jsxs)(`button`,{onClick:()=>{ie(e.chapter),S(``)},children:[(0,X.jsx)(`div`,{className:`course-icon ${e.chapter.color}`,children:e.chapter.icon}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:e.chapter.title}),(0,X.jsxs)(`small`,{children:[e.chapter.offerings[0].grade,` • `,e.chapter.englishTitle]})]}),(0,X.jsx)(bo,{size:15})]},e.chapter.id))})]}),(0,X.jsxs)(`div`,{className:`notification-menu`,ref:E,children:[(0,X.jsxs)(`button`,{className:`icon-button notification-button`,onClick:()=>T(e=>!e),"aria-label":`การแจ้งเตือน`,"aria-expanded":w,children:[(0,X.jsx)(ao,{size:19}),ue>0&&(0,X.jsx)(`span`,{})]}),w&&(0,X.jsxs)(`div`,{className:`notification-dropdown`,role:`dialog`,"aria-label":`การแจ้งเตือน`,children:[(0,X.jsxs)(`div`,{className:`notification-dropdown-head`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`การแจ้งเตือน`}),(0,X.jsx)(`span`,{children:ue>0?`${ue} รายการใหม่`:`ไม่มีรายการใหม่`})]}),ue>0&&(0,X.jsx)(`button`,{onClick:fe,children:`อ่านทั้งหมด`})]}),(0,X.jsx)(`div`,{className:`notification-list`,children:y.length===0?(0,X.jsxs)(`div`,{className:`notification-empty`,children:[(0,X.jsx)(ao,{size:18}),(0,X.jsx)(`span`,{children:`ยังไม่มีการแจ้งเตือน`})]}):y.map(e=>(0,X.jsxs)(`button`,{className:`notification-item ${e.read?`read`:``}`,onClick:()=>{de(e.id),T(!1)},children:[(0,X.jsx)(`span`,{className:`notification-icon ${e.kind}`,children:e.kind===`reply`?(0,X.jsx)(Uo,{size:15}):e.kind===`streak`?(0,X.jsx)(Oo,{size:15}):(0,X.jsx)(so,{size:15})}),(0,X.jsxs)(`span`,{className:`notification-copy`,children:[(0,X.jsx)(`strong`,{children:e.title}),(0,X.jsx)(`span`,{children:e.body}),(0,X.jsx)(`small`,{children:e.time})]}),!e.read&&(0,X.jsx)(`i`,{})]},e.id))})]})]}),(0,X.jsx)(`button`,{className:`icon-button theme-toggle`,onClick:ne,"aria-label":`สลับธีม`,title:`สลับธีม`,children:(0,X.jsx)(Go,{size:18})}),(0,X.jsx)(`button`,{className:`top-avatar`,onClick:()=>D(`profile`),children:`พช`})]})]}),(0,X.jsxs)(`div`,{className:`page-content`,children:[e===`home`&&(0,X.jsx)(ll,{progress:p,onNavigate:D,onLesson:re}),e===`lessons`&&(0,X.jsx)(_l,{progress:p,onChapter:ie,onBookmark:se}),e===`lesson-detail`&&(0,X.jsx)(xl,{lesson:i,progress:p,onBack:()=>D(`lessons`),onComplete:ce,onBookmark:se,onPractice:()=>D(`exercises`)}),e===`curriculum-chapter`&&(0,X.jsx)(vl,{chapter:o,progress:p,onBack:()=>D(`lessons`),onLesson:e=>ae(o,e),onPractice:()=>oe(o),onBookmark:se}),e===`curriculum-lesson`&&(0,X.jsx)(yl,{chapter:o,lesson:c,progress:p,onBack:()=>D(`curriculum-chapter`),onLesson:e=>ae(o,e),onComplete:()=>le(c.id),onPractice:()=>oe(o)}),e===`exercises`&&(0,X.jsx)($c,{progress:p,setProgress:m,onLesson:()=>d?ie(d):re(Os[0]),activeChapter:d}),e===`assessment`&&(0,X.jsx)(Cl,{progress:p,setProgress:m,onLessons:()=>D(`lessons`)}),e===`tutor`&&(0,X.jsx)(Tl,{messages:_,setMessages:v}),e===`community`&&(0,X.jsx)(Dl,{posts:h,setPosts:g}),e===`leaderboard`&&(0,X.jsx)(kl,{progress:p}),e===`profile`&&(0,X.jsx)(jl,{progress:p,onNavigate:D,onLesson:re}),e===`settings`&&(0,X.jsx)(Ml,{onThemeChange:te})]})]}),(0,X.jsxs)(`nav`,{className:`mobile-bottom-nav`,children:[il.slice(0,4).map(({id:t,label:n,icon:r})=>(0,X.jsxs)(`button`,{className:e===t?`active`:``,onClick:()=>D(t),children:[(0,X.jsx)(r,{size:19}),(0,X.jsx)(`span`,{children:n})]},t)),(0,X.jsxs)(`button`,{className:e===`tutor`?`active`:``,onClick:()=>D(`tutor`),children:[(0,X.jsx)(ds,{size:19}),(0,X.jsx)(`span`,{children:`ติวเตอร์`})]})]})]})}function cl(e){return{home:`หน้าหลัก`,lessons:`บทเรียน`,"lesson-detail":`รายละเอียดบทเรียน`,"curriculum-chapter":`บทในหลักสูตร`,"curriculum-lesson":`บทเรียนย่อย`,exercises:`แบบฝึกหัด`,assessment:`แบบประเมิน`,tutor:`ติวเตอร์ AI`,community:`ชุมชนการเรียนรู้`,leaderboard:`กระดานคะแนน`,profile:`โปรไฟล์ของฉัน`,settings:`ตั้งค่า`}[e]}function ll({progress:e,onNavigate:t,onLesson:n}){let r=Math.round(e.exerciseCorrect/e.exerciseTotal*100);return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsxs)(`section`,{className:`welcome-row`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`div`,{className:`eyebrow`,children:[(0,X.jsx)(`span`,{className:`eyebrow-dot`}),` วันจันทร์ที่ 13 ตุลาคม 2569`]}),(0,X.jsxs)(`h1`,{children:[`สวัสดี, พิมพ์ชนก `,(0,X.jsx)(`span`,{className:`wave`,children:`👋`})]}),(0,X.jsx)(`p`,{className:`page-intro`,children:`พร้อมเรียนรู้สิ่งใหม่วันนี้หรือยัง? มาเติบโตไปทีละก้าวด้วยกันนะ`})]}),(0,X.jsxs)(`button`,{className:`outline-button desktop-only`,children:[(0,X.jsx)(ul,{}),` ตารางการเรียน`]})]}),(0,X.jsxs)(`section`,{className:`hero-card`,children:[(0,X.jsxs)(`div`,{className:`hero-copy`,children:[(0,X.jsxs)(`div`,{className:`hero-label`,children:[(0,X.jsx)(ds,{size:15}),` เส้นทางการเรียนรู้ของคุณ`]}),(0,X.jsxs)(`h2`,{children:[`วางรากฐานพีชคณิต`,(0,X.jsx)(`br`,{}),(0,X.jsx)(`em`,{children:`ให้แน่นขึ้นอีกนิด`})]}),(0,X.jsx)(`p`,{children:`บทเรียนถัดไปของคุณรออยู่ ใช้เวลาเพียง 25 นาทีเพื่อทำความเข้าใจเรื่องสมการให้ชัดเจนขึ้น`}),(0,X.jsxs)(`button`,{className:`primary-button`,onClick:()=>n(Os[0]),children:[`เรียนต่อ `,(0,X.jsx)(to,{size:17})]})]}),(0,X.jsxs)(`div`,{className:`hero-art`,children:[(0,X.jsx)(`div`,{className:`orbit orbit-one`}),(0,X.jsx)(`div`,{className:`orbit orbit-two`}),(0,X.jsxs)(`div`,{className:`floating-card card-one`,children:[(0,X.jsx)(`span`,{children:`∑`}),(0,X.jsx)(`small`,{children:`เข้าใจ`})]}),(0,X.jsxs)(`div`,{className:`floating-card card-two`,children:[(0,X.jsx)(`span`,{children:`x²`}),(0,X.jsx)(`small`,{children:`ลองคิด`})]}),(0,X.jsxs)(`div`,{className:`hero-equation`,children:[(0,X.jsx)(ol,{formula:`2x + 3 = 11`,display:!0}),(0,X.jsx)(`span`,{children:`ให้เหตุผลกับทุกคำตอบ`})]})]})]}),(0,X.jsxs)(`div`,{className:`stats-grid`,children:[(0,X.jsx)(dl,{icon:(0,X.jsx)(Oo,{size:19}),label:`เรียนต่อเนื่อง`,value:`${e.streak} วัน`,note:`เพิ่มขึ้น 2 วันจากสัปดาห์ก่อน`,tone:`orange`}),(0,X.jsx)(dl,{icon:(0,X.jsx)(ps,{size:19}),label:`ความแม่นยำแบบฝึกหัด`,value:`${r}%`,note:`ดีขึ้น 8% จากครั้งก่อน`,tone:`green`}),(0,X.jsx)(dl,{icon:(0,X.jsx)(ro,{size:19}),label:`บทเรียนที่จบแล้ว`,value:`${e.completedLessons.length} บท`,note:`จากทั้งหมด ${Os.length} บท`,tone:`purple`}),(0,X.jsx)(dl,{icon:(0,X.jsx)(Ds,{size:19}),label:`คะแนนสะสม`,value:`${e.xp.toLocaleString()} XP`,note:`อีก 160 XP ถึงระดับถัดไป`,tone:`yellow`})]}),(0,X.jsxs)(`div`,{className:`content-grid home-grid`,children:[(0,X.jsxs)(`div`,{className:`primary-column`,children:[(0,X.jsx)(fl,{title:`เรียนต่อจากครั้งล่าสุด`,link:`ดูบทเรียนทั้งหมด`,onLink:()=>t(`lessons`)}),(0,X.jsxs)(`div`,{className:`continue-card`,children:[(0,X.jsxs)(`div`,{className:`continue-cover indigo-cover`,children:[(0,X.jsx)(`span`,{className:`cover-formula`,children:(0,X.jsx)(ol,{formula:`2x + 3 = 11`,display:!0})}),(0,X.jsx)(`span`,{className:`cover-tag`,children:`พีชคณิต • ม.1`})]}),(0,X.jsxs)(`div`,{className:`continue-body`,children:[(0,X.jsx)(`div`,{className:`card-kicker`,children:`บทเรียนที่กำลังเรียน`}),(0,X.jsx)(`h3`,{children:Os[0].title}),(0,X.jsx)(`p`,{children:Os[0].subtitle}),(0,X.jsx)(`div`,{className:`progress-line`,children:(0,X.jsx)(`span`,{style:{width:`${Os[0].progress}%`}})}),(0,X.jsxs)(`div`,{className:`progress-meta`,children:[(0,X.jsxs)(`span`,{children:[`เรียนไปแล้ว `,Os[0].progress,`%`]}),(0,X.jsxs)(`span`,{children:[Os[0].duration,` ที่เหลือ`]})]}),(0,X.jsxs)(`button`,{className:`text-button`,onClick:()=>n(Os[0]),children:[`กลับไปเรียนต่อ `,(0,X.jsx)(to,{size:15})]})]})]}),(0,X.jsx)(fl,{title:`บทเรียนแนะนำสำหรับคุณ`,link:`ดูทั้งหมด`,onLink:()=>t(`lessons`)}),(0,X.jsx)(`div`,{className:`lesson-mini-grid`,children:Os.slice(1,3).map(e=>(0,X.jsx)(gl,{lesson:e,onClick:()=>n(e)},e.id))})]}),(0,X.jsxs)(`aside`,{className:`secondary-column`,children:[(0,X.jsx)(pl,{progress:e}),(0,X.jsx)(ml,{onClick:()=>t(`tutor`)}),(0,X.jsx)(hl,{onNavigate:t})]})]})]})}function ul(){return(0,X.jsx)(`span`,{className:`calendar-icon`,children:`▦`})}function dl({icon:e,label:t,value:n,note:r,tone:i}){return(0,X.jsxs)(`div`,{className:`stat-card`,children:[(0,X.jsx)(`div`,{className:`stat-icon ${i}`,children:e}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{children:t}),(0,X.jsx)(`strong`,{children:n}),(0,X.jsx)(`small`,{children:r})]})]})}function fl({title:e,link:t,onLink:n}){return(0,X.jsxs)(`div`,{className:`section-heading`,children:[(0,X.jsx)(`h2`,{children:e}),t&&(0,X.jsxs)(`button`,{onClick:n,children:[t,` `,(0,X.jsx)(to,{size:14})]})]})}function pl({progress:e}){return(0,X.jsxs)(`div`,{className:`side-card progress-card`,children:[(0,X.jsxs)(`div`,{className:`side-card-heading`,children:[(0,X.jsx)(`h3`,{children:`ภาพรวมการเรียน`}),(0,X.jsx)(`button`,{"aria-label":`ตัวเลือก`,children:(0,X.jsx)(Eo,{size:18})})]}),(0,X.jsxs)(`div`,{className:`progress-ring-wrap`,children:[(0,X.jsx)(`div`,{className:`progress-ring`,style:{"--progress":`${Math.min(100,e.xp/12)}%`},children:(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`strong`,{children:[Math.round(e.xp/12),`%`]}),(0,X.jsx)(`span`,{children:`โดยรวม`})]})}),(0,X.jsxs)(`div`,{className:`ring-legend`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`i`,{className:`legend-dot indigo-dot`}),(0,X.jsx)(`span`,{children:`บทเรียน`}),(0,X.jsx)(`strong`,{children:`68%`})]}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`i`,{className:`legend-dot yellow-dot`}),(0,X.jsx)(`span`,{children:`แบบฝึกหัด`}),(0,X.jsxs)(`strong`,{children:[Math.round(e.exerciseCorrect/e.exerciseTotal*100),`%`]})]}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`i`,{className:`legend-dot gray-dot`}),(0,X.jsx)(`span`,{children:`แบบประเมิน`}),(0,X.jsxs)(`strong`,{children:[e.assessmentScore??0,`%`]})]})]})]}),(0,X.jsxs)(`div`,{className:`streak-strip`,children:[(0,X.jsx)(Oo,{size:16}),(0,X.jsxs)(`span`,{children:[`คุณกำลังเรียนต่อเนื่อง `,(0,X.jsxs)(`strong`,{children:[e.streak,` วัน`]})]}),(0,X.jsx)(bo,{size:15})]})]})}function ml({onClick:e}){return(0,X.jsxs)(`button`,{className:`tutor-shortcut`,onClick:e,children:[(0,X.jsx)(`div`,{className:`tutor-orb`,children:(0,X.jsx)(ds,{size:20})}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{children:`ติดขัดตรงไหนไหม?`}),(0,X.jsx)(`strong`,{children:`ถามติวเตอร์ AI ได้เลย`})]}),(0,X.jsx)(to,{size:17})]})}function hl({onNavigate:e}){return(0,X.jsxs)(`div`,{className:`side-card community-snippet`,children:[(0,X.jsxs)(`div`,{className:`side-card-heading`,children:[(0,X.jsx)(`h3`,{children:`พูดคุยล่าสุด`}),(0,X.jsx)(`button`,{onClick:()=>e(`community`),children:`ดูทั้งหมด`})]}),(0,X.jsxs)(`div`,{className:`snippet-post`,children:[(0,X.jsx)(`div`,{className:`avatar avatar-peach`,children:`พพ`}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`ทำไมเวลาย้ายข้างต้อง...`}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(`span`,{className:`tag-dot`}),` พีชคณิต `,(0,X.jsx)(`i`,{children:`•`}),` 12 นาทีที่แล้ว`]})]})]}),(0,X.jsxs)(`div`,{className:`snippet-post`,children:[(0,X.jsx)(`div`,{className:`avatar avatar-teal`,children:`ตน`}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`มีวิธีจำสูตรพีทาโกรัส...`}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(`span`,{className:`tag-dot teal-dot`}),` เรขาคณิต `,(0,X.jsx)(`i`,{children:`•`}),` 1 ชม.ที่แล้ว`]})]})]})]})}function gl({lesson:e,onClick:t}){return(0,X.jsxs)(`button`,{className:`lesson-mini-card`,onClick:t,children:[(0,X.jsx)(`div`,{className:`course-icon ${e.color}`,children:e.icon}),(0,X.jsxs)(`div`,{className:`lesson-mini-info`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`span`,{children:[e.grade,` • `,e.subject]}),(0,X.jsx)(fo,{size:15})]}),(0,X.jsx)(`h3`,{children:e.title}),(0,X.jsxs)(`p`,{children:[e.duration,` `,(0,X.jsx)(`i`,{children:`•`}),` `,e.level]})]}),(0,X.jsx)(bo,{size:17})]})}function _l({progress:e,onChapter:t,onBookmark:n}){let[r,i]=(0,l.useState)(`มัธยมศึกษาตอนต้น`),[a,o]=(0,l.useState)(`ทั้งหมด`),[s,c]=(0,l.useState)(`ทั้งหมด`),[u,d]=(0,l.useState)(`ทั้งหมด`),f=r===`มัธยมศึกษาตอนต้น`?[`ทั้งหมด`,`ม.1`,`ม.2`,`ม.3`]:[`ทั้งหมด`,`ม.4`,`ม.5`,`ม.6`],p=Gs.filter(e=>e.educationLevel===r&&Ys(e,a,s,u).length>0),m=e=>{i(e),o(`ทั้งหมด`),c(`ทั้งหมด`),d(`ทั้งหมด`)},h=t=>Math.round(t.lessons.filter(t=>e.completedLessons.includes(t.id)).length/t.lessons.length*100);return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(bl,{eyebrow:`หลักสูตรคณิตศาสตร์ไทย ม.1–ม.6`,title:`เส้นทางการเรียนรู้`,description:`เลือกช่วงชั้น ภาคเรียน และประเภทวิชา เพื่อค้นหาบทที่เหมาะกับคุณ พร้อมบทเรียนย่อยและแบบฝึกหัดที่เชื่อมต่อกัน`,action:(0,X.jsxs)(`div`,{className:`curriculum-summary`,children:[(0,X.jsxs)(`strong`,{children:[p.length,` บท`]}),(0,X.jsxs)(`span`,{children:[p.reduce((e,t)=>e+t.lessons.length,0),` บทเรียนย่อย • `,p.reduce((e,t)=>e+t.exercises.length,0),` แบบฝึกหัด`]})]})}),(0,X.jsxs)(`div`,{className:`curriculum-level-tabs`,children:[(0,X.jsxs)(`button`,{className:r===`มัธยมศึกษาตอนต้น`?`active`:``,onClick:()=>m(`มัธยมศึกษาตอนต้น`),children:[(0,X.jsx)(`span`,{className:`level-number`,children:`ม.1–3`}),(0,X.jsx)(`span`,{children:`มัธยมศึกษาตอนต้น`}),(0,X.jsx)(`small`,{children:`พื้นฐานแน่น ก่อนต่อยอด`})]}),(0,X.jsxs)(`button`,{className:r===`มัธยมศึกษาตอนปลาย`?`active`:``,onClick:()=>m(`มัธยมศึกษาตอนปลาย`),children:[(0,X.jsx)(`span`,{className:`level-number`,children:`ม.4–6`}),(0,X.jsx)(`span`,{children:`มัธยมศึกษาตอนปลาย`}),(0,X.jsx)(`small`,{children:`พื้นฐานและเพิ่มเติม`})]})]}),(0,X.jsxs)(`div`,{className:`curriculum-filter-bar`,children:[(0,X.jsxs)(`div`,{className:`curriculum-filter-group`,children:[(0,X.jsx)(`span`,{children:`ระดับชั้น`}),(0,X.jsx)(`div`,{children:f.map(e=>(0,X.jsx)(`button`,{className:a===e?`selected`:``,onClick:()=>o(e),children:e},e))})]}),(0,X.jsxs)(`div`,{className:`curriculum-filter-group`,children:[(0,X.jsx)(`span`,{children:`ภาคเรียน`}),(0,X.jsx)(`div`,{children:[`ทั้งหมด`,`ภาคเรียนที่ 1`,`ภาคเรียนที่ 2`].map(e=>(0,X.jsx)(`button`,{className:s===e?`selected`:``,onClick:()=>c(e),children:e===`ทั้งหมด`?e:e.replace(`ภาคเรียนที่ `,`ภาค `)},e))})]}),r===`มัธยมศึกษาตอนปลาย`&&(0,X.jsxs)(`div`,{className:`curriculum-filter-group course-group`,children:[(0,X.jsx)(`span`,{children:`ประเภทวิชา`}),(0,X.jsx)(`div`,{children:[`ทั้งหมด`,`คณิตศาสตร์พื้นฐาน`,`คณิตศาสตร์เพิ่มเติม`].map(e=>(0,X.jsx)(`button`,{className:u===e?`selected`:``,onClick:()=>d(e),children:e===`ทั้งหมด`?e:e.replace(`คณิตศาสตร์`,``)},e))})]})]}),(0,X.jsxs)(`div`,{className:`curriculum-results-heading`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:r}),(0,X.jsxs)(`span`,{children:[a===`ทั้งหมด`?``:` • ${a}`,u===`ทั้งหมด`?``:` • ${u}`]})]}),(0,X.jsxs)(`span`,{className:`verified-note`,children:[(0,X.jsx)(go,{size:13}),` เนื้อหามีสถานะการตรวจสอบ`]})]}),(0,X.jsx)(`div`,{className:`curriculum-card-grid`,children:p.map(r=>{let i=Ys(r,a,s,u)[0],o=h(r),c=e.bookmarks.includes(r.id);return(0,X.jsxs)(`article`,{className:`curriculum-card`,children:[(0,X.jsxs)(`button`,{className:`curriculum-card-cover ${r.color}-cover`,onClick:()=>t(r),children:[(0,X.jsx)(`span`,{className:`curriculum-card-formula`,children:(0,X.jsx)(ol,{formula:r.formula,display:!0})}),(0,X.jsx)(`span`,{className:`curriculum-card-level`,children:i?Xs(i):`หลายระดับ`})]}),(0,X.jsxs)(`div`,{className:`curriculum-card-body`,children:[(0,X.jsxs)(`div`,{className:`curriculum-card-meta`,children:[(0,X.jsx)(`span`,{children:r.category}),(0,X.jsx)(`button`,{onClick:()=>n(r.id),"aria-label":`บันทึกบท`,children:(0,X.jsx)(fo,{size:16,fill:c?`currentColor`:`none`})})]}),(0,X.jsxs)(`button`,{className:`curriculum-title-button`,onClick:()=>t(r),children:[(0,X.jsx)(`h3`,{children:r.title}),(0,X.jsx)(`small`,{children:r.englishTitle})]}),(0,X.jsx)(`p`,{children:r.intro}),(0,X.jsx)(`div`,{className:`curriculum-subtopics`,children:r.subtopics.map(e=>(0,X.jsx)(`span`,{children:e},e))}),(0,X.jsxs)(`div`,{className:`curriculum-card-foot`,children:[(0,X.jsxs)(`span`,{children:[(0,X.jsx)(wo,{size:13}),` `,r.estimatedMinutes,` นาที`]}),(0,X.jsx)(`span`,{children:o>0?`เรียนแล้ว ${o}%`:`${r.lessons.length} บทเรียน`})]}),(0,X.jsx)(`div`,{className:`progress-line slim`,children:(0,X.jsx)(`span`,{style:{width:`${o}%`}})})]})]},r.id)})}),p.length===0&&(0,X.jsxs)(`div`,{className:`empty-state`,children:[(0,X.jsx)(so,{size:25}),(0,X.jsx)(`h3`,{children:`ยังไม่มีบทในตัวกรองนี้`}),(0,X.jsx)(`p`,{children:`ลองเลือก “ทั้งหมด” หรือเปลี่ยนระดับชั้น/ประเภทวิชา`})]})]})}function vl({chapter:e,progress:t,onBack:n,onLesson:r,onPractice:i,onBookmark:a}){let o=e.lessons.filter(e=>t.completedLessons.includes(e.id)).length,s=t.bookmarks.includes(e.id);return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsxs)(`button`,{className:`back-button`,onClick:n,children:[(0,X.jsx)($a,{size:16}),` กลับไปยังเส้นทางการเรียนรู้`]}),(0,X.jsxs)(`div`,{className:`curriculum-chapter-head`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`div`,{className:`chip-row`,children:[(0,X.jsx)(`span`,{className:`chip chip-indigo`,children:e.educationLevel}),(0,X.jsx)(`span`,{className:`chip`,children:e.category}),(0,X.jsx)(`span`,{className:`chip chip-yellow`,children:e.offerings.length>1?`หลายรายวิชา`:e.offerings[0].course})]}),(0,X.jsx)(`h1`,{children:e.title}),(0,X.jsx)(`p`,{className:`english-title`,children:e.englishTitle}),(0,X.jsx)(`p`,{className:`page-intro`,children:e.intro})]}),(0,X.jsxs)(`div`,{className:`detail-actions`,children:[(0,X.jsx)(`button`,{className:`icon-button`,onClick:()=>a(e.id),"aria-label":`บันทึกบท`,children:s?(0,X.jsx)(lo,{size:20,fill:`currentColor`}):(0,X.jsx)(fo,{size:20})}),(0,X.jsxs)(`button`,{className:`primary-button`,onClick:i,children:[(0,X.jsx)(Yo,{size:16}),` ฝึกทำบทนี้`]})]})]}),(0,X.jsxs)(`div`,{className:`offering-strip`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{className:`offering-label`,children:`เส้นทางที่เปิดสอน`}),(0,X.jsx)(`strong`,{children:e.offerings.map(Xs).join(`  •  `)})]}),(0,X.jsxs)(`span`,{className:`source-status`,children:[(0,X.jsx)(go,{size:13}),` `,e.sourceStatus]})]}),(0,X.jsxs)(`div`,{className:`chapter-overview-grid`,children:[(0,X.jsxs)(`div`,{className:`chapter-overview-main`,children:[(0,X.jsxs)(`div`,{className:`chapter-progress-head`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{children:`ความคืบหน้าของบท`}),(0,X.jsxs)(`strong`,{children:[o,`/`,e.lessons.length,` บทเรียน`]})]}),(0,X.jsx)(ps,{size:20})]}),(0,X.jsx)(`div`,{className:`progress-line`,children:(0,X.jsx)(`span`,{style:{width:`${o/e.lessons.length*100}%`}})}),(0,X.jsxs)(`div`,{className:`chapter-objectives`,children:[(0,X.jsx)(`h2`,{children:`เมื่อเรียนจบบทนี้ คุณจะ...`}),e.objectives.map(e=>(0,X.jsxs)(`div`,{children:[(0,X.jsx)(go,{size:15}),` `,(0,X.jsx)(`span`,{children:e})]},e))]}),(0,X.jsxs)(`div`,{className:`chapter-prerequisite`,children:[(0,X.jsx)(`div`,{className:`callout-icon`,children:(0,X.jsx)(Fo,{size:17})}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`พื้นฐานที่ควรรู้`}),(0,X.jsx)(`p`,{children:e.prerequisites.join(` • `)})]})]})]}),(0,X.jsxs)(`aside`,{className:`chapter-meta-card`,children:[(0,X.jsx)(`div`,{className:`chapter-icon-large ${e.color}`,children:e.icon}),(0,X.jsx)(`span`,{children:`เวลาโดยประมาณ`}),(0,X.jsxs)(`strong`,{children:[e.estimatedMinutes,` นาที`]}),(0,X.jsx)(`span`,{children:`แบบฝึกหัดเริ่มต้น`}),(0,X.jsxs)(`strong`,{children:[e.exercises.length,` ข้อ`]}),(0,X.jsxs)(`button`,{className:`text-button`,onClick:i,children:[`เริ่มฝึกตอนนี้ `,(0,X.jsx)(to,{size:14})]})]})]}),(0,X.jsxs)(`div`,{className:`chapter-content-layout`,children:[(0,X.jsxs)(`section`,{className:`chapter-lessons-panel`,children:[(0,X.jsxs)(`div`,{className:`section-heading`,children:[(0,X.jsx)(`h2`,{children:`บทเรียนย่อยในบทนี้`}),(0,X.jsxs)(`span`,{className:`lesson-count-pill`,children:[e.lessons.length,` บทเรียน`]})]}),e.lessons.map(e=>{let n=t.completedLessons.includes(e.id);return(0,X.jsxs)(`button`,{className:`curriculum-lesson-row ${n?`done`:``}`,onClick:()=>r(e),children:[(0,X.jsx)(`span`,{className:`lesson-order`,children:n?(0,X.jsx)(go,{size:14}):String(e.order).padStart(2,`0`)}),(0,X.jsxs)(`span`,{className:`curriculum-lesson-copy`,children:[(0,X.jsx)(`strong`,{children:e.title}),(0,X.jsx)(`small`,{children:e.objective})]}),(0,X.jsx)(`span`,{className:`lesson-duration`,children:e.duration}),(0,X.jsx)(bo,{size:16})]},e.id)})]}),(0,X.jsxs)(`aside`,{className:`chapter-support-panel`,children:[(0,X.jsxs)(`div`,{className:`side-card`,children:[(0,X.jsxs)(`div`,{className:`side-card-heading`,children:[(0,X.jsx)(`h3`,{children:`แผนผังบท`}),(0,X.jsxs)(`span`,{children:[e.subtopics.length,` ช่วง`]})]}),e.subtopics.map((t,n)=>(0,X.jsxs)(`div`,{className:`chapter-map-row`,children:[(0,X.jsx)(`span`,{children:n+1}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:t}),(0,X.jsx)(`small`,{children:e.lessons[n]?.duration})]})]},t))]}),(0,X.jsxs)(`div`,{className:`source-card`,children:[(0,X.jsx)(Fo,{size:16}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`สถานะแหล่งอ้างอิง`}),(0,X.jsx)(`p`,{children:e.sourceStatus}),e.sourceReferences.length>0&&(0,X.jsxs)(`a`,{href:e.sourceReferences[0].url,target:`_blank`,rel:`noreferrer`,children:[`ดูเอกสารอ้างอิงจาก สสวท. `,(0,X.jsx)(to,{size:13})]})]})]})]})]})]})}function yl({chapter:e,lesson:t,progress:n,onBack:r,onLesson:i,onComplete:a,onPractice:o}){let s=n.completedLessons.includes(t.id),c=e.lessons.findIndex(e=>e.id===t.id),l=e.lessons[c-1],u=e.lessons[c+1];return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsxs)(`button`,{className:`back-button`,onClick:r,children:[(0,X.jsx)($a,{size:16}),` กลับไปยัง `,e.title]}),(0,X.jsxs)(`div`,{className:`curriculum-lesson-header`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`div`,{className:`eyebrow`,children:[(0,X.jsx)(`span`,{className:`eyebrow-dot`}),` `,e.title,` • บทที่ `,t.order]}),(0,X.jsx)(`h1`,{children:t.title}),(0,X.jsx)(`p`,{className:`page-intro`,children:t.objective})]}),(0,X.jsx)(`button`,{className:`primary-button ${s?`success-button`:``}`,onClick:a,children:s?(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(go,{size:16}),` เรียนจบแล้ว`]}):(0,X.jsxs)(X.Fragment,{children:[`ทำเครื่องหมายว่าเรียนจบ `,(0,X.jsx)(go,{size:16})]})})]}),(0,X.jsxs)(`div`,{className:`curriculum-lesson-layout`,children:[(0,X.jsxs)(`article`,{className:`curriculum-lesson-article`,children:[(0,X.jsxs)(`div`,{className:`curriculum-lesson-banner ${e.color}-cover`,children:[(0,X.jsx)(`span`,{className:`lesson-banner-label`,children:`เข้าใจแนวคิดก่อนใช้สูตร`}),(0,X.jsx)(`h2`,{children:e.title}),(0,X.jsx)(ol,{formula:t.workedExample.formula,display:!0})]}),(0,X.jsxs)(`div`,{className:`curriculum-lesson-section`,children:[(0,X.jsx)(`h2`,{children:`แนวคิดหลัก`}),(0,X.jsx)(`p`,{children:t.summary}),(0,X.jsxs)(`div`,{className:`lesson-definition-box`,children:[(0,X.jsx)(`strong`,{children:`คำจำกัดความและสัญลักษณ์`}),(0,X.jsx)(`p`,{children:t.definitions})]})]}),(0,X.jsxs)(`div`,{className:`curriculum-lesson-section`,children:[(0,X.jsx)(`h2`,{children:`พื้นฐานทางคณิตศาสตร์`}),(0,X.jsx)(`p`,{children:t.foundation}),(0,X.jsx)(`div`,{className:`formula-panel`,children:(0,X.jsx)(ol,{formula:t.workedExample.formula,display:!0})})]}),(0,X.jsxs)(`div`,{className:`curriculum-lesson-section`,children:[(0,X.jsx)(`h2`,{children:`ตัวอย่างทำไปพร้อมกัน`}),(0,X.jsxs)(`div`,{className:`worked-example-card`,children:[(0,X.jsx)(`span`,{className:`worked-label`,children:`โจทย์ตัวอย่าง`}),(0,X.jsx)(`h3`,{children:t.workedExample.problem}),(0,X.jsx)(`div`,{className:`worked-steps`,children:t.workedExample.steps.map((e,t)=>(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{children:t+1}),(0,X.jsx)(`p`,{children:e})]},e))}),(0,X.jsxs)(`div`,{className:`worked-answer`,children:[(0,X.jsx)(go,{size:16}),(0,X.jsxs)(`strong`,{children:[`คำตอบ: `,t.workedExample.answer]})]})]})]}),(0,X.jsxs)(`div`,{className:`curriculum-two-column`,children:[(0,X.jsxs)(`div`,{className:`curriculum-lesson-section compact-section`,children:[(0,X.jsx)(`h2`,{children:`วิธีคิดทางเลือก`}),(0,X.jsx)(`p`,{children:t.alternative})]}),(0,X.jsxs)(`div`,{className:`curriculum-lesson-section compact-section mistake-section`,children:[(0,X.jsxs)(`h2`,{children:[(0,X.jsx)(So,{size:17}),` ข้อผิดพลาดที่พบบ่อย`]}),(0,X.jsx)(`p`,{children:t.commonMistake})]})]}),(0,X.jsxs)(`div`,{className:`curriculum-lesson-section`,children:[(0,X.jsx)(`h2`,{children:`ลองเชื่อมกับชีวิตจริง`}),(0,X.jsx)(`p`,{children:t.application})]}),(0,X.jsxs)(`div`,{className:`lesson-summary-box`,children:[(0,X.jsx)(`div`,{className:`summary-icon`,children:(0,X.jsx)(Lo,{size:18})}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`สรุปบทเรียน`}),(0,X.jsx)(`p`,{children:e.summary})]})]}),(0,X.jsxs)(`div`,{className:`curriculum-lesson-footer`,children:[(0,X.jsxs)(`button`,{className:`secondary-nav-button`,disabled:!l,onClick:()=>l?i(l):r(),children:[(0,X.jsx)($a,{size:15}),` `,l?`บทก่อนหน้า`:`ต้นบท`]}),(0,X.jsxs)(`button`,{className:`primary-button`,onClick:o,children:[`ไปทำแบบฝึกหัด `,(0,X.jsx)(to,{size:16})]}),(0,X.jsxs)(`button`,{className:`secondary-nav-button`,disabled:!u,onClick:()=>u&&i(u),children:[u?`บทถัดไป`:`จบบท`,` `,(0,X.jsx)(to,{size:15})]})]})]}),(0,X.jsx)(`aside`,{className:`curriculum-lesson-aside`,children:(0,X.jsxs)(`div`,{className:`outline-sticky`,children:[(0,X.jsxs)(`div`,{className:`outline-heading`,children:[(0,X.jsx)(`strong`,{children:`ในบทเรียนนี้`}),(0,X.jsx)(`span`,{children:t.duration})]}),(0,X.jsx)(`div`,{className:`lesson-aside-progress`,children:(0,X.jsx)(`span`,{style:{width:`${s?100:38}%`}})}),[`แนวคิดหลัก`,`คำจำกัดความ`,`พื้นฐานทางคณิตศาสตร์`,`ตัวอย่างทำไปพร้อมกัน`,`วิธีคิดทางเลือก`,`สรุปบทเรียน`].map((e,t)=>(0,X.jsxs)(`div`,{className:t===0?`lesson-aside-item current`:`lesson-aside-item`,children:[(0,X.jsx)(`span`,{children:t+1}),e]},e)),(0,X.jsxs)(`div`,{className:`lesson-aside-next`,children:[(0,X.jsx)(`span`,{children:`ต่อไป`}),(0,X.jsx)(`strong`,{children:t.furtherLearning})]})]})})]})]})}function bl({eyebrow:e,title:t,description:n,action:r}){return(0,X.jsxs)(`section`,{className:`page-intro-row`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`div`,{className:`eyebrow`,children:[(0,X.jsx)(`span`,{className:`eyebrow-dot`}),` `,e]}),(0,X.jsx)(`h1`,{children:t}),(0,X.jsx)(`p`,{className:`page-intro`,children:n})]}),r]})}function xl({lesson:e,progress:t,onBack:n,onComplete:r,onBookmark:i,onPractice:a}){let o=t.completedLessons.includes(e.id),s=t.bookmarks.includes(e.id);return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsxs)(`button`,{className:`back-button`,onClick:n,children:[(0,X.jsx)($a,{size:16}),` กลับไปยังบทเรียนทั้งหมด`]}),(0,X.jsxs)(`div`,{className:`lesson-detail-header`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`div`,{className:`chip-row`,children:[(0,X.jsx)(`span`,{className:`chip chip-indigo`,children:e.grade}),(0,X.jsx)(`span`,{className:`chip`,children:e.subject}),(0,X.jsx)(`span`,{className:`chip chip-yellow`,children:e.level})]}),(0,X.jsx)(`h1`,{children:e.title}),(0,X.jsx)(`p`,{className:`page-intro`,children:e.subtitle})]}),(0,X.jsxs)(`div`,{className:`detail-actions`,children:[(0,X.jsx)(`button`,{className:`icon-button`,onClick:()=>i(e.id),"aria-label":`บันทึกบทเรียน`,children:s?(0,X.jsx)(lo,{size:20,fill:`currentColor`}):(0,X.jsx)(fo,{size:20})}),(0,X.jsx)(`button`,{className:`primary-button ${o?`success-button`:``}`,onClick:r,children:o?(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(go,{size:17}),` เรียนจบแล้ว`]}):(0,X.jsxs)(X.Fragment,{children:[`ทำเครื่องหมายว่าเรียนจบ `,(0,X.jsx)(go,{size:17})]})})]})]}),(0,X.jsxs)(`div`,{className:`lesson-detail-layout`,children:[(0,X.jsxs)(`article`,{className:`lesson-article`,children:[(0,X.jsxs)(`div`,{className:`lesson-hero-banner`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{className:`banner-overline`,children:`ทำความเข้าใจ ไม่ใช่แค่จำ`}),(0,X.jsxs)(`h2`,{children:[`สมการคือการรักษา`,(0,X.jsx)(`br`,{}),(0,X.jsx)(`em`,{children:`ความสมดุล`})]}),(0,X.jsx)(`p`,{children:`ทุกการเปลี่ยนแปลงในข้างหนึ่ง ต้องทำเหมือนกันกับอีกข้าง`})]}),(0,X.jsxs)(`div`,{className:`balance-illustration`,children:[(0,X.jsx)(`div`,{className:`balance-beam`}),(0,X.jsx)(`div`,{className:`balance-pan left`,children:(0,X.jsx)(`span`,{children:`2x + 3`})}),(0,X.jsx)(`div`,{className:`balance-pan right`,children:(0,X.jsx)(`span`,{children:`11`})}),(0,X.jsx)(`div`,{className:`balance-stand`})]})]}),(0,X.jsxs)(`div`,{className:`article-section`,children:[(0,X.jsx)(`h2`,{children:`สมการเชิงเส้นตัวแปรเดียวคืออะไร?`}),(0,X.jsxs)(`p`,{children:[e.description,` ลองสังเกตตัวอย่างนี้:`]}),(0,X.jsx)(`div`,{className:`formula-panel`,children:(0,X.jsx)(ol,{formula:e.formula,display:!0})}),(0,X.jsxs)(`div`,{className:`why-callout`,children:[(0,X.jsx)(`div`,{className:`callout-icon`,children:(0,X.jsx)(Lo,{size:19})}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`ลองคิดก่อนอ่านต่อ`}),(0,X.jsx)(`p`,{children:`ถ้าเราอยากให้เหลือเพียง x เราควรทำอะไรกับทั้งสองข้างก่อน?`})]})]})]}),(0,X.jsxs)(`div`,{className:`article-section`,children:[(0,X.jsx)(`div`,{className:`section-number`,children:`01`}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`h2`,{children:`หลักการรักษาสมดุล`}),(0,X.jsx)(`p`,{children:`สมการเหมือนตาชั่งที่สมดุล เราสามารถบวก ลบ คูณ หรือหารด้วยจำนวนเดียวกันทั้งสองข้างได้ โดยสมการยังคงเป็นจริง`}),(0,X.jsxs)(`div`,{className:`steps-row`,children:[(0,X.jsx)(Sl,{number:`1`,title:`ลบ 3 ทั้งสองข้าง`,formula:`2x + 3 - 3 = 11 - 3`}),(0,X.jsx)(Sl,{number:`2`,title:`ลดรูป`,formula:`2x = 8`}),(0,X.jsx)(Sl,{number:`3`,title:`หารด้วย 2`,formula:`x = 4`})]})]})]}),(0,X.jsxs)(`div`,{className:`mistake-panel`,children:[(0,X.jsx)(`div`,{className:`mistake-icon`,children:(0,X.jsx)(So,{size:20})}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`ข้อผิดพลาดที่พบบ่อย`}),(0,X.jsx)(`p`,{children:`“ย้ายข้างแล้วเปลี่ยนเครื่องหมาย” เป็นคำพูดสั้น ๆ แต่จริง ๆ แล้วเรากำลังทำสิ่งเดียวกันทั้งสองข้างเสมอ อย่าลืมตรวจคำตอบด้วยการแทนค่ากลับเข้าไป`})]})]}),(0,X.jsxs)(`div`,{className:`article-footer-cta`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`h3`,{children:`พร้อมลองทำด้วยตัวเองแล้วหรือยัง?`}),(0,X.jsx)(`p`,{children:`ฝึกใช้หลักการนี้กับโจทย์สั้น ๆ 3 ข้อ`})]}),(0,X.jsxs)(`button`,{className:`primary-button`,onClick:a,children:[`ไปทำแบบฝึกหัด `,(0,X.jsx)(to,{size:17})]})]})]}),(0,X.jsx)(`aside`,{className:`lesson-outline`,children:(0,X.jsxs)(`div`,{className:`outline-sticky`,children:[(0,X.jsxs)(`div`,{className:`outline-heading`,children:[(0,X.jsx)(`strong`,{children:`เนื้อหาในบทเรียน`}),(0,X.jsxs)(`span`,{children:[e.progress,`%`]})]}),(0,X.jsx)(`div`,{className:`outline-progress`,children:(0,X.jsx)(`span`,{style:{width:`${o?100:e.progress}%`}})}),(0,X.jsx)(`div`,{className:`outline-list`,children:e.sections.map((e,t)=>(0,X.jsxs)(`button`,{className:t===0?`current`:``,children:[(0,X.jsx)(`span`,{children:t===0?(0,X.jsx)(go,{size:13}):t+1}),e,(0,X.jsx)(bo,{size:14})]},e))}),(0,X.jsxs)(`div`,{className:`prerequisite`,children:[(0,X.jsxs)(`span`,{children:[(0,X.jsx)(Fo,{size:14}),` พื้นฐานที่ควรรู้`]}),(0,X.jsx)(`p`,{children:e.prerequisite})]})]})})]})]})}function Sl({number:e,title:t,formula:n}){return(0,X.jsxs)(`div`,{className:`step-card`,children:[(0,X.jsx)(`span`,{className:`step-number`,children:e}),(0,X.jsx)(`strong`,{children:t}),(0,X.jsx)(ol,{formula:n,display:!0})]})}function Cl({progress:e,setProgress:t,onLessons:n}){let[r,i]=(0,l.useState)(!1),[a,o]=(0,l.useState)(!1),[s,c]=(0,l.useState)({}),u=ks,d=u.reduce((e,t,n)=>e+ +(s[n]===t.correct),0);return a?(0,X.jsx)(wl,{score:d,total:u.length,progress:e,onLessons:n}):r?(0,X.jsxs)(X.Fragment,{children:[(0,X.jsxs)(`div`,{className:`assessment-top`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`button`,{className:`back-button`,onClick:()=>i(!1),children:[(0,X.jsx)($a,{size:16}),` กลับ`]}),(0,X.jsx)(`h1`,{children:`แบบประเมินพื้นฐาน`})]}),(0,X.jsxs)(`div`,{className:`assessment-timer`,children:[(0,X.jsx)(wo,{size:17}),(0,X.jsx)(`span`,{children:`เวลาที่ใช้`}),(0,X.jsx)(`strong`,{children:`08:24`})]})]}),(0,X.jsxs)(`div`,{className:`assessment-layout`,children:[(0,X.jsxs)(`aside`,{className:`assessment-nav`,children:[(0,X.jsx)(`strong`,{children:`คำถามทั้งหมด`}),(0,X.jsx)(`div`,{className:`question-grid`,children:u.map((e,t)=>(0,X.jsx)(`button`,{className:s[t]===void 0?``:`answered`,children:t+1},t))}),(0,X.jsxs)(`div`,{className:`answer-legend`,children:[(0,X.jsxs)(`span`,{children:[(0,X.jsx)(`i`,{className:`answered-dot`}),` ตอบแล้ว`]}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(`i`,{className:`empty-dot`}),` ยังไม่ตอบ`]})]})]}),(0,X.jsxs)(`section`,{className:`assessment-question-list`,children:[(0,X.jsxs)(`div`,{className:`assessment-progress-label`,children:[(0,X.jsx)(`span`,{children:`ความคืบหน้า`}),(0,X.jsxs)(`strong`,{children:[Object.keys(s).length,`/`,u.length,` ข้อ`]})]}),(0,X.jsx)(`div`,{className:`progress-line`,children:(0,X.jsx)(`span`,{style:{width:`${Object.keys(s).length/u.length*100}%`}})}),u.map((e,t)=>(0,X.jsxs)(`div`,{className:`assessment-question`,children:[(0,X.jsxs)(`div`,{className:`assessment-question-heading`,children:[(0,X.jsxs)(`span`,{children:[`คำถามที่ `,t+1]}),(0,X.jsx)(`span`,{className:`chip`,children:e.topic})]}),(0,X.jsx)(`h2`,{children:e.prompt}),(0,X.jsx)(`div`,{className:`assessment-options`,children:e.choices.map((e,n)=>(0,X.jsxs)(`button`,{className:s[t]===n?`selected`:``,onClick:()=>c(e=>({...e,[t]:n})),children:[(0,X.jsx)(`span`,{children:String.fromCharCode(65+n)}),e]},e))})]},e.id)),(0,X.jsxs)(`button`,{className:`primary-button submit-assessment`,disabled:Object.keys(s).length<u.length,onClick:()=>{o(!0),t(e=>({...e,assessmentScore:Math.round(d/u.length*100),xp:e.xp+d*20}))},children:[`ส่งคำตอบและดูผลลัพธ์ `,(0,X.jsx)(to,{size:17})]})]})]})]}):(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(bl,{eyebrow:`รู้จักจุดแข็งของตัวเอง`,title:`แบบประเมินพื้นฐาน`,description:`แบบประเมินสั้น ๆ เพื่อดูว่าคุณเข้าใจเรื่องใดแล้ว และเรื่องใดควรเสริมเพิ่มเติม`}),(0,X.jsxs)(`div`,{className:`assessment-intro-card`,children:[(0,X.jsxs)(`div`,{className:`assessment-illustration`,children:[(0,X.jsx)(`div`,{className:`check-circle`,children:(0,X.jsx)(zo,{size:36})}),(0,X.jsx)(`div`,{className:`small-equation eq-1`,children:`x + 5 = 12`}),(0,X.jsx)(`div`,{className:`small-equation eq-2`,children:`a² + b² = c²`}),(0,X.jsx)(`div`,{className:`small-equation eq-3`,children:`P(A)`})]}),(0,X.jsxs)(`div`,{className:`assessment-intro-copy`,children:[(0,X.jsx)(`span`,{className:`chip chip-indigo`,children:`Diagnostic • ม.3`}),(0,X.jsx)(`h2`,{children:`สำรวจพื้นฐานคณิตศาสตร์ของคุณ`}),(0,X.jsx)(`p`,{children:`ตอบตามความเข้าใจจริง ไม่ต้องกังวลเรื่องคะแนน ผลลัพธ์จะช่วยให้ CommuMathy แนะนำเส้นทางการเรียนที่เหมาะกับคุณ`}),(0,X.jsxs)(`div`,{className:`assessment-facts`,children:[(0,X.jsxs)(`span`,{children:[(0,X.jsx)(zo,{size:17}),(0,X.jsx)(`strong`,{children:`3 ข้อ`}),` คำถาม`]}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(wo,{size:17}),(0,X.jsx)(`strong`,{children:`ประมาณ 5 นาที`})]}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(ps,{size:17}),(0,X.jsx)(`strong`,{children:`2 หัวข้อ`}),` สำคัญ`]})]}),(0,X.jsxs)(`button`,{className:`primary-button large-button`,onClick:()=>i(!0),children:[`เริ่มทำแบบประเมิน `,(0,X.jsx)(to,{size:17})]}),(0,X.jsxs)(`small`,{className:`privacy-note`,children:[(0,X.jsx)(Fo,{size:13}),` ผลการทำแบบประเมินจะบันทึกไว้ในอุปกรณ์นี้เท่านั้น`]})]})]})]})}function wl({score:e,total:t,progress:n,onLessons:r}){let i=Math.round(e/t*100);return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(bl,{eyebrow:`ผลการประเมินของคุณ`,title:`เห็นภาพชัดขึ้น แล้วไปต่อด้วยกัน`,description:`ผลลัพธ์นี้เป็นข้อมูลเบื้องต้นจากคำตอบชุดนี้ ใช้เป็นแนวทางวางแผนการเรียน ไม่ใช่การตัดสินความสามารถ`,action:(0,X.jsxs)(`button`,{className:`outline-button`,onClick:r,children:[(0,X.jsx)(so,{size:16}),` ดูบทเรียนแนะนำ`]})}),(0,X.jsxs)(`div`,{className:`results-summary`,children:[(0,X.jsxs)(`div`,{className:`result-score`,children:[(0,X.jsxs)(`div`,{className:`score-circle`,children:[(0,X.jsxs)(`strong`,{children:[i,`%`]}),(0,X.jsx)(`span`,{children:`คะแนนรวม`})]}),(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`span`,{className:`result-kicker`,children:[`ทำได้ `,e,` จาก `,t,` ข้อ`]}),(0,X.jsx)(`h2`,{children:i>=70?`พื้นฐานกำลังแข็งแรง!`:`เรามาหาจุดที่ต้องเสริมกัน`}),(0,X.jsx)(`p`,{children:`ทุกคำตอบช่วยให้เราเข้าใจเส้นทางของคุณมากขึ้น`})]})]}),(0,X.jsxs)(`div`,{className:`result-stats`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:e}),(0,X.jsx)(`span`,{children:`ตอบถูก`})]}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:t-e}),(0,X.jsx)(`span`,{children:`ควรทบทวน`})]}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:n.streak}),(0,X.jsx)(`span`,{children:`วันต่อเนื่อง`})]})]})]}),(0,X.jsxs)(`div`,{className:`result-grid`,children:[(0,X.jsxs)(`div`,{className:`result-panel`,children:[(0,X.jsxs)(`div`,{className:`panel-heading`,children:[(0,X.jsx)(`h3`,{children:`ภาพรวมรายหัวข้อ`}),(0,X.jsx)(`span`,{children:`จากแบบประเมินครั้งนี้`})]}),[`สมการและพีชคณิต`,`การคิดเชิงเหตุผล`,`จำนวนและการคำนวณ`].map((e,t)=>(0,X.jsxs)(`div`,{className:`topic-result`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{children:e}),(0,X.jsxs)(`strong`,{children:[t===0?Math.min(100,i+4):t===1?Math.max(25,i-12):Math.min(100,i+14),`%`]})]}),(0,X.jsx)(`div`,{className:`progress-line`,children:(0,X.jsx)(`span`,{style:{width:`${t===0?Math.min(100,i+4):t===1?Math.max(25,i-12):Math.min(100,i+14)}%`}})})]},e))]}),(0,X.jsxs)(`div`,{className:`result-panel recommendation-panel`,children:[(0,X.jsx)(`div`,{className:`recommendation-icon`,children:(0,X.jsx)(ds,{size:18})}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{className:`result-kicker`,children:`แนะนำสำหรับคุณ`}),(0,X.jsx)(`h3`,{children:`เริ่มจากการทบทวนสมการ`}),(0,X.jsx)(`p`,{children:`จากคำตอบของคุณ บทเรียนนี้น่าจะช่วยเสริมความมั่นใจก่อนเข้าสู่ฟังก์ชัน`}),(0,X.jsxs)(`button`,{className:`text-button`,onClick:r,children:[`เปิดเส้นทางแนะนำ `,(0,X.jsx)(to,{size:15})]})]})]})]})]})}function Tl({messages:e,setMessages:t}){let[n,r]=(0,l.useState)(``),[i,a]=(0,l.useState)(null),[o,s]=(0,l.useState)(null),[c,u]=(0,l.useState)(!1),d=(0,l.useRef)(null);(0,l.useEffect)(()=>{let e=!0;return fetch(`/api/gemini/status`).then(e=>e.ok?e.json():Promise.reject(Error(`Status unavailable`))).then(t=>{e&&s(t)}).catch(()=>{e&&s({configured:!1,model:`gemini-3.8-flash`})}),()=>{e=!1}},[]);let f=async(s=n)=>{let l=s.trim()||(i?`ช่วยดูโจทย์จากรูปนี้ให้หน่อยค่ะ`:``);if(!l||c)return;let d=new Date().toLocaleTimeString(`th-TH`,{hour:`2-digit`,minute:`2-digit`}),f={role:`user`,text:l,time:d},p=[...e,f];t(p),r(``),a(null),u(!0);try{if(!o?.configured){t(e=>[...e,{role:`tutor`,text:El(l),time:d}]);return}let e=await fetch(`/api/gemini`,{method:`POST`,headers:{"Content-Type":`application/json`},body:JSON.stringify({contents:p.map(e=>({role:e.role===`tutor`?`model`:`user`,parts:[{text:e.text}]}))})}),n=await e.json().catch(()=>({}));if(!e.ok||!n.text)throw Error(n.error||`Gemini request failed`);t(e=>[...e,{role:`tutor`,text:n.text??``,time:d}])}catch(e){let n=e instanceof Error?e.message:`เชื่อมต่อ Gemini ไม่สำเร็จ`;t(e=>[...e,{role:`tutor`,text:`ขออภัยค่ะ ตอนนี้เชื่อมต่อ Gemini ไม่สำเร็จ (${n}) จึงขอใช้คำตอบตัวอย่างแทน\n\n${El(l)}`,time:d}])}finally{u(!1)}},p=!!o?.configured,m=p?`Gemini Flash • ${o?.model}`:`โหมดสาธิต • ยังไม่เชื่อมต่อโมเดลจริง`;return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(bl,{eyebrow:`ผู้ช่วยคิดไปด้วยกัน`,title:`ติวเตอร์คณิตศาสตร์ AI`,description:`ถามได้ทุกเรื่อง ค่อย ๆ คิดไปทีละขั้น และเลือกขอคำใบ้แทนคำตอบได้`,action:(0,X.jsxs)(`div`,{className:`demo-badge ${p?`model-badge`:``}`,children:[(0,X.jsx)(`span`,{className:`status-dot`}),` `,m]})}),(0,X.jsxs)(`div`,{className:`tutor-layout`,children:[(0,X.jsxs)(`aside`,{className:`tutor-history`,children:[(0,X.jsxs)(`button`,{className:`primary-button new-chat`,onClick:()=>t(nl),children:[(0,X.jsx)(Zo,{size:17}),` เริ่มบทสนทนาใหม่`]}),(0,X.jsx)(`div`,{className:`history-label`,children:`ประวัติการคุย`}),[`ทำความเข้าใจเรื่องย้ายข้าง`,`โจทย์พีทาโกรัส`,`ทบทวนก่อนสอบ ม.3`].map((e,t)=>(0,X.jsxs)(`button`,{className:`history-item ${t===0?`active`:``}`,children:[(0,X.jsx)(Uo,{size:16}),(0,X.jsx)(`span`,{children:e}),(0,X.jsx)(Eo,{size:15})]},e)),(0,X.jsxs)(`div`,{className:`tutor-history-footer`,children:[(0,X.jsx)(Fo,{size:15}),(0,X.jsx)(`span`,{children:p?`เชื่อมต่อ Gemini Flash ผ่านเซิร์ฟเวอร์ของแอปแล้ว`:`คำตอบในโหมดสาธิตเป็นตัวอย่างเพื่อแสดงประสบการณ์ใช้งาน`})]})]}),(0,X.jsxs)(`section`,{className:`chat-window`,children:[(0,X.jsxs)(`div`,{className:`chat-header`,children:[(0,X.jsx)(`div`,{className:`tutor-avatar`,children:(0,X.jsx)(mo,{size:21})}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`Mathy Tutor`}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(`span`,{className:`status-dot`}),` `,p?`Gemini Flash • ${o?.model}`:`พร้อมช่วยอธิบาย`]})]}),(0,X.jsx)(`button`,{className:`icon-button`,children:(0,X.jsx)(Eo,{size:18})})]}),(0,X.jsxs)(`div`,{className:`chat-messages`,children:[e.map((e,t)=>(0,X.jsxs)(`div`,{className:`chat-row ${e.role}`,children:[(0,X.jsx)(`div`,{className:`chat-avatar ${e.role}`,children:e.role===`tutor`?(0,X.jsx)(ds,{size:16}):`พช`}),(0,X.jsxs)(`div`,{className:`message-wrap`,children:[(0,X.jsxs)(`div`,{className:`message-bubble`,children:[e.text.split(`
-`).map((t,n)=>(0,X.jsxs)(`span`,{children:[t,n<e.text.split(`
-`).length-1&&(0,X.jsx)(`br`,{})]},n)),e.role===`tutor`&&t>0&&(0,X.jsxs)(`div`,{className:`message-reaction`,children:[(0,X.jsx)(`button`,{children:(0,X.jsx)(hs,{size:13})}),(0,X.jsx)(`button`,{children:(0,X.jsx)(hs,{size:13,className:`downvote`})})]})]}),(0,X.jsx)(`small`,{children:e.time})]})]},`${e.time}-${t}`)),c&&(0,X.jsxs)(`div`,{className:`chat-row tutor`,children:[(0,X.jsx)(`div`,{className:`chat-avatar tutor`,children:(0,X.jsx)(ds,{size:16})}),(0,X.jsx)(`div`,{className:`message-wrap`,children:(0,X.jsx)(`div`,{className:`message-bubble`,children:`กำลังคิด…`})})]}),i&&(0,X.jsxs)(`div`,{className:`upload-preview`,children:[(0,X.jsx)(Po,{size:16}),` แนบรูปแล้ว `,(0,X.jsx)(`button`,{onClick:()=>a(null),children:(0,X.jsx)(Ts,{size:14})})]})]}),(0,X.jsx)(`div`,{className:`suggestion-row`,children:[`ขอคำใบ้หน่อย`,`ช่วยตรวจวิธีทำ`,`อธิบายแบบง่าย ๆ`].map(e=>(0,X.jsxs)(`button`,{disabled:c,onClick:()=>f(e),children:[(0,X.jsx)(Lo,{size:14}),` `,e]},e))}),(0,X.jsxs)(`div`,{className:`chat-composer`,children:[(0,X.jsx)(`button`,{className:`attach-button`,onClick:()=>d.current?.click(),"aria-label":`แนบรูป`,disabled:c,children:(0,X.jsx)(qo,{size:19})}),(0,X.jsx)(`input`,{ref:d,type:`file`,accept:`image/*`,hidden:!0,onChange:e=>a(e.target.files?.[0]?.name??null)}),(0,X.jsx)(`input`,{value:n,onChange:e=>r(e.target.value),onKeyDown:e=>{e.key===`Enter`&&f()},placeholder:`พิมพ์คำถามคณิตศาสตร์ของคุณ...`,"aria-label":`คำถามถึงติวเตอร์`,disabled:c}),(0,X.jsx)(`button`,{className:`send-button`,onClick:()=>f(),"aria-label":c?`กำลังส่ง`:`ส่ง`,disabled:c,children:(0,X.jsx)(as,{size:18})})]})]})]})]})}function El(e){return e.includes(`ใบ้`)?`ได้เลยค่ะ ลองเริ่มจากเขียนสิ่งที่โจทย์ให้มาก่อน แล้วถามตัวเองว่า “เราต้องการหาค่าอะไร” จากนั้นเลือกสมบัติทางคณิตศาสตร์ที่ทำให้ตัวแปรอยู่เพียงข้างเดียว โดยทำเหมือนกันทั้งสองข้างนะคะ`:e.includes(`ตรวจ`)?`ส่งวิธีทำมาได้เลยค่ะ ในโหมดสาธิตนี้ฉันจะช่วยชี้จุดที่ควรตรวจ โดยจะแยกให้เห็นชัดว่าคำตอบสุดท้ายถูกหรือไม่ และเหตุผลแต่ละขั้นสมเหตุสมผลหรือเปล่า`:`คำถามนี้น่าสนใจมากค่ะ ลองแยกโจทย์เป็น “สิ่งที่รู้” กับ “สิ่งที่ต้องหา” ก่อนนะคะ จากนั้นฉันจะแนะนำคำถามเล็ก ๆ ให้คุณลองคิดต่อเองทีละขั้น (คำตอบนี้เป็นตัวอย่างในโหมดสาธิต)`}function Dl({posts:e,setPosts:t}){let[n,r]=(0,l.useState)(``),[i,a]=(0,l.useState)(`recent`),[o,s]=(0,l.useState)(!1),[c,u]=(0,l.useState)(``),[d,f]=(0,l.useState)(``),[p,m]=(0,l.useState)(null),[h,g]=(0,l.useState)(``),_=e.filter(e=>`${e.title} ${e.body} ${e.tag}`.toLowerCase().includes(n.toLowerCase())).sort((e,t)=>i===`popular`?t.likes-e.likes:t.id.localeCompare(e.id));return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(bl,{eyebrow:`เรียนรู้ไปด้วยกัน`,title:`ชุมชนการเรียนรู้`,description:`ถาม แบ่งปันวิธีคิด และช่วยกันทำให้คณิตศาสตร์เข้าใจง่ายขึ้น`,action:(0,X.jsxs)(`button`,{className:`primary-button`,onClick:()=>s(!0),children:[(0,X.jsx)(Zo,{size:17}),` ตั้งคำถามใหม่`]})}),(0,X.jsxs)(`div`,{className:`community-toolbar`,children:[(0,X.jsxs)(`div`,{className:`community-search`,children:[(0,X.jsx)(rs,{size:17}),(0,X.jsx)(`input`,{value:n,onChange:e=>r(e.target.value),placeholder:`ค้นหาคำถามหรือหัวข้อ...`})]}),(0,X.jsxs)(`div`,{className:`sort-buttons`,children:[(0,X.jsx)(`button`,{className:i===`recent`?`active`:``,onClick:()=>a(`recent`),children:`ล่าสุด`}),(0,X.jsx)(`button`,{className:i===`popular`?`active`:``,onClick:()=>a(`popular`),children:`ยอดนิยม`})]})]}),(0,X.jsxs)(`div`,{className:`community-layout`,children:[(0,X.jsxs)(`section`,{className:`post-feed`,children:[(0,X.jsxs)(`div`,{className:`feed-label`,children:[(0,X.jsxs)(`strong`,{children:[_.length,` การสนทนา`]}),(0,X.jsx)(`span`,{children:`พื้นที่ปลอดภัยสำหรับการเรียนรู้`})]}),_.map(e=>(0,X.jsx)(Ol,{post:e,onOpen:()=>m(e),onLike:()=>t(t=>t.map(t=>t.id===e.id?{...t,likes:t.likes+(t.liked?-1:1),liked:!t.liked}:t))},e.id)),_.length===0&&(0,X.jsxs)(`div`,{className:`empty-state`,children:[(0,X.jsx)(rs,{size:24}),(0,X.jsx)(`h3`,{children:`ยังไม่พบการสนทนา`}),(0,X.jsx)(`p`,{children:`ลองใช้คำค้นอื่น หรือเป็นคนเริ่มถามคำถามแรกกันเลย`})]})]}),(0,X.jsxs)(`aside`,{className:`community-aside`,children:[(0,X.jsxs)(`div`,{className:`side-card topic-card`,children:[(0,X.jsx)(`div`,{className:`side-card-heading`,children:(0,X.jsx)(`h3`,{children:`หัวข้อยอดนิยม`})}),[`พีชคณิต`,`เรขาคณิต`,`โจทย์ประยุกต์`,`เตรียมสอบ ม.3`].map((e,t)=>(0,X.jsxs)(`button`,{className:`topic-row`,children:[(0,X.jsx)(`span`,{className:`topic-color color-${t}`}),e,(0,X.jsx)(`span`,{children:[24,18,12,9][t]})]},e))]}),(0,X.jsxs)(`div`,{className:`community-guideline`,children:[(0,X.jsx)(Cs,{size:18}),(0,X.jsx)(`strong`,{children:`ช่วยกันสร้างพื้นที่ที่ดี`}),(0,X.jsx)(`p`,{children:`อธิบายด้วยเหตุผล ให้เกียรติกัน และจำไว้ว่าทุกคนกำลังเรียนรู้`})]})]})]}),o&&(0,X.jsx)(`div`,{className:`modal-backdrop`,children:(0,X.jsxs)(`div`,{className:`create-modal`,children:[(0,X.jsxs)(`div`,{className:`modal-heading`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{className:`eyebrow-dot`}),` ตั้งคำถามใหม่`]}),(0,X.jsx)(`button`,{onClick:()=>s(!1),children:(0,X.jsx)(Ts,{size:19})})]}),(0,X.jsxs)(`label`,{children:[`หัวข้อคำถาม`,(0,X.jsx)(`input`,{value:c,onChange:e=>u(e.target.value),placeholder:`เช่น มีวิธีคิดข้อนี้แบบอื่นไหม?`})]}),(0,X.jsxs)(`label`,{children:[`รายละเอียด`,(0,X.jsx)(`textarea`,{value:d,onChange:e=>f(e.target.value),placeholder:`เล่าโจทย์หรือสิ่งที่ลองทำมาแล้วได้เลย...`,rows:5})]}),(0,X.jsxs)(`div`,{className:`modal-actions`,children:[(0,X.jsx)(`button`,{className:`outline-button`,onClick:()=>s(!1),children:`ยกเลิก`}),(0,X.jsxs)(`button`,{className:`primary-button`,disabled:!c.trim()||!d.trim(),onClick:()=>{c.trim()&&d.trim()&&(t(e=>[{id:`post-${Date.now()}`,title:c,body:d,author:`พิมพ์ชนก`,initials:`พช`,tag:`คำถาม`,time:`เมื่อสักครู่`,likes:0,comments:0,replies:[]},...e]),u(``),f(``),s(!1))},children:[`เผยแพร่คำถาม `,(0,X.jsx)(as,{size:16})]})]})]})}),p&&(0,X.jsx)(`div`,{className:`modal-backdrop`,onClick:()=>m(null),children:(0,X.jsxs)(`div`,{className:`post-detail-modal`,onClick:e=>e.stopPropagation(),children:[(0,X.jsx)(`button`,{className:`modal-close`,onClick:()=>m(null),children:(0,X.jsx)(Ts,{size:18})}),(0,X.jsx)(Ol,{post:p,onOpen:()=>void 0,onLike:()=>void 0}),(0,X.jsx)(`div`,{className:`reply-list`,children:p.replies.map((e,t)=>(0,X.jsxs)(`div`,{className:`reply-item`,children:[(0,X.jsx)(`div`,{className:`avatar avatar-lavender`,children:t===0?`คม`:`พช`}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:t===0?`ครูเมย์`:`พิมพ์ชนก`}),(0,X.jsx)(`p`,{children:e})]})]},t))}),(0,X.jsxs)(`div`,{className:`reply-composer`,children:[(0,X.jsx)(`input`,{value:h,onChange:e=>g(e.target.value),placeholder:`เขียนคำตอบที่ช่วยให้เพื่อนเข้าใจ...`}),(0,X.jsx)(`button`,{onClick:()=>{p&&h.trim()&&(t(e=>e.map(e=>e.id===p.id?{...e,comments:e.comments+1,replies:[...e.replies,h]}:e)),m({...p,comments:p.comments+1,replies:[...p.replies,h]}),g(``))},children:(0,X.jsx)(as,{size:16})})]})]})})]})}function Ol({post:e,onOpen:t,onLike:n}){return(0,X.jsxs)(`article`,{className:`post-card`,children:[(0,X.jsxs)(`div`,{className:`post-author`,children:[(0,X.jsx)(`div`,{className:`avatar ${e.initials===`พพ`?`avatar-peach`:e.initials===`ตน`?`avatar-teal`:`avatar-lavender`}`,children:e.initials}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:e.author}),(0,X.jsx)(`span`,{children:e.time})]}),(0,X.jsx)(`button`,{className:`more-button`,children:(0,X.jsx)(Eo,{size:18})})]}),(0,X.jsxs)(`button`,{className:`post-content`,onClick:t,children:[(0,X.jsxs)(`div`,{className:`post-title-row`,children:[(0,X.jsx)(`h3`,{children:e.title}),(0,X.jsx)(`span`,{className:`post-tag`,children:e.tag})]}),(0,X.jsx)(`p`,{children:e.body})]}),(0,X.jsxs)(`div`,{className:`post-actions`,children:[(0,X.jsxs)(`button`,{className:e.liked?`liked`:``,onClick:n,children:[(0,X.jsx)(hs,{size:15}),` มีประโยชน์ `,(0,X.jsx)(`span`,{children:e.likes})]}),(0,X.jsxs)(`button`,{onClick:t,children:[(0,X.jsx)(Uo,{size:15}),` ความคิดเห็น `,(0,X.jsx)(`span`,{children:e.comments})]}),(0,X.jsxs)(`button`,{className:`share-button`,children:[(0,X.jsx)(ys,{size:15}),` แชร์`]})]})]})}function kl({progress:e}){return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(bl,{eyebrow:`เติบโตไปด้วยกัน`,title:`กระดานคะแนน`,description:`คะแนนเป็นแรงจูงใจเล็ก ๆ ให้เราเรียนต่อเนื่อง ไม่ใช่ตัววัดคุณค่าหรือความเก่งของใคร`,action:(0,X.jsxs)(`div`,{className:`leaderboard-actions`,children:[(0,X.jsxs)(`div`,{className:`demo-badge`,children:[(0,X.jsx)(`span`,{className:`status-dot`}),` ข้อมูลตัวอย่างในโหมดเดโม`]}),(0,X.jsxs)(`div`,{className:`period-select`,children:[`สัปดาห์นี้ `,(0,X.jsx)(vo,{size:15})]})]})}),(0,X.jsxs)(`div`,{className:`leaderboard-layout`,children:[(0,X.jsxs)(`section`,{className:`leaderboard-main`,children:[(0,X.jsxs)(`div`,{className:`podium`,children:[(0,X.jsxs)(`div`,{className:`podium-person second`,children:[(0,X.jsx)(`div`,{className:`podium-avatar silver-bg`,children:`ตน`}),(0,X.jsx)(`strong`,{children:`ต้นน้ำ`}),(0,X.jsx)(`span`,{children:`1,080 XP`}),(0,X.jsx)(`div`,{className:`podium-block block-two`,children:`2`})]}),(0,X.jsxs)(`div`,{className:`podium-person first`,children:[(0,X.jsx)(`div`,{className:`crown`,children:`✦`}),(0,X.jsx)(`div`,{className:`podium-avatar gold-bg`,children:`ขห`}),(0,X.jsx)(`strong`,{children:`น้องข้าวหอม`}),(0,X.jsx)(`span`,{children:`1,240 XP`}),(0,X.jsx)(`div`,{className:`podium-block block-one`,children:`1`})]}),(0,X.jsxs)(`div`,{className:`podium-person third`,children:[(0,X.jsx)(`div`,{className:`podium-avatar bronze-bg`,children:`พช`}),(0,X.jsx)(`strong`,{children:`พิมพ์ชนก`}),(0,X.jsxs)(`span`,{children:[e.xp.toLocaleString(),` XP`]}),(0,X.jsx)(`div`,{className:`podium-block block-three`,children:`3`})]})]}),(0,X.jsx)(`div`,{className:`rank-list`,children:js.map(t=>(0,X.jsxs)(`div`,{className:`rank-row ${t.rank===3?`current-user`:``}`,children:[(0,X.jsx)(`span`,{className:`rank-number`,children:t.rank}),(0,X.jsx)(`div`,{className:`avatar avatar-${t.color}`,children:t.initials}),(0,X.jsxs)(`div`,{className:`rank-name`,children:[(0,X.jsxs)(`strong`,{children:[t.name,` `,t.rank===3&&(0,X.jsx)(`span`,{children:`คุณ`})]}),(0,X.jsx)(`small`,{children:t.rank===1?`เรียน 4 วันติด`:t.rank===2?`ทำแบบฝึกหัดเก่ง`:`กำลังไปได้ดี`})]}),(0,X.jsxs)(`strong`,{className:`rank-xp`,children:[t.rank===3?e.xp.toLocaleString():t.xp.replace(` XP`,``),` XP`]})]},t.rank))})]}),(0,X.jsxs)(`aside`,{className:`leaderboard-side`,children:[(0,X.jsxs)(`div`,{className:`side-card your-rank`,children:[(0,X.jsxs)(`div`,{className:`side-card-heading`,children:[(0,X.jsx)(`h3`,{children:`อันดับของคุณ`}),(0,X.jsx)(`span`,{children:`สัปดาห์นี้`})]}),(0,X.jsxs)(`div`,{className:`your-rank-number`,children:[(0,X.jsx)(`strong`,{children:`#3`}),(0,X.jsx)(`span`,{children:`จาก 24 คน`})]}),(0,X.jsxs)(`div`,{className:`rank-up`,children:[(0,X.jsx)(Al,{}),` ขึ้นมา 2 อันดับจากสัปดาห์ก่อน`]}),(0,X.jsx)(`div`,{className:`xp-bar`,children:(0,X.jsx)(`span`,{style:{width:`70%`}})}),(0,X.jsx)(`small`,{children:`อีก 240 XP จะถึงอันดับ #2`})]}),(0,X.jsxs)(`div`,{className:`side-card rewards-card`,children:[(0,X.jsx)(`div`,{className:`reward-icon`,children:(0,X.jsx)(ro,{size:20})}),(0,X.jsx)(`h3`,{children:`สะสมความสำเร็จ`}),(0,X.jsx)(`p`,{children:`คุณปลดล็อกแล้ว 4 จาก 12 เหรียญ`}),(0,X.jsxs)(`div`,{className:`reward-dots`,children:[(0,X.jsx)(`i`,{className:`unlocked`}),(0,X.jsx)(`i`,{className:`unlocked`}),(0,X.jsx)(`i`,{className:`unlocked`}),(0,X.jsx)(`i`,{className:`unlocked`}),(0,X.jsx)(`i`,{}),(0,X.jsx)(`i`,{}),(0,X.jsx)(`i`,{}),(0,X.jsx)(`i`,{})]}),(0,X.jsxs)(`button`,{className:`text-button`,children:[`ดูความสำเร็จทั้งหมด `,(0,X.jsx)(to,{size:14})]})]})]})]})]})}function Al(){return(0,X.jsx)(`span`,{className:`arrow-up-small`,children:`↑`})}function jl({progress:e,onNavigate:t,onLesson:n}){return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsxs)(`div`,{className:`profile-hero`,children:[(0,X.jsx)(`div`,{className:`profile-banner-shape`}),(0,X.jsxs)(`div`,{className:`profile-main`,children:[(0,X.jsx)(`div`,{className:`profile-avatar-large`,children:`พช`}),(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`div`,{className:`profile-name-row`,children:[(0,X.jsx)(`h1`,{children:`พิมพ์ชนก`}),(0,X.jsxs)(`span`,{className:`level-badge`,children:[(0,X.jsx)(ds,{size:13}),` นักสำรวจ`]})]}),(0,X.jsx)(`p`,{children:`นักเรียนชั้น ม.3 • เริ่มเรียนกับ CommuMathy เมื่อ 3 ต.ค. 2569`}),(0,X.jsxs)(`div`,{className:`profile-stat-row`,children:[(0,X.jsxs)(`span`,{children:[(0,X.jsx)(Oo,{size:15}),` `,(0,X.jsx)(`strong`,{children:e.streak}),` วันต่อเนื่อง`]}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(Ds,{size:15}),` `,(0,X.jsx)(`strong`,{children:e.xp.toLocaleString()}),` XP`]}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(so,{size:15}),` `,(0,X.jsx)(`strong`,{children:e.completedLessons.length}),` บทเรียนจบแล้ว`]})]})]})]}),(0,X.jsxs)(`button`,{className:`outline-button profile-edit`,onClick:()=>t(`settings`),children:[(0,X.jsx)(Yo,{size:15}),` แก้ไขโปรไฟล์`]})]}),(0,X.jsxs)(`div`,{className:`profile-grid`,children:[(0,X.jsxs)(`section`,{children:[(0,X.jsx)(fl,{title:`เส้นทางการเรียนรู้`}),(0,X.jsxs)(`div`,{className:`profile-progress-card`,children:[(0,X.jsxs)(`div`,{className:`profile-progress-head`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{children:`ความก้าวหน้าโดยรวม`}),(0,X.jsxs)(`strong`,{children:[Math.round(e.xp/12),`%`]})]}),(0,X.jsx)(ps,{size:22})]}),(0,X.jsx)(`div`,{className:`progress-line`,children:(0,X.jsx)(`span`,{style:{width:`${Math.min(100,e.xp/12)}%`}})}),(0,X.jsxs)(`div`,{className:`profile-progress-foot`,children:[(0,X.jsx)(`span`,{children:`เริ่มต้นได้ดีมาก รักษาจังหวะนี้ไว้`}),(0,X.jsx)(`span`,{children:`เป้าหมาย: 1,000 XP`})]})]}),(0,X.jsx)(fl,{title:`บทเรียนที่บันทึกไว้`,link:`ดูทั้งหมด`,onLink:()=>t(`lessons`)}),e.bookmarks.length>0?e.bookmarks.map(e=>{let t=Os.find(t=>t.id===e);return t?(0,X.jsx)(gl,{lesson:t,onClick:()=>n(t)},e):null}):(0,X.jsxs)(`div`,{className:`empty-state compact`,children:[(0,X.jsx)(fo,{size:22}),(0,X.jsx)(`p`,{children:`ยังไม่มีบทเรียนที่บันทึกไว้`})]})]}),(0,X.jsxs)(`aside`,{children:[(0,X.jsxs)(`div`,{className:`side-card achievement-card`,children:[(0,X.jsxs)(`div`,{className:`side-card-heading`,children:[(0,X.jsx)(`h3`,{children:`ความสำเร็จล่าสุด`}),(0,X.jsx)(`button`,{children:`ดูทั้งหมด`})]}),(0,X.jsxs)(`div`,{className:`achievement`,children:[(0,X.jsx)(`div`,{className:`achievement-icon yellow-achievement`,children:(0,X.jsx)(Oo,{size:19})}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`ไฟแรงต่อเนื่อง`}),(0,X.jsx)(`span`,{children:`เรียนติดต่อกันครบ 5 วัน`})]}),(0,X.jsx)(go,{size:16})]}),(0,X.jsxs)(`div`,{className:`achievement`,children:[(0,X.jsx)(`div`,{className:`achievement-icon purple-achievement`,children:(0,X.jsx)(ps,{size:19})}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`นักแก้โจทย์`}),(0,X.jsx)(`span`,{children:`ตอบถูกครบ 5 ข้อ`})]}),(0,X.jsx)(go,{size:16})]})]}),(0,X.jsxs)(`div`,{className:`side-card activity-card`,children:[(0,X.jsx)(`div`,{className:`side-card-heading`,children:(0,X.jsx)(`h3`,{children:`กิจกรรมล่าสุด`})}),(0,X.jsxs)(`div`,{className:`activity-line`,children:[(0,X.jsx)(`span`,{className:`activity-dot green-dot`}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`ทำแบบฝึกหัด`}),(0,X.jsx)(`p`,{children:`สมการเชิงเส้น • 3 ข้อ`})]}),(0,X.jsx)(`small`,{children:`วันนี้`})]}),(0,X.jsxs)(`div`,{className:`activity-line`,children:[(0,X.jsx)(`span`,{className:`activity-dot purple-dot`}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`เข้าเรียนบทเรียน`}),(0,X.jsx)(`p`,{children:`สมการเชิงเส้นตัวแปรเดียว`})]}),(0,X.jsx)(`small`,{children:`เมื่อวาน`})]})]})]})]})]})}function Ml({onThemeChange:e}){let[t,n]=(0,l.useState)(`profile`),[r,i]=(0,l.useState)(()=>al(`commumathy-settings`,el)),[a,o]=(0,l.useState)(!0),s=(t,n)=>{i(e=>({...e,[t]:n})),t===`theme`&&e(n),o(!1)},c=()=>{localStorage.setItem(`commumathy-settings`,JSON.stringify(r)),o(!0)},u=()=>{i(el),e(el.theme),o(!1)},d=[{id:`profile`,label:`บัญชีและโปรไฟล์`,description:`ข้อมูลที่แสดงกับเพื่อน`,icon:xs},{id:`notifications`,label:`การแจ้งเตือน`,description:`เลือกสิ่งที่อยากให้เตือน`,icon:ao},{id:`appearance`,label:`การแสดงผล`,description:`ปรับหน้าตาให้อ่านง่าย`,icon:Go},{id:`learning`,label:`การเรียนรู้`,description:`ตั้งจังหวะการฝึกของคุณ`,icon:Ao}],f=d.find(e=>e.id===t)??d[0];return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(bl,{eyebrow:`ปรับให้เป็นแบบของคุณ`,title:`ตั้งค่า`,description:`จัดการข้อมูลส่วนตัว การแจ้งเตือน และรูปแบบการเรียนรู้ของคุณได้ในที่เดียว`}),(0,X.jsxs)(`div`,{className:`settings-layout`,children:[(0,X.jsx)(`aside`,{className:`settings-nav`,"aria-label":`หมวดการตั้งค่า`,children:d.map(({id:e,label:r,description:i,icon:a})=>(0,X.jsxs)(`button`,{className:t===e?`active`:``,onClick:()=>n(e),children:[(0,X.jsx)(a,{size:17}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(`strong`,{children:r}),(0,X.jsx)(`small`,{children:i})]})]},e))}),(0,X.jsxs)(`section`,{className:`settings-panel`,children:[(0,X.jsxs)(`div`,{className:`settings-panel-heading`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{className:`eyebrow-dot`}),` การตั้งค่าของฉัน`,(0,X.jsx)(`h2`,{children:f.label}),(0,X.jsx)(`p`,{children:f.description})]}),(0,X.jsxs)(`span`,{className:`settings-status`,children:[(0,X.jsx)(`span`,{className:`status-dot ${a?`saved`:`unsaved`}`}),` `,a?`บันทึกแล้ว`:`มีการเปลี่ยนแปลง`]})]}),t===`profile`&&(0,X.jsxs)(X.Fragment,{children:[(0,X.jsxs)(`div`,{className:`settings-section profile-settings-section`,children:[(0,X.jsxs)(`div`,{className:`settings-section-copy`,children:[(0,X.jsx)(`h2`,{children:`ข้อมูลโปรไฟล์`}),(0,X.jsx)(`p`,{children:`ข้อมูลนี้จะแสดงในชุมชนการเรียนรู้และช่วยปรับคำแนะนำให้เหมาะกับคุณ`})]}),(0,X.jsxs)(`div`,{className:`profile-summary`,children:[(0,X.jsx)(`div`,{className:`profile-settings-avatar`,children:r.displayName.slice(0,2)}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:r.displayName}),(0,X.jsxs)(`span`,{children:[`นักเรียน `,r.grade,` • สมาชิก CommuMathy`]})]}),(0,X.jsx)(`button`,{className:`outline-button`,onClick:()=>s(`displayName`,r.displayName.trim()||`พิมพ์ชนก`),children:`อัปเดตชื่อ`})]}),(0,X.jsxs)(`div`,{className:`profile-form`,children:[(0,X.jsxs)(`label`,{children:[`ชื่อที่แสดง`,(0,X.jsx)(`input`,{value:r.displayName,onChange:e=>s(`displayName`,e.target.value),placeholder:`เช่น พิมพ์ชนก`})]}),(0,X.jsxs)(`label`,{children:[`ระดับชั้น`,(0,X.jsxs)(`select`,{value:r.grade,onChange:e=>s(`grade`,e.target.value),children:[(0,X.jsx)(`option`,{children:`ม.1`}),(0,X.jsx)(`option`,{children:`ม.2`}),(0,X.jsx)(`option`,{children:`ม.3`}),(0,X.jsx)(`option`,{children:`ม.4`}),(0,X.jsx)(`option`,{children:`ม.5`}),(0,X.jsx)(`option`,{children:`ม.6`})]})]}),(0,X.jsxs)(`label`,{children:[`อีเมลสำหรับบัญชี`,(0,X.jsx)(`input`,{value:r.email,onChange:e=>s(`email`,e.target.value),type:`email`})]}),(0,X.jsxs)(`label`,{children:[`เกี่ยวกับฉัน`,(0,X.jsx)(`textarea`,{value:r.bio,onChange:e=>s(`bio`,e.target.value),placeholder:`เล่าเกี่ยวกับเป้าหมายการเรียนของคุณ`,rows:3})]})]})]}),(0,X.jsxs)(`div`,{className:`settings-info-strip`,children:[(0,X.jsx)(Fo,{size:16}),(0,X.jsx)(`span`,{children:`ข้อมูลของคุณจะถูกเก็บไว้บนอุปกรณ์นี้ในโหมดเดโม และยังไม่มีการเชื่อมต่อบัญชีออนไลน์`})]})]}),t===`notifications`&&(0,X.jsx)(Nl,{title:`เลือกการแจ้งเตือนที่มีประโยชน์กับคุณ`,description:`เปิดเฉพาะสิ่งที่ช่วยให้คุณเรียนต่อเนื่องโดยไม่รบกวนเกินไป`,children:(0,X.jsxs)(`div`,{className:`setting-toggles`,children:[(0,X.jsx)(Pl,{label:`เตือนการเรียนต่อเนื่อง`,description:`เตือนเบา ๆ เมื่อใกล้หมดวันและยังไม่ได้เรียน`,checked:r.dailyReminder,onChange:e=>s(`dailyReminder`,e)}),(0,X.jsx)(Pl,{label:`แจ้งเตือนการตอบกลับในชุมชน`,description:`บอกเมื่อมีคนตอบหรือช่วยต่อยอดคำถามของคุณ`,checked:r.communityReplies,onChange:e=>s(`communityReplies`,e)}),(0,X.jsx)(Pl,{label:`สรุปความก้าวหน้ารายสัปดาห์`,description:`รับภาพรวมบทเรียน แบบฝึกหัด และเป้าหมายที่เหลือ`,checked:r.weeklySummary,onChange:e=>s(`weeklySummary`,e)})]})}),t===`appearance`&&(0,X.jsxs)(Nl,{title:`ทำให้หน้าจออ่านง่ายขึ้น`,description:`ตัวเลือกเหล่านี้มีผลกับการแสดงผลบนอุปกรณ์นี้`,children:[(0,X.jsxs)(`div`,{className:`settings-choice-grid`,children:[(0,X.jsx)(Fl,{label:`ธีมสี`,description:`เลือกโหมดที่สบายตา`,value:r.theme,options:[`สว่าง`,`มืด`,`ตามระบบ`],onChange:e=>s(`theme`,e)}),(0,X.jsx)(Fl,{label:`ขนาดตัวอักษร`,description:`ปรับให้เหมาะกับการอ่าน`,value:r.fontSize,options:[`มาตรฐาน`,`ใหญ่`],onChange:e=>s(`fontSize`,e)})]}),(0,X.jsxs)(`div`,{className:`settings-preview`,children:[(0,X.jsxs)(`div`,{className:`preview-window`,children:[(0,X.jsx)(`span`,{className:`preview-dot`}),(0,X.jsx)(`span`,{className:`preview-dot`}),(0,X.jsx)(`span`,{className:`preview-dot`}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`ตัวอย่างการอ่านบทเรียน`}),(0,X.jsx)(`p`,{children:`ปรับขนาดตัวอักษรเพื่ออ่านคำอธิบายและสมการได้สบายขึ้น`})]})]}),(0,X.jsx)(`span`,{children:`ตัวอย่างการแสดงผล`})]})]}),t===`learning`&&(0,X.jsx)(Nl,{title:`ตั้งค่าจังหวะการเรียน`,description:`ช่วยให้บทเรียนและแบบฝึกหัดตรงกับเป้าหมายของคุณ`,children:(0,X.jsxs)(`div`,{className:`learning-preferences`,children:[(0,X.jsxs)(`label`,{children:[`ระดับความท้าทายที่แนะนำ`,(0,X.jsxs)(`select`,{value:r.difficulty,onChange:e=>s(`difficulty`,e.target.value),children:[(0,X.jsx)(`option`,{children:`พื้นฐาน`}),(0,X.jsx)(`option`,{children:`กำลังดี`}),(0,X.jsx)(`option`,{children:`ท้าทาย`})]})]}),(0,X.jsxs)(`div`,{className:`setting-toggles`,children:[(0,X.jsx)(Pl,{label:`แสดงคำใบ้ก่อนเฉลย`,description:`ช่วยให้ได้ลองคิดด้วยตัวเองมากขึ้น`,checked:r.showHints,onChange:e=>s(`showHints`,e)}),(0,X.jsx)(Pl,{label:`แสดงสมการแบบเต็มหน้าจอ`,description:`เหมาะกับการอ่านบนมือถือ`,checked:r.fullScreenMath,onChange:e=>s(`fullScreenMath`,e)})]})]})}),(0,X.jsxs)(`div`,{className:`settings-footer`,children:[(0,X.jsxs)(`button`,{className:`reset-settings`,onClick:u,children:[(0,X.jsx)($o,{size:14}),` คืนค่าเริ่มต้น`]}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{children:a?(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(go,{size:15}),` บันทึกแล้ว`]}):`การเปลี่ยนแปลงยังไม่ได้บันทึก`}),(0,X.jsxs)(`button`,{className:`primary-button`,onClick:c,children:[(0,X.jsx)(ts,{size:15}),` บันทึกการตั้งค่า`]})]})]})]})]})]})}function Nl({title:e,description:t,children:n}){return(0,X.jsxs)(`div`,{className:`settings-section`,children:[(0,X.jsxs)(`div`,{className:`settings-section-copy`,children:[(0,X.jsx)(`h2`,{children:e}),(0,X.jsx)(`p`,{children:t})]}),n]})}function Pl({label:e,description:t,checked:n,onChange:r}){return(0,X.jsxs)(`button`,{type:`button`,className:`toggle-row`,onClick:()=>r(!n),"aria-pressed":n,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:e}),(0,X.jsx)(`span`,{children:t})]}),(0,X.jsx)(`span`,{className:`toggle ${n?`on`:``}`,children:(0,X.jsx)(`i`,{})})]})}function Fl({label:e,description:t,value:n,options:r,onChange:i}){return(0,X.jsxs)(`div`,{className:`choice-card`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:e}),(0,X.jsx)(`span`,{children:t})]}),(0,X.jsx)(`div`,{className:`choice-buttons`,children:r.map(e=>(0,X.jsx)(`button`,{type:`button`,className:n===e?`selected`:``,onClick:()=>i(e),children:e},e))})]})}(0,u.createRoot)(document.getElementById(`root`)).render((0,X.jsx)(l.StrictMode,{children:(0,X.jsx)(sl,{})}));
+คำว่า “ย้าย +3 ไปอีกข้างเป็น -3” เป็นเพียงวิธีเขียนสั้น ๆ ของการลบ 3 ทั้งสองข้างค่ะ ความเท่ากันจึงยังคงเดิม`,time:`09:42`}],rl=[{id:`reply-1`,kind:`reply`,title:`มีคนตอบคำถามของคุณ`,body:`มินตราช่วยต่อยอดเรื่องสมการเชิงเส้นแล้ว`,time:`12 นาทีที่แล้ว`,read:!1},{id:`lesson-1`,kind:`lesson`,title:`บทเรียนใหม่ที่น่าลอง`,body:`ฟังก์ชันเชิงเส้นและกราฟพร้อมให้เรียนแล้ว`,time:`เมื่อวาน`,read:!0}],il=[{id:`home`,label:`หน้าหลัก`,icon:Mo},{id:`lessons`,label:`บทเรียน`,icon:so},{id:`exercises`,label:`แบบฝึกหัด`,icon:Yo},{id:`assessment`,label:`แบบประเมิน`,icon:zo},{id:`tutor`,label:`ติวเตอร์ AI`,icon:ds},{id:`community`,label:`ชุมชนการเรียนรู้`,icon:Cs},{id:`leaderboard`,label:`กระดานคะแนน`,icon:_s}];function al(e,t){try{return JSON.parse(localStorage.getItem(e)??``)}catch{return t}}function ol({formula:e,display:t=!1}){let n=e;try{n=Ia(e,{throwOnError:!1,displayMode:t,strict:`ignore`})}catch{}return(0,X.jsx)(`span`,{className:t?`math-display`:`math-inline`,dangerouslySetInnerHTML:{__html:n}})}function qmmNewProgress() {
+  return {
+    completedLessons: [],
+    bookmarks: [],
+    xp: 0,
+    streak: 0,
+    exerciseCorrect: 0,
+    exerciseTotal: 0,
+    assessmentScore: null,
+    activityDates: [],
+    recentActivity: [],
+  };
+}
+function qmmLocalDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+function qmmComputeStreak(activityDates = [], now = new Date()) {
+  const dates = new Set(
+    Array.isArray(activityDates)
+      ? activityDates.filter((date) => typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date))
+      : [],
+  );
+  const cursor = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (!dates.has(qmmLocalDateKey(cursor))) cursor.setDate(cursor.getDate() - 1);
+
+  let streak = 0;
+  while (dates.has(qmmLocalDateKey(cursor))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+}
+function qmmNormalizeProgress(progress, now = new Date()) {
+  const source = progress && typeof progress === "object" && !Array.isArray(progress) ? progress : {};
+  const uniqueStrings = (value) => Array.isArray(value)
+    ? [...new Set(value.filter((item) => typeof item === "string" && item.trim()))]
+    : [];
+  const completedLessons = uniqueStrings(source.completedLessons);
+  const bookmarks = uniqueStrings(source.bookmarks);
+  const activityDates = [...new Set(
+    Array.isArray(source.activityDates)
+      ? source.activityDates.filter((date) => typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date))
+      : [],
+  )].sort();
+  const recentActivity = Array.isArray(source.recentActivity)
+    ? source.recentActivity.filter((item) => item && ["lesson", "exercise"].includes(item.type)
+      && typeof item.label === "string" && typeof item.timestamp === "string"
+      && Number.isFinite(new Date(item.timestamp).getTime())).slice(0, 20)
+    : [];
+
+  let xp = Math.max(0, Math.floor(Number(source.xp) || 0));
+  let exerciseCorrect = Math.max(0, Math.floor(Number(source.exerciseCorrect) || 0));
+  let exerciseTotal = Math.max(0, Math.floor(Number(source.exerciseTotal) || 0));
+  const hasActivityHistory = activityDates.length > 0 || recentActivity.length > 0;
+  const hasLegacySeed = !hasActivityHistory
+    && Number(source.streak) === 5
+    && xp >= 840
+    && exerciseCorrect >= 7
+    && exerciseTotal >= 9;
+
+  if (hasLegacySeed) {
+    const exactStarterSeed = xp === 840
+      && exerciseCorrect === 7
+      && exerciseTotal === 9
+      && completedLessons.length === 0
+      && bookmarks.length === 1
+      && bookmarks[0] === "linear-equation";
+    if (exactStarterSeed) return qmmNewProgress();
+    xp = Math.max(0, xp - 840);
+    exerciseCorrect = Math.max(0, exerciseCorrect - 7);
+    exerciseTotal = Math.max(0, exerciseTotal - 9);
+  }
+
+  exerciseTotal = Math.max(exerciseTotal, exerciseCorrect);
+  const assessmentScore = source.assessmentScore == null ? null : Number(source.assessmentScore);
+  return {
+    ...source,
+    completedLessons,
+    bookmarks,
+    xp,
+    streak: qmmComputeStreak(activityDates, now),
+    exerciseCorrect,
+    exerciseTotal,
+    assessmentScore: Number.isFinite(assessmentScore) ? assessmentScore : null,
+    activityDates,
+    recentActivity,
+  };
+}
+function qmmRecordLearningActivity(progress, type, label, now = new Date()) {
+  const normalized = qmmNormalizeProgress(progress, now);
+  const activityType = type === "lesson" ? "lesson" : "exercise";
+  const timestamp = now.toISOString();
+  const activity = {
+    id: `${activityType}-${timestamp}`,
+    type: activityType,
+    label: String(label || (activityType === "lesson" ? "บทเรียน" : "แบบฝึกหัด")),
+    timestamp,
+  };
+  const dateKey = qmmLocalDateKey(now);
+  const activityDates = [...new Set([...normalized.activityDates, dateKey])].slice(-400);
+  return {
+    ...normalized,
+    activityDates,
+    recentActivity: [activity, ...normalized.recentActivity].slice(0, 20),
+    streak: qmmComputeStreak(activityDates, now),
+  };
+}
+function qmmExerciseAccuracy(correct, total) {
+  const attempts = Math.floor(Number(total) || 0);
+  if (attempts <= 0) return null;
+  return Math.round(Math.max(0, Number(correct) || 0) / attempts * 100);
+}
+function qmmCompletionPercent(completed, total) {
+  const available = Math.floor(Number(total) || 0);
+  if (available <= 0) return 0;
+  const count = Math.min(available, Math.max(0, Math.floor(Number(completed) || 0)));
+  return Math.round(count / available * 100);
+}
+function qmmLoadProgress(){return qmmLoadActiveUserProgress()}
+function qmmLoadNotifications(){const notifications=al(`commumathy-notifications`,rl);return Array.isArray(notifications)?notifications.filter(item=>item&&item.id!==`streak-1`):[]}
+function qmmReadLocalUsers() {
+  const stored = al("commumathy-local-users", null);
+  if (!Array.isArray(stored)) return [];
+  const grades = ["ม.1", "ม.2", "ม.3", "ม.4", "ม.5", "ม.6"];
+  return stored
+    .filter((user) => user && typeof user.id === "string" && user.id.trim())
+    .map((user) => {
+      const rawSettings = user.settings && typeof user.settings === "object" ? user.settings : {};
+      const displayName = String(user.displayName || rawSettings.displayName || "ผู้เรียน").trim().slice(0, 40) || "ผู้เรียน";
+      const requestedGrade = user.grade || rawSettings.grade;
+      const grade = grades.includes(requestedGrade) ? requestedGrade : "ม.1";
+      return {
+        ...user,
+        displayName,
+        grade,
+        settings: { ...el, ...rawSettings, displayName, grade },
+        progress: qmmNormalizeProgress(user.progress ?? qmmNewProgress()),
+      };
+    });
+}
+function qmmEnsureLocalUsers() {
+  const users = qmmReadLocalUsers();
+  if (users.length) return users;
+  const rawSettings = al("commumathy-settings", el);
+  const settings = { ...el, ...(rawSettings && typeof rawSettings === "object" ? rawSettings : {}) };
+  const progress = qmmNormalizeProgress(al("commumathy-progress", tl));
+  const profile = {
+    id: "local-default",
+    displayName: String(settings.displayName || "พิมพ์ชนก").trim() || "พิมพ์ชนก",
+    grade: settings.grade || "ม.3",
+    settings,
+    progress,
+    createdAt: new Date().toISOString(),
+  };
+  localStorage.setItem("commumathy-local-users", JSON.stringify([profile]));
+  localStorage.setItem("commumathy-active-local-user", profile.id);
+  localStorage.setItem("commumathy-settings", JSON.stringify(settings));
+  localStorage.setItem("commumathy-progress", JSON.stringify(progress));
+  return [profile];
+}
+function qmmGetActiveLocalUser() {
+  const users = qmmEnsureLocalUsers();
+  const activeId = localStorage.getItem("commumathy-active-local-user");
+  return users.find((user) => user.id === activeId) || null;
+}
+function qmmLocalUserInitials() {
+  const name = qmmGetActiveLocalUser()?.displayName || "ผู้เรียน";
+  return Array.from(name).slice(0, 2).join("");
+}
+function qmmLoadActiveUserSettings(fallback = el) {
+  const user = qmmGetActiveLocalUser();
+  if (!user) return fallback;
+  const settings = { ...fallback, ...user.settings };
+  localStorage.setItem("commumathy-settings", JSON.stringify(settings));
+  return settings;
+}
+function qmmLoadActiveUserProgress(fallback = tl) {
+  const user = qmmGetActiveLocalUser();
+  if (!user) return qmmNewProgress();
+  const progress = qmmNormalizeProgress(user.progress ?? al("commumathy-progress", fallback));
+  localStorage.setItem("commumathy-progress", JSON.stringify(progress));
+  return progress;
+}
+function qmmSaveActiveUserSettings(value) {
+  const active = qmmGetActiveLocalUser();
+  if (!active) return false;
+  const settings = { ...el, ...(value && typeof value === "object" ? value : {}) };
+  const users = qmmReadLocalUsers().map((user) => user.id === active.id
+    ? { ...user, displayName: settings.displayName || "ผู้เรียน", grade: settings.grade || "ม.1", settings }
+    : user);
+  localStorage.setItem("commumathy-local-users", JSON.stringify(users));
+  localStorage.setItem("commumathy-settings", JSON.stringify(settings));
+  return true;
+}
+function qmmSaveActiveUserProgress(value) {
+  const active = qmmGetActiveLocalUser();
+  if (!active) return false;
+  const progress = qmmNormalizeProgress(value);
+  const users = qmmReadLocalUsers().map((user) => user.id === active.id ? { ...user, progress } : user);
+  localStorage.setItem("commumathy-local-users", JSON.stringify(users));
+  localStorage.setItem("commumathy-progress", JSON.stringify(progress));
+  return true;
+}
+function qmmSwitchLocalUser(id) {
+  const user = qmmReadLocalUsers().find((item) => item.id === id);
+  if (!user) return false;
+  localStorage.setItem("commumathy-active-local-user", user.id);
+  localStorage.setItem("commumathy-settings", JSON.stringify(user.settings));
+  localStorage.setItem("commumathy-progress", JSON.stringify(user.progress));
+  localStorage.setItem("commumathy-page", JSON.stringify("home"));
+  return true;
+}
+function qmmCreateLocalUser(name, grade) {
+  const displayName = String(name || "").trim().slice(0, 40);
+  if (!displayName) return false;
+  const users = qmmEnsureLocalUsers();
+  const grades = ["ม.1", "ม.2", "ม.3", "ม.4", "ม.5", "ม.6"];
+  const selectedGrade = grades.includes(grade) ? grade : "ม.1";
+  const id = `local-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  const settings = {
+    ...el,
+    displayName,
+    grade: selectedGrade,
+    profilePicture: "",
+    mathInterests: [],
+    email: "",
+    theme: "ตามระบบ",
+  };
+  const profile = {
+    id,
+    displayName,
+    grade: selectedGrade,
+    settings,
+    progress: qmmNewProgress(),
+    createdAt: new Date().toISOString(),
+  };
+  localStorage.setItem("commumathy-local-users", JSON.stringify([...users, profile]));
+  return qmmSwitchLocalUser(id);
+}
+function qmmSignOutLocalUser() {
+  const active = qmmGetActiveLocalUser();
+  if (active) {
+    qmmSaveActiveUserSettings(active.settings);
+    qmmSaveActiveUserProgress(active.progress);
+  }
+  localStorage.removeItem("commumathy-active-local-user");
+  localStorage.setItem("commumathy-page", JSON.stringify("home"));
+  window.location.reload();
+}
+function QmmLocalAccountCard() {
+  const active = qmmGetActiveLocalUser();
+  return (0, X.jsxs)("section", {
+    className: "settings-local-account-card settings-local-account-card--prominent",
+    children: [
+      (0, X.jsxs)("div", {
+        className: "settings-local-account-copy",
+        children: [
+          (0, X.jsx)("strong", { children: "สลับผู้ใช้บนอุปกรณ์นี้ / Switch user" }),
+          (0, X.jsx)("p", { children: `กำลังใช้โปรไฟล์ ${active?.displayName || "ผู้เรียน"} ข้อมูลไม่ซิงก์ไปยังอุปกรณ์อื่น` }),
+        ],
+      }),
+      (0, X.jsx)("button", {
+        type: "button",
+        className: "outline-button local-signout-button",
+        onClick: qmmSignOutLocalUser,
+        children: "เปลี่ยนผู้ใช้ / Switch user",
+      }),
+    ],
+  });
+}
+function QmmLocalUserGate() {
+  const [displayName, setDisplayName] = (0, l.useState)("");
+  const [grade, setGrade] = (0, l.useState)("ม.1");
+  const [error, setError] = (0, l.useState)("");
+  const users = qmmReadLocalUsers();
+  const grades = ["ม.1", "ม.2", "ม.3", "ม.4", "ม.5", "ม.6"];
+  const createProfile = (event) => {
+    event.preventDefault();
+    if (!qmmCreateLocalUser(displayName, grade)) {
+      setError("กรุณากรอกชื่อเพื่อสร้างโปรไฟล์");
+      return;
+    }
+    window.location.reload();
+  };
+  return (0, X.jsx)("main", {
+    className: "local-user-gate",
+    children: (0, X.jsxs)("section", {
+      className: "local-user-gate-card",
+      children: [
+        (0, X.jsx)("span", { className: "local-user-kicker", children: "โปรไฟล์ในอุปกรณ์นี้" }),
+        (0, X.jsx)("h1", { children: "เลือกโปรไฟล์เพื่อเริ่มเรียน" }),
+        (0, X.jsx)("p", { className: "local-user-disclaimer", children: "โปรไฟล์และความก้าวหน้าเก็บอยู่ในเบราว์เซอร์นี้เท่านั้น ไม่มีรหัสผ่านหรือการซิงก์บัญชีออนไลน์ ผู้ที่ใช้อุปกรณ์นี้อาจเลือกโปรไฟล์ใดก็ได้" }),
+        users.length > 0 && (0, X.jsxs)("div", {
+          className: "local-user-list",
+          children: [
+            (0, X.jsx)("h2", { children: "โปรไฟล์ที่บันทึกไว้" }),
+            users.map((user) => (0, X.jsxs)("button", {
+              type: "button",
+              className: "local-user-option",
+              onClick: () => { if (qmmSwitchLocalUser(user.id)) window.location.reload(); },
+              children: [
+                (0, X.jsx)("span", { className: "local-user-avatar", children: Array.from(user.displayName).slice(0, 2).join("") }),
+                (0, X.jsxs)("span", {
+                  className: "local-user-option-copy",
+                  children: [
+                    (0, X.jsx)("strong", { children: user.displayName }),
+                    (0, X.jsx)("small", { children: `${user.grade} • ${user.progress.completedLessons.length} บทเรียนที่จบ` }),
+                  ],
+                }),
+                (0, X.jsx)("span", { className: "local-user-arrow", children: "→" }),
+              ],
+            }, user.id)),
+          ],
+        }),
+        (0, X.jsxs)("form", {
+          className: "local-user-create-form",
+          onSubmit: createProfile,
+          children: [
+            (0, X.jsx)("h2", { children: "สร้างโปรไฟล์ใหม่บนอุปกรณ์นี้" }),
+            (0, X.jsxs)("label", {
+              children: ["ชื่อที่แสดง", (0, X.jsx)("input", {
+                type: "text",
+                maxLength: 40,
+                value: displayName,
+                onChange: (event) => { setDisplayName(event.target.value); setError(""); },
+                placeholder: "เช่น พิมพ์ชนก",
+                required: true,
+              })],
+            }),
+            (0, X.jsxs)("label", {
+              children: ["ระดับชั้น", (0, X.jsx)("select", {
+                value: grade,
+                onChange: (event) => setGrade(event.target.value),
+                children: grades.map((option) => (0, X.jsx)("option", { value: option, children: option }, option)),
+              })],
+            }),
+            error && (0, X.jsx)("p", { className: "local-user-error", role: "alert", children: error }),
+            (0, X.jsx)("button", { type: "submit", className: "primary-button", children: "สร้างและเข้าใช้โปรไฟล์" }),
+          ],
+        }),
+      ],
+    }),
+  });
+}
+function sl(){let[e,t]=(0,l.useState)(()=>al(`commumathy-page`,`home`)),[n,r]=(0,l.useState)(()=>qmmLoadActiveUserSettings(el).theme??`ตามระบบ`),[i,a]=(0,l.useState)(Os[0]),[o,s]=(0,l.useState)(Gs[0]),[c,u]=(0,l.useState)(Gs[0].lessons[0]),[d,f]=(0,l.useState)(null),[p,m]=(0,l.useState)(()=>qmmLoadProgress()),[h,g]=(0,l.useState)(()=>al(`commumathy-posts`,As)),[_,v]=(0,l.useState)(()=>al(`commumathy-tutor`,nl)),[y,b]=(0,l.useState)(()=>qmmLoadNotifications()),[x,S]=(0,l.useState)(``),[C,ee]=(0,l.useState)(!1),[w,T]=(0,l.useState)(!1),E=(0,l.useRef)(null);(0,l.useEffect)(()=>{qmmSaveActiveUserProgress(p)},[p]),(0,l.useEffect)(()=>{localStorage.setItem(`commumathy-page`,JSON.stringify(e))},[e]),(0,l.useEffect)(()=>{localStorage.setItem(`commumathy-posts`,JSON.stringify(h))},[h]),(0,l.useEffect)(()=>{localStorage.setItem(`commumathy-tutor`,JSON.stringify(_))},[_]),(0,l.useEffect)(()=>{localStorage.setItem(`commumathy-notifications`,JSON.stringify(y))},[y]),(0,l.useEffect)(()=>{if(!w)return;let e=e=>{E.current&&!E.current.contains(e.target)&&T(!1)};return document.addEventListener(`mousedown`,e),()=>document.removeEventListener(`mousedown`,e)},[w]),(0,l.useEffect)(()=>{let e=window.matchMedia(`(prefers-color-scheme: dark)`),t=()=>{document.documentElement.dataset.theme=n===`มืด`||n===`ตามระบบ`&&e.matches?`มืด`:`สว่าง`};return t(),e.addEventListener(`change`,t),()=>e.removeEventListener(`change`,t)},[n]);let D=e=>{t(e),ee(!1),window.scrollTo({top:0,behavior:`smooth`})},te=e=>{r(e);let t=qmmLoadActiveUserSettings(el);qmmSaveActiveUserSettings({...t,theme:e})},ne=()=>te(n===`มืด`?`สว่าง`:`มืด`),re=e=>{a(e),D(`lesson-detail`)},ie=e=>{s(e),D(`curriculum-chapter`)},ae=(e,t)=>{s(e),u(t),D(`curriculum-lesson`)},oe=e=>{f(e),D(`exercises`)},se=e=>m(t=>({...t,bookmarks:t.bookmarks.includes(e)?t.bookmarks.filter(t=>t!==e):[...t.bookmarks,e]})),ce=()=>m(e=>e.completedLessons.includes(i.id)?e:qmmRecordLearningActivity({...e,completedLessons:[...e.completedLessons,i.id],xp:e.xp+40},"lesson",i.title)),le=e=>m(t=>t.completedLessons.includes(e)?t:qmmRecordLearningActivity({...t,completedLessons:[...t.completedLessons,e],xp:t.xp+40},"lesson",Os.find(n=>n.id===e)?.title||`บทเรียน`)),ue=y.filter(e=>!e.read).length,de=e=>b(t=>t.map(t=>t.id===e?{...t,read:!0}:t)),fe=()=>b(e=>e.map(e=>({...e,read:!0}))),pe=(0,l.useMemo)(()=>{if(!x.trim())return[];let e=x.toLowerCase();return[...Os.map(e=>({kind:`lesson`,lesson:e})),...Gs.map(e=>({kind:`chapter`,chapter:e}))].filter(t=>(t.kind===`lesson`?`${t.lesson.title} ${t.lesson.subject} ${t.lesson.grade}`:`${t.chapter.title} ${t.chapter.englishTitle} ${t.chapter.offerings.map(e=>e.grade).join(` `)}`).toLowerCase().includes(e)).slice(0,7)},[x]);if(!qmmGetActiveLocalUser())return(0,X.jsx)(QmmLocalUserGate,{});return(0,X.jsxs)(`div`,{className:`app-shell`,children:[(0,X.jsxs)(`aside`,{className:`sidebar ${C?`sidebar-open`:``}`,children:[(0,X.jsxs)(`div`,{className:`brand`,onClick:()=>D(`home`),role:`button`,tabIndex:0,children:[(0,X.jsx)(`div`,{className:`brand-mark`,children:(0,X.jsx)(`span`,{children:`∑`})}),(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`strong`,{children:[`Commu`,(0,X.jsx)(`span`,{children:`Mathy`})]}),(0,X.jsx)(`small`,{children:`เรียนคณิตให้เข้าใจ`})]})]}),(0,X.jsx)(`div`,{className:`sidebar-section-label`,children:`เมนูหลัก`}),(0,X.jsx)(`nav`,{className:`sidebar-nav`,children:il.map(({id:t,label:n,icon:r})=>(0,X.jsxs)(`button`,{className:`nav-item ${e===t||t===`lessons`&&[`lesson-detail`,`curriculum-chapter`,`curriculum-lesson`].includes(e)?`active`:``}`,onClick:()=>D(t),children:[(0,X.jsx)(r,{size:19,strokeWidth:e===t?2.4:1.8}),(0,X.jsx)(`span`,{children:n}),t===`tutor`&&(0,X.jsx)(`span`,{className:`nav-new`,children:`ใหม่`})]},t))}),(0,X.jsx)(`div`,{className:`sidebar-spacer`}),(0,X.jsxs)(`div`,{className:`sidebar-tip`,children:[(0,X.jsx)(`div`,{className:`tip-icon`,children:(0,X.jsx)(Lo,{size:17})}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`เคล็ดลับวันนี้`}),(0,X.jsx)(`p`,{children:`ลองอธิบายวิธีคิดของตัวเองเป็นคำพูด จะช่วยให้จำได้นานขึ้น`})]})]}),(0,X.jsxs)(`nav`,{className:`sidebar-nav sidebar-bottom`,children:[(0,X.jsxs)(`button`,{className:`nav-item ${e===`profile`?`active`:``}`,onClick:()=>D(`profile`),children:[(0,X.jsx)(xs,{size:19}),(0,X.jsx)(`span`,{children:`โปรไฟล์ของฉัน`})]}),(0,X.jsxs)(`button`,{className:`nav-item ${e===`settings`?`active`:``}`,onClick:()=>D(`settings`),children:[(0,X.jsx)(ss,{size:19}),(0,X.jsx)(`span`,{children:`ตั้งค่า`})]})]}),(0,X.jsxs)(`div`,{className:`mini-profile`,children:[(0,X.jsx)(`div`,{className:`avatar avatar-indigo`,children:qmmLocalUserInitials()}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:qmmGetActiveLocalUser()?.displayName||`ผู้เรียน`}),(0,X.jsx)(`small`,{children:`${qmmGetActiveLocalUser()?.grade||`—`} • โปรไฟล์ในอุปกรณ์นี้`})]}),(0,X.jsx)(Eo,{size:17})]})]}),C&&(0,X.jsx)(`div`,{className:`sidebar-overlay`,onClick:()=>ee(!1)}),(0,X.jsxs)(`main`,{className:`main-area`,children:[(0,X.jsxs)(`header`,{className:`topbar`,children:[(0,X.jsx)(`button`,{className:`mobile-menu-button`,onClick:()=>ee(!0),"aria-label":`เปิดเมนู`,children:(0,X.jsx)(Vo,{size:22})}),(0,X.jsxs)(`div`,{className:`breadcrumbs`,children:[(0,X.jsx)(`span`,{children:`CommuMathy`}),(0,X.jsx)(bo,{size:14}),` `,(0,X.jsx)(`strong`,{children:cl(e)})]}),(0,X.jsxs)(`div`,{className:`topbar-actions`,children:[(0,X.jsxs)(`div`,{className:`global-search`,children:[(0,X.jsx)(rs,{size:17}),(0,X.jsx)(`input`,{value:x,onChange:e=>S(e.target.value),placeholder:`ค้นหาบทเรียน แบบฝึกหัด...`,"aria-label":`ค้นหา`}),x&&(0,X.jsx)(`button`,{onClick:()=>S(``),children:(0,X.jsx)(Ts,{size:15})}),pe.length>0&&(0,X.jsx)(`div`,{className:`search-dropdown`,children:pe.map(e=>e.kind===`lesson`?(0,X.jsxs)(`button`,{onClick:()=>{re(e.lesson),S(``)},children:[(0,X.jsx)(`div`,{className:`course-icon ${e.lesson.color}`,children:e.lesson.icon}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:e.lesson.title}),(0,X.jsxs)(`small`,{children:[e.lesson.grade,` • `,e.lesson.subject]})]}),(0,X.jsx)(bo,{size:15})]},e.lesson.id):(0,X.jsxs)(`button`,{onClick:()=>{ie(e.chapter),S(``)},children:[(0,X.jsx)(`div`,{className:`course-icon ${e.chapter.color}`,children:e.chapter.icon}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:e.chapter.title}),(0,X.jsxs)(`small`,{children:[e.chapter.offerings[0].grade,` • `,e.chapter.englishTitle]})]}),(0,X.jsx)(bo,{size:15})]},e.chapter.id))})]}),(0,X.jsxs)(`div`,{className:`notification-menu`,ref:E,children:[(0,X.jsxs)(`button`,{className:`icon-button notification-button`,onClick:()=>T(e=>!e),"aria-label":`การแจ้งเตือน`,"aria-expanded":w,children:[(0,X.jsx)(ao,{size:19}),ue>0&&(0,X.jsx)(`span`,{})]}),w&&(0,X.jsxs)(`div`,{className:`notification-dropdown`,role:`dialog`,"aria-label":`การแจ้งเตือน`,children:[(0,X.jsxs)(`div`,{className:`notification-dropdown-head`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`การแจ้งเตือน`}),(0,X.jsx)(`span`,{children:ue>0?`${ue} รายการใหม่`:`ไม่มีรายการใหม่`})]}),ue>0&&(0,X.jsx)(`button`,{onClick:fe,children:`อ่านทั้งหมด`})]}),(0,X.jsx)(`div`,{className:`notification-list`,children:y.length===0?(0,X.jsxs)(`div`,{className:`notification-empty`,children:[(0,X.jsx)(ao,{size:18}),(0,X.jsx)(`span`,{children:`ยังไม่มีการแจ้งเตือน`})]}):y.map(e=>(0,X.jsxs)(`button`,{className:`notification-item ${e.read?`read`:``}`,onClick:()=>{de(e.id),T(!1)},children:[(0,X.jsx)(`span`,{className:`notification-icon ${e.kind}`,children:e.kind===`reply`?(0,X.jsx)(Uo,{size:15}):e.kind===`streak`?(0,X.jsx)(Oo,{size:15}):(0,X.jsx)(so,{size:15})}),(0,X.jsxs)(`span`,{className:`notification-copy`,children:[(0,X.jsx)(`strong`,{children:e.title}),(0,X.jsx)(`span`,{children:e.body}),(0,X.jsx)(`small`,{children:e.time})]}),!e.read&&(0,X.jsx)(`i`,{})]},e.id))})]})]}),(0,X.jsx)(`button`,{className:`icon-button theme-toggle`,onClick:ne,"aria-label":`สลับธีม`,title:`สลับธีม`,children:(0,X.jsx)(Go,{size:18})}),(0,X.jsx)(`button`,{className:`top-avatar`,onClick:()=>D(`profile`),children:qmmLocalUserInitials()})]})]}),(0,X.jsxs)(`div`,{className:`page-content`,children:[e===`home`&&(0,X.jsx)(ll,{progress:p,onNavigate:D,onLesson:re}),e===`lessons`&&(0,X.jsx)(_l,{progress:p,onChapter:ie,onBookmark:se}),e===`lesson-detail`&&(0,X.jsx)(xl,{lesson:i,progress:p,onBack:()=>D(`lessons`),onComplete:ce,onBookmark:se,onPractice:()=>D(`exercises`)}),e===`curriculum-chapter`&&(0,X.jsx)(vl,{chapter:o,progress:p,onBack:()=>D(`lessons`),onLesson:e=>ae(o,e),onPractice:()=>oe(o),onBookmark:se}),e===`curriculum-lesson`&&(0,X.jsx)(yl,{chapter:o,lesson:c,progress:p,onBack:()=>D(`curriculum-chapter`),onLesson:e=>ae(o,e),onComplete:()=>le(c.id),onPractice:()=>oe(o)}),e===`exercises`&&(0,X.jsx)($c,{progress:p,setProgress:m,onLesson:()=>d?ie(d):re(Os[0]),activeChapter:d}),e===`assessment`&&(0,X.jsx)(Cl,{progress:p,setProgress:m,onLessons:()=>D(`lessons`)}),e===`tutor`&&(0,X.jsx)(Tl,{messages:_,setMessages:v}),e===`community`&&(0,X.jsx)(Dl,{posts:h,setPosts:g}),e===`leaderboard`&&(0,X.jsx)(kl,{progress:p}),e===`profile`&&(0,X.jsx)(jl,{progress:p,onNavigate:D,onLesson:re}),e===`settings`&&(0,X.jsx)(Ml,{onThemeChange:te})]})]}),(0,X.jsxs)(`nav`,{className:`mobile-bottom-nav`,children:[il.slice(0,4).map(({id:t,label:n,icon:r})=>(0,X.jsxs)(`button`,{className:e===t?`active`:``,onClick:()=>D(t),children:[(0,X.jsx)(r,{size:19}),(0,X.jsx)(`span`,{children:n})]},t)),(0,X.jsxs)(`button`,{className:e===`tutor`?`active`:``,onClick:()=>D(`tutor`),children:[(0,X.jsx)(ds,{size:19}),(0,X.jsx)(`span`,{children:`ติวเตอร์`})]})]})]})}function cl(e){return{home:`หน้าหลัก`,lessons:`บทเรียน`,"lesson-detail":`รายละเอียดบทเรียน`,"curriculum-chapter":`บทในหลักสูตร`,"curriculum-lesson":`บทเรียนย่อย`,exercises:`แบบฝึกหัด`,assessment:`แบบประเมิน`,tutor:`ติวเตอร์ AI`,community:`ชุมชนการเรียนรู้`,leaderboard:`กระดานคะแนน`,profile:`โปรไฟล์ของฉัน`,settings:`ตั้งค่า`}[e]}function qmmFormatThaiDate(date = new Date()) {
+  return new Intl.DateTimeFormat("th-TH", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+function ll({progress:e,onNavigate:t,onLesson:n}){let r=qmmExerciseAccuracy(e.exerciseCorrect,e.exerciseTotal);return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsxs)(`section`,{className:`welcome-row`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`div`,{className:`eyebrow`,children:[(0,X.jsx)(`span`,{className:`eyebrow-dot`}),qmmFormatThaiDate(new Date())]}),(0,X.jsxs)(`h1`,{children:[`สวัสดี, ${qmmGetActiveLocalUser()?.displayName||`ผู้เรียน`} `,(0,X.jsx)(`span`,{className:`wave`,children:`👋`})]}),(0,X.jsx)(`p`,{className:`page-intro`,children:`พร้อมเรียนรู้สิ่งใหม่วันนี้หรือยัง? มาเติบโตไปทีละก้าวด้วยกันนะ`})]}),(0,X.jsxs)(`button`,{className:`outline-button desktop-only`,children:[(0,X.jsx)(ul,{}),` ตารางการเรียน`]})]}),(0,X.jsxs)(`section`,{className:`hero-card`,children:[(0,X.jsxs)(`div`,{className:`hero-copy`,children:[(0,X.jsxs)(`div`,{className:`hero-label`,children:[(0,X.jsx)(ds,{size:15}),` เส้นทางการเรียนรู้ของคุณ`]}),(0,X.jsxs)(`h2`,{children:[`วางรากฐานพีชคณิต`,(0,X.jsx)(`br`,{}),(0,X.jsx)(`em`,{children:`ให้แน่นขึ้นอีกนิด`})]}),(0,X.jsx)(`p`,{children:`บทเรียนถัดไปของคุณรออยู่ ใช้เวลาเพียง 25 นาทีเพื่อทำความเข้าใจเรื่องสมการให้ชัดเจนขึ้น`}),(0,X.jsxs)(`button`,{className:`primary-button`,onClick:()=>n(Os[0]),children:[`เรียนต่อ `,(0,X.jsx)(to,{size:17})]})]}),(0,X.jsxs)(`div`,{className:`hero-art`,children:[(0,X.jsx)(`div`,{className:`orbit orbit-one`}),(0,X.jsx)(`div`,{className:`orbit orbit-two`}),(0,X.jsxs)(`div`,{className:`floating-card card-one`,children:[(0,X.jsx)(`span`,{children:`∑`}),(0,X.jsx)(`small`,{children:`เข้าใจ`})]}),(0,X.jsxs)(`div`,{className:`floating-card card-two`,children:[(0,X.jsx)(`span`,{children:`x²`}),(0,X.jsx)(`small`,{children:`ลองคิด`})]}),(0,X.jsxs)(`div`,{className:`hero-equation`,children:[(0,X.jsx)(ol,{formula:`2x + 3 = 11`,display:!0}),(0,X.jsx)(`span`,{children:`ให้เหตุผลกับทุกคำตอบ`})]})]})]}),(0,X.jsxs)(`div`,{className:`stats-grid`,children:[(0,X.jsx)(dl,{icon:(0,X.jsx)(Oo,{size:19}),label:`เรียนต่อเนื่อง`,value:`${e.streak} วัน`,note:e.streak?`คำนวณจากวันที่เรียนจริง`:`เริ่มเรียนเพื่อบันทึกสถิติ`,tone:`orange`}),(0,X.jsx)(dl,{icon:(0,X.jsx)(ps,{size:19}),label:`ความแม่นยำแบบฝึกหัด`,value:r===null?`—`:`${r}%`,note:e.exerciseTotal?`คำนวณจาก ${e.exerciseTotal} ข้อ`:`ยังไม่มีคำตอบที่บันทึก`,tone:`green`}),(0,X.jsx)(dl,{icon:(0,X.jsx)(ro,{size:19}),label:`บทเรียนที่จบแล้ว`,value:`${e.completedLessons.length} บท`,note:`จากทั้งหมด ${Os.length} บท`,tone:`purple`}),(0,X.jsx)(dl,{icon:(0,X.jsx)(Ds,{size:19}),label:`คะแนนสะสม`,value:`${e.xp.toLocaleString()} XP`,note:`สะสมจากบทเรียนและแบบฝึกหัดที่ทำเสร็จ`,tone:`yellow`})]}),(0,X.jsxs)(`div`,{className:`content-grid home-grid`,children:[(0,X.jsxs)(`div`,{className:`primary-column`,children:[(0,X.jsx)(fl,{title:`บทเรียนที่แนะนำให้เริ่ม`,link:`ดูบทเรียนทั้งหมด`,onLink:()=>t(`lessons`)}),(0,X.jsxs)(`div`,{className:`continue-card`,children:[(0,X.jsxs)(`div`,{className:`continue-cover indigo-cover`,children:[(0,X.jsx)(`span`,{className:`cover-formula`,children:(0,X.jsx)(ol,{formula:`2x + 3 = 11`,display:!0})}),(0,X.jsx)(`span`,{className:`cover-tag`,children:`พีชคณิต • ม.1`})]}),(0,X.jsxs)(`div`,{className:`continue-body`,children:[(0,X.jsx)(`div`,{className:`card-kicker`,children:`บทเรียนแนะนำ`}),(0,X.jsx)(`h3`,{children:Os[0].title}),(0,X.jsx)(`p`,{children:Os[0].subtitle}),(0,X.jsx)(`div`,{className:`progress-line`,children:(0,X.jsx)(`span`,{style:{width:`${qmmCompletionPercent(e.completedLessons.includes(Os[0].id)?1:0,1)}%`}})}),(0,X.jsxs)(`div`,{className:`progress-meta`,children:[(0,X.jsxs)(`span`,{children:[`เรียนไปแล้ว `,qmmCompletionPercent(e.completedLessons.includes(Os[0].id)?1:0,1),`%`]}),(0,X.jsxs)(`span`,{children:[Os[0].duration,` โดยประมาณ`]})]}),(0,X.jsxs)(`button`,{className:`text-button`,onClick:()=>n(Os[0]),children:[e.completedLessons.includes(Os[0].id)?`ทบทวนบทเรียน `:`เริ่มบทเรียน `,(0,X.jsx)(to,{size:15})]})]})]}),(0,X.jsx)(fl,{title:`บทเรียนแนะนำสำหรับคุณ`,link:`ดูทั้งหมด`,onLink:()=>t(`lessons`)}),(0,X.jsx)(`div`,{className:`lesson-mini-grid`,children:Os.slice(1,3).map(e=>(0,X.jsx)(gl,{lesson:e,onClick:()=>n(e)},e.id))})]}),(0,X.jsxs)(`aside`,{className:`secondary-column`,children:[(0,X.jsx)(pl,{progress:e}),(0,X.jsx)(ml,{onClick:()=>t(`tutor`)}),(0,X.jsx)(hl,{onNavigate:t})]})]})]})}function ul(){return(0,X.jsx)(`span`,{className:`calendar-icon`,children:`▦`})}function dl({icon:e,label:t,value:n,note:r,tone:i}){return(0,X.jsxs)(`div`,{className:`stat-card`,children:[(0,X.jsx)(`div`,{className:`stat-icon ${i}`,children:e}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{children:t}),(0,X.jsx)(`strong`,{children:n}),(0,X.jsx)(`small`,{children:r})]})]})}function fl({title:e,link:t,onLink:n}){return(0,X.jsxs)(`div`,{className:`section-heading`,children:[(0,X.jsx)(`h2`,{children:e}),t&&(0,X.jsxs)(`button`,{onClick:n,children:[t,` `,(0,X.jsx)(to,{size:14})]})]})}function pl({progress:e}){return(0,X.jsxs)(`div`,{className:`side-card progress-card`,children:[(0,X.jsxs)(`div`,{className:`side-card-heading`,children:[(0,X.jsx)(`h3`,{children:`ภาพรวมการเรียน`}),(0,X.jsx)(`button`,{"aria-label":`ตัวเลือก`,children:(0,X.jsx)(Eo,{size:18})})]}),(0,X.jsxs)(`div`,{className:`progress-ring-wrap`,children:[(0,X.jsx)(`div`,{className:`progress-ring`,style:{"--progress":`${Math.min(100,qmmCompletionPercent(e.completedLessons.length,Os.length))}%`},children:(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`strong`,{children:[Math.round(qmmCompletionPercent(e.completedLessons.length,Os.length)),`%`]}),(0,X.jsx)(`span`,{children:`โดยรวม`})]})}),(0,X.jsxs)(`div`,{className:`ring-legend`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`i`,{className:`legend-dot indigo-dot`}),(0,X.jsx)(`span`,{children:`บทเรียน`}),(0,X.jsx)(`strong`,{children:`${qmmCompletionPercent(e.completedLessons.length,Os.length)}%`})]}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`i`,{className:`legend-dot yellow-dot`}),(0,X.jsx)(`span`,{children:`แบบฝึกหัด`}),(0,X.jsxs)(`strong`,{children:[qmmExerciseAccuracy(e.exerciseCorrect,e.exerciseTotal)??`—`,qmmExerciseAccuracy(e.exerciseCorrect,e.exerciseTotal)===null?``:`%`]})]}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`i`,{className:`legend-dot gray-dot`}),(0,X.jsx)(`span`,{children:`แบบประเมิน`}),(0,X.jsxs)(`strong`,{children:[e.assessmentScore==null?`—`:e.assessmentScore,e.assessmentScore==null?``:`%`]})]})]})]}),(0,X.jsxs)(`div`,{className:`streak-strip`,children:[(0,X.jsx)(Oo,{size:16}),(0,X.jsxs)(`span`,{children:[e.streak?`คุณกำลังเรียนต่อเนื่อง `:`เริ่มเรียนเพื่อบันทึกสตรีค `,(0,X.jsxs)(`strong`,{children:[e.streak,` วัน`]})]}),(0,X.jsx)(bo,{size:15})]})]})}function ml({onClick:e}){return(0,X.jsxs)(`button`,{className:`tutor-shortcut`,onClick:e,children:[(0,X.jsx)(`div`,{className:`tutor-orb`,children:(0,X.jsx)(ds,{size:20})}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{children:`ติดขัดตรงไหนไหม?`}),(0,X.jsx)(`strong`,{children:`ถามติวเตอร์ AI ได้เลย`})]}),(0,X.jsx)(to,{size:17})]})}function hl({onNavigate:e}){return(0,X.jsxs)(`div`,{className:`side-card community-snippet`,children:[(0,X.jsxs)(`div`,{className:`side-card-heading`,children:[(0,X.jsx)(`h3`,{children:`พูดคุยล่าสุด`}),(0,X.jsx)(`button`,{onClick:()=>e(`community`),children:`ดูทั้งหมด`})]}),(0,X.jsxs)(`div`,{className:`snippet-post`,children:[(0,X.jsx)(`div`,{className:`avatar avatar-peach`,children:`พพ`}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`ทำไมเวลาย้ายข้างต้อง...`}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(`span`,{className:`tag-dot`}),` พีชคณิต `,(0,X.jsx)(`i`,{children:`•`}),` 12 นาทีที่แล้ว`]})]})]}),(0,X.jsxs)(`div`,{className:`snippet-post`,children:[(0,X.jsx)(`div`,{className:`avatar avatar-teal`,children:`ตน`}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`มีวิธีจำสูตรพีทาโกรัส...`}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(`span`,{className:`tag-dot teal-dot`}),` เรขาคณิต `,(0,X.jsx)(`i`,{children:`•`}),` 1 ชม.ที่แล้ว`]})]})]})]})}function gl({lesson:e,onClick:t}){return(0,X.jsxs)(`button`,{className:`lesson-mini-card`,onClick:t,children:[(0,X.jsx)(`div`,{className:`course-icon ${e.color}`,children:e.icon}),(0,X.jsxs)(`div`,{className:`lesson-mini-info`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`span`,{children:[e.grade,` • `,e.subject]}),(0,X.jsx)(fo,{size:15})]}),(0,X.jsx)(`h3`,{children:e.title}),(0,X.jsxs)(`p`,{children:[e.duration,` `,(0,X.jsx)(`i`,{children:`•`}),` `,e.level]})]}),(0,X.jsx)(bo,{size:17})]})}function _l({progress:e,onChapter:t,onBookmark:n}){let[r,i]=(0,l.useState)(`มัธยมศึกษาตอนต้น`),[a,o]=(0,l.useState)(`ทั้งหมด`),[s,c]=(0,l.useState)(`ทั้งหมด`),[u,d]=(0,l.useState)(`ทั้งหมด`),f=r===`มัธยมศึกษาตอนต้น`?[`ทั้งหมด`,`ม.1`,`ม.2`,`ม.3`]:[`ทั้งหมด`,`ม.4`,`ม.5`,`ม.6`],p=Gs.filter(e=>e.educationLevel===r&&Ys(e,a,s,u).length>0),m=e=>{i(e),o(`ทั้งหมด`),c(`ทั้งหมด`),d(`ทั้งหมด`)},h=t=>Math.round(t.lessons.filter(t=>e.completedLessons.includes(t.id)).length/t.lessons.length*100);return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(bl,{eyebrow:`หลักสูตรคณิตศาสตร์ไทย ม.1–ม.6`,title:`เส้นทางการเรียนรู้`,description:`เลือกช่วงชั้น ภาคเรียน และประเภทวิชา เพื่อค้นหาบทที่เหมาะกับคุณ พร้อมบทเรียนย่อยและแบบฝึกหัดที่เชื่อมต่อกัน`,action:(0,X.jsxs)(`div`,{className:`curriculum-summary`,children:[(0,X.jsxs)(`strong`,{children:[p.length,` บท`]}),(0,X.jsxs)(`span`,{children:[p.reduce((e,t)=>e+t.lessons.length,0),` บทเรียนย่อย • `,p.reduce((e,t)=>e+t.exercises.length,0),` แบบฝึกหัด`]})]})}),(0,X.jsxs)(`div`,{className:`curriculum-level-tabs`,children:[(0,X.jsxs)(`button`,{className:r===`มัธยมศึกษาตอนต้น`?`active`:``,onClick:()=>m(`มัธยมศึกษาตอนต้น`),children:[(0,X.jsx)(`span`,{className:`level-number`,children:`ม.1–3`}),(0,X.jsx)(`span`,{children:`มัธยมศึกษาตอนต้น`}),(0,X.jsx)(`small`,{children:`พื้นฐานแน่น ก่อนต่อยอด`})]}),(0,X.jsxs)(`button`,{className:r===`มัธยมศึกษาตอนปลาย`?`active`:``,onClick:()=>m(`มัธยมศึกษาตอนปลาย`),children:[(0,X.jsx)(`span`,{className:`level-number`,children:`ม.4–6`}),(0,X.jsx)(`span`,{children:`มัธยมศึกษาตอนปลาย`}),(0,X.jsx)(`small`,{children:`พื้นฐานและเพิ่มเติม`})]})]}),(0,X.jsxs)(`div`,{className:`curriculum-filter-bar`,children:[(0,X.jsxs)(`div`,{className:`curriculum-filter-group`,children:[(0,X.jsx)(`span`,{children:`ระดับชั้น`}),(0,X.jsx)(`div`,{children:f.map(e=>(0,X.jsx)(`button`,{className:a===e?`selected`:``,onClick:()=>o(e),children:e},e))})]}),(0,X.jsxs)(`div`,{className:`curriculum-filter-group`,children:[(0,X.jsx)(`span`,{children:`ภาคเรียน`}),(0,X.jsx)(`div`,{children:[`ทั้งหมด`,`ภาคเรียนที่ 1`,`ภาคเรียนที่ 2`].map(e=>(0,X.jsx)(`button`,{className:s===e?`selected`:``,onClick:()=>c(e),children:e===`ทั้งหมด`?e:e.replace(`ภาคเรียนที่ `,`ภาค `)},e))})]}),r===`มัธยมศึกษาตอนปลาย`&&(0,X.jsxs)(`div`,{className:`curriculum-filter-group course-group`,children:[(0,X.jsx)(`span`,{children:`ประเภทวิชา`}),(0,X.jsx)(`div`,{children:[`ทั้งหมด`,`คณิตศาสตร์พื้นฐาน`,`คณิตศาสตร์เพิ่มเติม`].map(e=>(0,X.jsx)(`button`,{className:u===e?`selected`:``,onClick:()=>d(e),children:e===`ทั้งหมด`?e:e.replace(`คณิตศาสตร์`,``)},e))})]})]}),(0,X.jsxs)(`div`,{className:`curriculum-results-heading`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:r}),(0,X.jsxs)(`span`,{children:[a===`ทั้งหมด`?``:` • ${a}`,u===`ทั้งหมด`?``:` • ${u}`]})]}),(0,X.jsxs)(`span`,{className:`verified-note`,children:[(0,X.jsx)(go,{size:13}),` เนื้อหามีสถานะการตรวจสอบ`]})]}),(0,X.jsx)(`div`,{className:`curriculum-card-grid`,children:p.map(r=>{let i=Ys(r,a,s,u)[0],o=h(r),c=e.bookmarks.includes(r.id);return(0,X.jsxs)(`article`,{className:`curriculum-card`,children:[(0,X.jsxs)(`button`,{className:`curriculum-card-cover ${r.color}-cover`,onClick:()=>t(r),children:[(0,X.jsx)(`span`,{className:`curriculum-card-formula`,children:(0,X.jsx)(ol,{formula:r.formula,display:!0})}),(0,X.jsx)(`span`,{className:`curriculum-card-level`,children:i?Xs(i):`หลายระดับ`})]}),(0,X.jsxs)(`div`,{className:`curriculum-card-body`,children:[(0,X.jsxs)(`div`,{className:`curriculum-card-meta`,children:[(0,X.jsx)(`span`,{children:r.category}),(0,X.jsx)(`button`,{onClick:()=>n(r.id),"aria-label":`บันทึกบท`,children:(0,X.jsx)(fo,{size:16,fill:c?`currentColor`:`none`})})]}),(0,X.jsxs)(`button`,{className:`curriculum-title-button`,onClick:()=>t(r),children:[(0,X.jsx)(`h3`,{children:r.title}),(0,X.jsx)(`small`,{children:r.englishTitle})]}),(0,X.jsx)(`p`,{children:r.intro}),(0,X.jsx)(`div`,{className:`curriculum-subtopics`,children:r.subtopics.map(e=>(0,X.jsx)(`span`,{children:e},e))}),(0,X.jsxs)(`div`,{className:`curriculum-card-foot`,children:[(0,X.jsxs)(`span`,{children:[(0,X.jsx)(wo,{size:13}),` `,r.estimatedMinutes,` นาที`]}),(0,X.jsx)(`span`,{children:o>0?`เรียนแล้ว ${o}%`:`${r.lessons.length} บทเรียน`})]}),(0,X.jsx)(`div`,{className:`progress-line slim`,children:(0,X.jsx)(`span`,{style:{width:`${o}%`}})})]})]},r.id)})}),p.length===0&&(0,X.jsxs)(`div`,{className:`empty-state`,children:[(0,X.jsx)(so,{size:25}),(0,X.jsx)(`h3`,{children:`ยังไม่มีบทในตัวกรองนี้`}),(0,X.jsx)(`p`,{children:`ลองเลือก “ทั้งหมด” หรือเปลี่ยนระดับชั้น/ประเภทวิชา`})]})]})}function vl({chapter:e,progress:t,onBack:n,onLesson:r,onPractice:i,onBookmark:a}){let o=e.lessons.filter(e=>t.completedLessons.includes(e.id)).length,s=t.bookmarks.includes(e.id);return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsxs)(`button`,{className:`back-button`,onClick:n,children:[(0,X.jsx)($a,{size:16}),` กลับไปยังเส้นทางการเรียนรู้`]}),(0,X.jsxs)(`div`,{className:`curriculum-chapter-head`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`div`,{className:`chip-row`,children:[(0,X.jsx)(`span`,{className:`chip chip-indigo`,children:e.educationLevel}),(0,X.jsx)(`span`,{className:`chip`,children:e.category}),(0,X.jsx)(`span`,{className:`chip chip-yellow`,children:e.offerings.length>1?`หลายรายวิชา`:e.offerings[0].course})]}),(0,X.jsx)(`h1`,{children:e.title}),(0,X.jsx)(`p`,{className:`english-title`,children:e.englishTitle}),(0,X.jsx)(`p`,{className:`page-intro`,children:e.intro})]}),(0,X.jsxs)(`div`,{className:`detail-actions`,children:[(0,X.jsx)(`button`,{className:`icon-button`,onClick:()=>a(e.id),"aria-label":`บันทึกบท`,children:s?(0,X.jsx)(lo,{size:20,fill:`currentColor`}):(0,X.jsx)(fo,{size:20})}),(0,X.jsxs)(`button`,{className:`primary-button`,onClick:i,children:[(0,X.jsx)(Yo,{size:16}),` ฝึกทำบทนี้`]})]})]}),(0,X.jsxs)(`div`,{className:`offering-strip`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{className:`offering-label`,children:`เส้นทางที่เปิดสอน`}),(0,X.jsx)(`strong`,{children:e.offerings.map(Xs).join(`  •  `)})]}),(0,X.jsxs)(`span`,{className:`source-status`,children:[(0,X.jsx)(go,{size:13}),` `,e.sourceStatus]})]}),(0,X.jsxs)(`div`,{className:`chapter-overview-grid`,children:[(0,X.jsxs)(`div`,{className:`chapter-overview-main`,children:[(0,X.jsxs)(`div`,{className:`chapter-progress-head`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{children:`ความคืบหน้าของบท`}),(0,X.jsxs)(`strong`,{children:[o,`/`,e.lessons.length,` บทเรียน`]})]}),(0,X.jsx)(ps,{size:20})]}),(0,X.jsx)(`div`,{className:`progress-line`,children:(0,X.jsx)(`span`,{style:{width:`${o/e.lessons.length*100}%`}})}),(0,X.jsxs)(`div`,{className:`chapter-objectives`,children:[(0,X.jsx)(`h2`,{children:`เมื่อเรียนจบบทนี้ คุณจะ...`}),e.objectives.map(e=>(0,X.jsxs)(`div`,{children:[(0,X.jsx)(go,{size:15}),` `,(0,X.jsx)(`span`,{children:e})]},e))]}),(0,X.jsxs)(`div`,{className:`chapter-prerequisite`,children:[(0,X.jsx)(`div`,{className:`callout-icon`,children:(0,X.jsx)(Fo,{size:17})}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`พื้นฐานที่ควรรู้`}),(0,X.jsx)(`p`,{children:e.prerequisites.join(` • `)})]})]})]}),(0,X.jsxs)(`aside`,{className:`chapter-meta-card`,children:[(0,X.jsx)(`div`,{className:`chapter-icon-large ${e.color}`,children:e.icon}),(0,X.jsx)(`span`,{children:`เวลาโดยประมาณ`}),(0,X.jsxs)(`strong`,{children:[e.estimatedMinutes,` นาที`]}),(0,X.jsx)(`span`,{children:`แบบฝึกหัดเริ่มต้น`}),(0,X.jsxs)(`strong`,{children:[e.exercises.length,` ข้อ`]}),(0,X.jsxs)(`button`,{className:`text-button`,onClick:i,children:[`เริ่มฝึกตอนนี้ `,(0,X.jsx)(to,{size:14})]})]})]}),(0,X.jsxs)(`div`,{className:`chapter-content-layout`,children:[(0,X.jsxs)(`section`,{className:`chapter-lessons-panel`,children:[(0,X.jsxs)(`div`,{className:`section-heading`,children:[(0,X.jsx)(`h2`,{children:`บทเรียนย่อยในบทนี้`}),(0,X.jsxs)(`span`,{className:`lesson-count-pill`,children:[e.lessons.length,` บทเรียน`]})]}),e.lessons.map(e=>{let n=t.completedLessons.includes(e.id);return(0,X.jsxs)(`button`,{className:`curriculum-lesson-row ${n?`done`:``}`,onClick:()=>r(e),children:[(0,X.jsx)(`span`,{className:`lesson-order`,children:n?(0,X.jsx)(go,{size:14}):String(e.order).padStart(2,`0`)}),(0,X.jsxs)(`span`,{className:`curriculum-lesson-copy`,children:[(0,X.jsx)(`strong`,{children:e.title}),(0,X.jsx)(`small`,{children:e.objective})]}),(0,X.jsx)(`span`,{className:`lesson-duration`,children:e.duration}),(0,X.jsx)(bo,{size:16})]},e.id)})]}),(0,X.jsxs)(`aside`,{className:`chapter-support-panel`,children:[(0,X.jsxs)(`div`,{className:`side-card`,children:[(0,X.jsxs)(`div`,{className:`side-card-heading`,children:[(0,X.jsx)(`h3`,{children:`แผนผังบท`}),(0,X.jsxs)(`span`,{children:[e.subtopics.length,` ช่วง`]})]}),e.subtopics.map((t,n)=>(0,X.jsxs)(`div`,{className:`chapter-map-row`,children:[(0,X.jsx)(`span`,{children:n+1}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:t}),(0,X.jsx)(`small`,{children:e.lessons[n]?.duration})]})]},t))]}),(0,X.jsxs)(`div`,{className:`source-card`,children:[(0,X.jsx)(Fo,{size:16}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`สถานะแหล่งอ้างอิง`}),(0,X.jsx)(`p`,{children:e.sourceStatus}),e.sourceReferences.length>0&&(0,X.jsxs)(`a`,{href:e.sourceReferences[0].url,target:`_blank`,rel:`noreferrer`,children:[`ดูเอกสารอ้างอิงจาก สสวท. `,(0,X.jsx)(to,{size:13})]})]})]})]})]})]})}function yl({chapter:e,lesson:t,progress:n,onBack:r,onLesson:i,onComplete:a,onPractice:o}){let s=n.completedLessons.includes(t.id),c=e.lessons.findIndex(e=>e.id===t.id),l=e.lessons[c-1],u=e.lessons[c+1];return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsxs)(`button`,{className:`back-button`,onClick:r,children:[(0,X.jsx)($a,{size:16}),` กลับไปยัง `,e.title]}),(0,X.jsxs)(`div`,{className:`curriculum-lesson-header`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`div`,{className:`eyebrow`,children:[(0,X.jsx)(`span`,{className:`eyebrow-dot`}),` `,e.title,` • บทที่ `,t.order]}),(0,X.jsx)(`h1`,{children:t.title}),(0,X.jsx)(`p`,{className:`page-intro`,children:t.objective})]}),(0,X.jsx)(`button`,{className:`primary-button ${s?`success-button`:``}`,onClick:a,children:s?(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(go,{size:16}),` เรียนจบแล้ว`]}):(0,X.jsxs)(X.Fragment,{children:[`ทำเครื่องหมายว่าเรียนจบ `,(0,X.jsx)(go,{size:16})]})})]}),(0,X.jsxs)(`div`,{className:`curriculum-lesson-layout`,children:[(0,X.jsxs)(`article`,{className:`curriculum-lesson-article`,children:[(0,X.jsxs)(`div`,{className:`curriculum-lesson-banner ${e.color}-cover`,children:[(0,X.jsx)(`span`,{className:`lesson-banner-label`,children:`เข้าใจแนวคิดก่อนใช้สูตร`}),(0,X.jsx)(`h2`,{children:e.title}),(0,X.jsx)(ol,{formula:t.workedExample.formula,display:!0})]}),(0,X.jsxs)(`div`,{className:`curriculum-lesson-section`,children:[(0,X.jsx)(`h2`,{children:`แนวคิดหลัก`}),(0,X.jsx)(`p`,{children:t.summary}),(0,X.jsxs)(`div`,{className:`lesson-definition-box`,children:[(0,X.jsx)(`strong`,{children:`คำจำกัดความและสัญลักษณ์`}),(0,X.jsx)(`p`,{children:t.definitions})]})]}),(0,X.jsxs)(`div`,{className:`curriculum-lesson-section`,children:[(0,X.jsx)(`h2`,{children:`พื้นฐานทางคณิตศาสตร์`}),(0,X.jsx)(`p`,{children:t.foundation}),(0,X.jsx)(`div`,{className:`formula-panel`,children:(0,X.jsx)(ol,{formula:t.workedExample.formula,display:!0})})]}),(0,X.jsxs)(`div`,{className:`curriculum-lesson-section`,children:[(0,X.jsx)(`h2`,{children:`ตัวอย่างทำไปพร้อมกัน`}),(0,X.jsxs)(`div`,{className:`worked-example-card`,children:[(0,X.jsx)(`span`,{className:`worked-label`,children:`โจทย์ตัวอย่าง`}),(0,X.jsx)(`h3`,{children:t.workedExample.problem}),(0,X.jsx)(`div`,{className:`worked-steps`,children:t.workedExample.steps.map((e,t)=>(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{children:t+1}),(0,X.jsx)(`p`,{children:e})]},e))}),(0,X.jsxs)(`div`,{className:`worked-answer`,children:[(0,X.jsx)(go,{size:16}),(0,X.jsxs)(`strong`,{children:[`คำตอบ: `,t.workedExample.answer]})]})]})]}),(0,X.jsxs)(`div`,{className:`curriculum-two-column`,children:[(0,X.jsxs)(`div`,{className:`curriculum-lesson-section compact-section`,children:[(0,X.jsx)(`h2`,{children:`วิธีคิดทางเลือก`}),(0,X.jsx)(`p`,{children:t.alternative})]}),(0,X.jsxs)(`div`,{className:`curriculum-lesson-section compact-section mistake-section`,children:[(0,X.jsxs)(`h2`,{children:[(0,X.jsx)(So,{size:17}),` ข้อผิดพลาดที่พบบ่อย`]}),(0,X.jsx)(`p`,{children:t.commonMistake})]})]}),(0,X.jsxs)(`div`,{className:`curriculum-lesson-section`,children:[(0,X.jsx)(`h2`,{children:`ลองเชื่อมกับชีวิตจริง`}),(0,X.jsx)(`p`,{children:t.application})]}),(0,X.jsxs)(`div`,{className:`lesson-summary-box`,children:[(0,X.jsx)(`div`,{className:`summary-icon`,children:(0,X.jsx)(Lo,{size:18})}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`สรุปบทเรียน`}),(0,X.jsx)(`p`,{children:e.summary})]})]}),(0,X.jsxs)(`div`,{className:`curriculum-lesson-footer`,children:[(0,X.jsxs)(`button`,{className:`secondary-nav-button`,disabled:!l,onClick:()=>l?i(l):r(),children:[(0,X.jsx)($a,{size:15}),` `,l?`บทก่อนหน้า`:`ต้นบท`]}),(0,X.jsxs)(`button`,{className:`primary-button`,onClick:o,children:[`ไปทำแบบฝึกหัด `,(0,X.jsx)(to,{size:16})]}),(0,X.jsxs)(`button`,{className:`secondary-nav-button`,disabled:!u,onClick:()=>u&&i(u),children:[u?`บทถัดไป`:`จบบท`,` `,(0,X.jsx)(to,{size:15})]})]})]}),(0,X.jsx)(`aside`,{className:`curriculum-lesson-aside`,children:(0,X.jsxs)(`div`,{className:`outline-sticky`,children:[(0,X.jsxs)(`div`,{className:`outline-heading`,children:[(0,X.jsx)(`strong`,{children:`ในบทเรียนนี้`}),(0,X.jsx)(`span`,{children:t.duration})]}),(0,X.jsx)(`div`,{className:`lesson-aside-progress`,children:(0,X.jsx)(`span`,{style:{width:`${s?100:38}%`}})}),[`แนวคิดหลัก`,`คำจำกัดความ`,`พื้นฐานทางคณิตศาสตร์`,`ตัวอย่างทำไปพร้อมกัน`,`วิธีคิดทางเลือก`,`สรุปบทเรียน`].map((e,t)=>(0,X.jsxs)(`div`,{className:t===0?`lesson-aside-item current`:`lesson-aside-item`,children:[(0,X.jsx)(`span`,{children:t+1}),e]},e)),(0,X.jsxs)(`div`,{className:`lesson-aside-next`,children:[(0,X.jsx)(`span`,{children:`ต่อไป`}),(0,X.jsx)(`strong`,{children:t.furtherLearning})]})]})})]})]})}function bl({eyebrow:e,title:t,description:n,action:r}){return(0,X.jsxs)(`section`,{className:`page-intro-row`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`div`,{className:`eyebrow`,children:[(0,X.jsx)(`span`,{className:`eyebrow-dot`}),` `,e]}),(0,X.jsx)(`h1`,{children:t}),(0,X.jsx)(`p`,{className:`page-intro`,children:n})]}),r]})}function xl({ lesson, progress, onBack, onComplete, onBookmark, onPractice }) {
+  const completed = progress.completedLessons.includes(lesson.id);
+  const saved = progress.bookmarks.includes(lesson.id);
+  const sections = Array.isArray(lesson.sections) ? lesson.sections : [];
+  const objectives = Array.isArray(lesson.objectives) ? lesson.objectives : [];
+
+  return (0, X.jsxs)(X.Fragment, {
+    children: [
+      (0, X.jsxs)("button", {
+        className: "back-button",
+        onClick: onBack,
+        children: [(0, X.jsx)($a, { size: 16 }), " กลับไปยังบทเรียนทั้งหมด"],
+      }),
+      (0, X.jsxs)("div", {
+        className: "lesson-detail-header",
+        children: [
+          (0, X.jsxs)("div", {
+            children: [
+              (0, X.jsxs)("div", {
+                className: "chip-row",
+                children: [
+                  (0, X.jsx)("span", { className: "chip chip-indigo", children: lesson.grade }),
+                  (0, X.jsx)("span", { className: "chip", children: lesson.subject }),
+                  (0, X.jsx)("span", { className: "chip chip-yellow", children: lesson.level }),
+                ],
+              }),
+              (0, X.jsx)("h1", { children: lesson.title }),
+              (0, X.jsx)("p", { className: "page-intro", children: lesson.subtitle }),
+            ],
+          }),
+          (0, X.jsxs)("div", {
+            className: "detail-actions",
+            children: [
+              (0, X.jsx)("button", {
+                className: "icon-button",
+                onClick: () => onBookmark(lesson.id),
+                "aria-label": "บันทึกบทเรียน",
+                children: saved
+                  ? (0, X.jsx)(lo, { size: 20, fill: "currentColor" })
+                  : (0, X.jsx)(fo, { size: 20 }),
+              }),
+              (0, X.jsx)("button", {
+                className: `primary-button ${completed ? "success-button" : ""}`,
+                onClick: onComplete,
+                children: completed
+                  ? (0, X.jsxs)(X.Fragment, { children: [(0, X.jsx)(go, { size: 17 }), " เรียนจบแล้ว"] })
+                  : (0, X.jsxs)(X.Fragment, { children: ["ทำเครื่องหมายว่าเรียนจบ ", (0, X.jsx)(go, { size: 17 })] }),
+              }),
+            ],
+          }),
+        ],
+      }),
+      (0, X.jsxs)("div", {
+        className: "lesson-detail-layout",
+        children: [
+          (0, X.jsxs)("article", {
+            className: "lesson-article",
+            children: [
+              (0, X.jsxs)("div", {
+                className: "lesson-hero-banner",
+                children: [
+                  (0, X.jsxs)("div", {
+                    children: [
+                      (0, X.jsx)("span", { className: "banner-overline", children: "ทำความเข้าใจ ไม่ใช่แค่จำ" }),
+                      (0, X.jsxs)("h2", {
+                        children: ["แนวคิดสำคัญ", (0, X.jsx)("br", {}), (0, X.jsx)("em", { children: lesson.title })],
+                      }),
+                      (0, X.jsx)("p", { children: lesson.subtitle }),
+                    ],
+                  }),
+                  (0, X.jsx)("div", {
+                    className: "lesson-formula-preview",
+                    children: (0, X.jsx)(ol, { formula: lesson.formula, display: true }),
+                  }),
+                ],
+              }),
+              (0, X.jsxs)("div", {
+                className: "article-section",
+                children: [
+                  (0, X.jsx)("h2", { children: "ภาพรวม" }),
+                  (0, X.jsx)("p", { children: lesson.description }),
+                  (0, X.jsx)("div", {
+                    className: "formula-panel",
+                    children: (0, X.jsx)(ol, { formula: lesson.formula, display: true }),
+                  }),
+                  (0, X.jsxs)("div", {
+                    className: "why-callout",
+                    children: [
+                      (0, X.jsx)("div", { className: "callout-icon", children: (0, X.jsx)(Lo, { size: 19 }) }),
+                      (0, X.jsxs)("div", {
+                        children: [
+                          (0, X.jsx)("strong", { children: "เป้าหมายของบทนี้" }),
+                          (0, X.jsx)("ul", {
+                            className: "lesson-objectives",
+                            children: objectives.map((objective) => (0, X.jsx)("li", { children: objective }, objective)),
+                          }),
+                        ],
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+              (0, X.jsxs)("div", {
+                className: "article-section",
+                children: [
+                  (0, X.jsx)("div", { className: "section-number", children: "01" }),
+                  (0, X.jsxs)("div", {
+                    children: [
+                      (0, X.jsx)("h2", { children: sections[0] || "แนวคิดหลัก" }),
+                      (0, X.jsx)("p", { children: lesson.description }),
+                      (0, X.jsx)("div", {
+                        className: "steps-row",
+                        children: sections.slice(0, 3).map((section, index) => (0, X.jsxs)("div", {
+                          className: "step-card",
+                          children: [
+                            (0, X.jsx)("span", { className: "step-number", children: index + 1 }),
+                            (0, X.jsx)("strong", { children: section }),
+                            (0, X.jsx)("p", {
+                              className: "lesson-step-copy",
+                              children: objectives[index] || lesson.subtitle,
+                            }),
+                          ],
+                        }, section)),
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+              (0, X.jsxs)("div", {
+                className: "mistake-panel",
+                children: [
+                  (0, X.jsx)("div", { className: "mistake-icon", children: (0, X.jsx)(So, { size: 20 }) }),
+                  (0, X.jsxs)("div", {
+                    children: [
+                      (0, X.jsx)("strong", { children: "ตรวจความเข้าใจ" }),
+                      (0, X.jsx)("p", {
+                        children: "ลองตรวจว่าขั้นตอนและคำตอบสอดคล้องกับข้อมูลและแนวคิดของบทนี้หรือไม่",
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+              (0, X.jsxs)("div", {
+                className: "article-footer-cta",
+                children: [
+                  (0, X.jsxs)("div", {
+                    children: [
+                      (0, X.jsx)("h3", { children: "พร้อมลองทำด้วยตัวเองแล้วหรือยัง?" }),
+                      (0, X.jsx)("p", { children: `ฝึกเรื่อง ${lesson.title} กับโจทย์สั้น ๆ 3 ข้อ` }),
+                    ],
+                  }),
+                  (0, X.jsxs)("button", {
+                    className: "primary-button",
+                    onClick: onPractice,
+                    children: ["ไปทำแบบฝึกหัด ", (0, X.jsx)(to, { size: 17 })],
+                  }),
+                ],
+              }),
+            ],
+          }),
+          (0, X.jsx)("aside", {
+            className: "lesson-outline",
+            children: (0, X.jsxs)("div", {
+              className: "outline-sticky",
+              children: [
+                (0, X.jsxs)("div", {
+                  className: "outline-heading",
+                  children: [
+                    (0, X.jsx)("strong", { children: "เนื้อหาในบทเรียน" }),
+                    (0, X.jsxs)("span", { children: [completed ? 100 : 0, "%"] }),
+                  ],
+                }),
+                (0, X.jsx)("div", {
+                  className: "outline-progress",
+                  children: (0, X.jsx)("span", { style: { width: `${completed ? 100 : 0}%` } }),
+                }),
+                (0, X.jsx)("div", {
+                  className: "outline-list",
+                  children: sections.map((section, index) => (0, X.jsxs)("button", {
+                    className: index === 0 ? "current" : "",
+                    children: [
+                      (0, X.jsx)("span", { children: index === 0 ? (0, X.jsx)(go, { size: 13 }) : index + 1 }),
+                      section,
+                      (0, X.jsx)(bo, { size: 14 }),
+                    ],
+                  }, section)),
+                }),
+                (0, X.jsxs)("div", {
+                  className: "prerequisite",
+                  children: [
+                    (0, X.jsxs)("span", { children: [(0, X.jsx)(Fo, { size: 14 }), " พื้นฐานที่ควรรู้"] }),
+                    (0, X.jsx)("p", { children: lesson.prerequisite }),
+                  ],
+                }),
+              ],
+            }),
+          }),
+        ],
+      }),
+    ],
+  });
+}
+function Sl({number:e,title:t,formula:n}){return(0,X.jsxs)(`div`,{className:`step-card`,children:[(0,X.jsx)(`span`,{className:`step-number`,children:e}),(0,X.jsx)(`strong`,{children:t}),(0,X.jsx)(ol,{formula:n,display:!0})]})}function qmmFormatElapsed(totalSeconds) {
+  const seconds = Math.max(0, Math.floor(Number(totalSeconds) || 0));
+  const minutesPart = String(Math.floor(seconds / 60)).padStart(2, "0");
+  const secondsPart = String(seconds % 60).padStart(2, "0");
+  return `${minutesPart}:${secondsPart}`;
+}
+function QmmAssessmentTimer() {
+  const [elapsed, setElapsed] = (0, l.useState)(0);
+
+  (0, l.useEffect)(() => {
+    const startedAt = Date.now();
+    const interval = window.setInterval(() => {
+      setElapsed(Math.floor((Date.now() - startedAt) / 1000));
+    }, 1000);
+    return () => window.clearInterval(interval);
+  }, []);
+
+  return qmmFormatElapsed(elapsed);
+}
+function Cl({progress:e,setProgress:t,onLessons:n}){let[r,i]=(0,l.useState)(!1),[a,o]=(0,l.useState)(!1),[s,c]=(0,l.useState)({}),u=ks,d=u.reduce((e,t,n)=>e+ +(s[n]===t.correct),0);return a?(0,X.jsx)(wl,{score:d,total:u.length,progress:e,onLessons:n,questions:u,answers:s}):r?(0,X.jsxs)(X.Fragment,{children:[(0,X.jsxs)(`div`,{className:`assessment-top`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`button`,{className:`back-button`,onClick:()=>i(!1),children:[(0,X.jsx)($a,{size:16}),` กลับ`]}),(0,X.jsx)(`h1`,{children:`แบบประเมินพื้นฐาน`})]}),(0,X.jsxs)(`div`,{className:`assessment-timer`,children:[(0,X.jsx)(wo,{size:17}),(0,X.jsx)(`span`,{children:`เวลาที่ใช้`}),(0,X.jsx)(`strong`,{children:(0,X.jsx)(QmmAssessmentTimer,{})})]})]}),(0,X.jsxs)(`div`,{className:`assessment-layout`,children:[(0,X.jsxs)(`aside`,{className:`assessment-nav`,children:[(0,X.jsx)(`strong`,{children:`คำถามทั้งหมด`}),(0,X.jsx)(`div`,{className:`question-grid`,children:u.map((e,t)=>(0,X.jsx)(`button`,{className:s[t]===void 0?``:`answered`,children:t+1},t))}),(0,X.jsxs)(`div`,{className:`answer-legend`,children:[(0,X.jsxs)(`span`,{children:[(0,X.jsx)(`i`,{className:`answered-dot`}),` ตอบแล้ว`]}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(`i`,{className:`empty-dot`}),` ยังไม่ตอบ`]})]})]}),(0,X.jsxs)(`section`,{className:`assessment-question-list`,children:[(0,X.jsxs)(`div`,{className:`assessment-progress-label`,children:[(0,X.jsx)(`span`,{children:`ความคืบหน้า`}),(0,X.jsxs)(`strong`,{children:[Object.keys(s).length,`/`,u.length,` ข้อ`]})]}),(0,X.jsx)(`div`,{className:`progress-line`,children:(0,X.jsx)(`span`,{style:{width:`${Object.keys(s).length/u.length*100}%`}})}),u.map((e,t)=>(0,X.jsxs)(`div`,{className:`assessment-question`,children:[(0,X.jsxs)(`div`,{className:`assessment-question-heading`,children:[(0,X.jsxs)(`span`,{children:[`คำถามที่ `,t+1]}),(0,X.jsx)(`span`,{className:`chip`,children:e.topic})]}),(0,X.jsx)(`h2`,{children:e.prompt}),(0,X.jsx)(`div`,{className:`assessment-options`,children:e.choices.map((e,n)=>(0,X.jsxs)(`button`,{className:s[t]===n?`selected`:``,onClick:()=>c(e=>({...e,[t]:n})),children:[(0,X.jsx)(`span`,{children:String.fromCharCode(65+n)}),e]},e))})]},e.id)),(0,X.jsxs)(`button`,{className:`primary-button submit-assessment`,disabled:Object.keys(s).length<u.length,onClick:()=>{o(!0),t(e=>({...e,assessmentScore:Math.round(d/u.length*100),xp:e.xp+d*20}))},children:[`ส่งคำตอบและดูผลลัพธ์ `,(0,X.jsx)(to,{size:17})]})]})]})]}):(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(bl,{eyebrow:`รู้จักจุดแข็งของตัวเอง`,title:`แบบประเมินพื้นฐาน`,description:`แบบประเมินสั้น ๆ เพื่อดูว่าคุณเข้าใจเรื่องใดแล้ว และเรื่องใดควรเสริมเพิ่มเติม`}),(0,X.jsxs)(`div`,{className:`assessment-intro-card`,children:[(0,X.jsxs)(`div`,{className:`assessment-illustration`,children:[(0,X.jsx)(`div`,{className:`check-circle`,children:(0,X.jsx)(zo,{size:36})}),(0,X.jsx)(`div`,{className:`small-equation eq-1`,children:`x + 5 = 12`}),(0,X.jsx)(`div`,{className:`small-equation eq-2`,children:`a² + b² = c²`}),(0,X.jsx)(`div`,{className:`small-equation eq-3`,children:`P(A)`})]}),(0,X.jsxs)(`div`,{className:`assessment-intro-copy`,children:[(0,X.jsx)(`span`,{className:`chip chip-indigo`,children:`Diagnostic • ม.3`}),(0,X.jsx)(`h2`,{children:`สำรวจพื้นฐานคณิตศาสตร์ของคุณ`}),(0,X.jsx)(`p`,{children:`ตอบตามความเข้าใจจริง ไม่ต้องกังวลเรื่องคะแนน ผลลัพธ์จะช่วยให้ CommuMathy แนะนำเส้นทางการเรียนที่เหมาะกับคุณ`}),(0,X.jsxs)(`div`,{className:`assessment-facts`,children:[(0,X.jsxs)(`span`,{children:[(0,X.jsx)(zo,{size:17}),(0,X.jsx)(`strong`,{children:`3 ข้อ`}),` คำถาม`]}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(wo,{size:17}),(0,X.jsx)(`strong`,{children:`ประมาณ 5 นาที`})]}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(ps,{size:17}),(0,X.jsx)(`strong`,{children:`2 หัวข้อ`}),` สำคัญ`]})]}),(0,X.jsxs)(`button`,{className:`primary-button large-button`,onClick:()=>i(!0),children:[`เริ่มทำแบบประเมิน `,(0,X.jsx)(to,{size:17})]}),(0,X.jsxs)(`small`,{className:`privacy-note`,children:[(0,X.jsx)(Fo,{size:13}),` ผลการทำแบบประเมินจะบันทึกไว้ในอุปกรณ์นี้เท่านั้น`]})]})]})]})}function qmmBuildTopicScores(questions = [], answers = {}) {
+  const groups = new Map();
+
+  questions.forEach((question, index) => {
+    const label = question.topic === "สมการเชิงเส้น"
+      ? "สมการและพีชคณิต"
+      : question.topic || "อื่น ๆ";
+    const group = groups.get(label) ?? { label, total: 0, correct: 0 };
+    group.total += 1;
+    if (answers[index] === question.correct) group.correct += 1;
+    groups.set(label, group);
+  });
+
+  return [...groups.values()].map((group) => ({
+    ...group,
+    score: Math.round((group.correct / group.total) * 100),
+  }));
+}
+function wl({ score, total, progress, onLessons, questions = [], answers = {} }) {
+  const percentage = total > 0 ? Math.round((score / total) * 100) : 0;
+  const topicScores = qmmBuildTopicScores(questions, answers);
+  const weakestTopic = topicScores
+    .filter((topic) => topic.score < 100)
+    .sort((left, right) => left.score - right.score)[0];
+  const recommendationTitle = weakestTopic
+    ? `ทบทวน${weakestTopic.label}`
+    : "ต่อยอดด้วยโจทย์ที่ท้าทายขึ้น";
+  const recommendationCopy = weakestTopic
+    ? `ทำได้ ${weakestTopic.correct} จาก ${weakestTopic.total} ข้อในหัวข้อนี้ ลองทบทวนบทเรียนที่เกี่ยวข้องก่อนทำโจทย์ถัดไป`
+    : "คุณตอบถูกทุกข้อในแบบประเมินนี้ ลองต่อยอดด้วยโจทย์ที่ท้าทายขึ้น";
+
+  return (0, X.jsxs)(X.Fragment, {
+    children: [
+      (0, X.jsx)(bl, {
+        eyebrow: "ผลการประเมินของคุณ",
+        title: "เห็นภาพชัดขึ้น แล้วไปต่อด้วยกัน",
+        description: "ผลลัพธ์นี้เป็นข้อมูลเบื้องต้นจากคำตอบชุดนี้ ใช้เป็นแนวทางวางแผนการเรียน ไม่ใช่การตัดสินความสามารถ",
+        action: (0, X.jsxs)("button", {
+          className: "outline-button",
+          onClick: onLessons,
+          children: [(0, X.jsx)(so, { size: 16 }), " ดูบทเรียนแนะนำ"],
+        }),
+      }),
+      (0, X.jsxs)("div", {
+        className: "results-summary",
+        children: [
+          (0, X.jsxs)("div", {
+            className: "result-score",
+            children: [
+              (0, X.jsxs)("div", {
+                className: "score-circle",
+                children: [
+                  (0, X.jsxs)("strong", { children: [percentage, "%"] }),
+                  (0, X.jsx)("span", { children: "คะแนนรวม" }),
+                ],
+              }),
+              (0, X.jsxs)("div", {
+                children: [
+                  (0, X.jsxs)("span", {
+                    className: "result-kicker",
+                    children: ["ทำได้ ", score, " จาก ", total, " ข้อ"],
+                  }),
+                  (0, X.jsx)("h2", {
+                    children: percentage >= 70
+                      ? "พื้นฐานกำลังแข็งแรง!"
+                      : "เรามาหาจุดที่ต้องเสริมกัน",
+                  }),
+                  (0, X.jsx)("p", {
+                    children: "ทุกคำตอบช่วยให้เราเข้าใจเส้นทางของคุณมากขึ้น",
+                  }),
+                ],
+              }),
+            ],
+          }),
+          (0, X.jsxs)("div", {
+            className: "result-stats",
+            children: [
+              (0, X.jsxs)("div", {
+                children: [
+                  (0, X.jsx)("strong", { children: score }),
+                  (0, X.jsx)("span", { children: "ตอบถูก" }),
+                ],
+              }),
+              (0, X.jsxs)("div", {
+                children: [
+                  (0, X.jsx)("strong", { children: total - score }),
+                  (0, X.jsx)("span", { children: "ควรทบทวน" }),
+                ],
+              }),
+              (0, X.jsxs)("div", {
+                children: [
+                  (0, X.jsx)("strong", { children: progress.streak }),
+                  (0, X.jsx)("span", { children: "วันต่อเนื่อง" }),
+                ],
+              }),
+            ],
+          }),
+        ],
+      }),
+      (0, X.jsxs)("div", {
+        className: "result-grid",
+        children: [
+          (0, X.jsxs)("div", {
+            className: "result-panel",
+            children: [
+              (0, X.jsxs)("div", {
+                className: "panel-heading",
+                children: [
+                  (0, X.jsx)("h3", { children: "ภาพรวมรายหัวข้อ" }),
+                  (0, X.jsx)("span", { children: "จากแบบประเมินครั้งนี้" }),
+                ],
+              }),
+              topicScores.map((topic) => (0, X.jsxs)("div", {
+                className: "topic-result",
+                children: [
+                  (0, X.jsxs)("div", {
+                    children: [
+                      (0, X.jsx)("span", { children: topic.label }),
+                      (0, X.jsxs)("strong", { children: [topic.score, "%"] }),
+                    ],
+                  }),
+                  (0, X.jsx)("div", {
+                    className: "progress-line",
+                    children: (0, X.jsx)("span", {
+                      style: { width: `${topic.score}%` },
+                    }),
+                  }),
+                ],
+              }, topic.label)),
+            ],
+          }),
+          (0, X.jsxs)("div", {
+            className: "result-panel recommendation-panel",
+            children: [
+              (0, X.jsx)("div", {
+                className: "recommendation-icon",
+                children: (0, X.jsx)(ds, { size: 18 }),
+              }),
+              (0, X.jsxs)("div", {
+                children: [
+                  (0, X.jsx)("span", {
+                    className: "result-kicker",
+                    children: "แนะนำสำหรับคุณ",
+                  }),
+                  (0, X.jsx)("h3", { children: recommendationTitle }),
+                  (0, X.jsx)("p", { children: recommendationCopy }),
+                  (0, X.jsxs)("button", {
+                    className: "text-button",
+                    onClick: onLessons,
+                    children: ["เปิดเส้นทางแนะนำ ", (0, X.jsx)(to, { size: 15 })],
+                  }),
+                ],
+              }),
+            ],
+          }),
+        ],
+      }),
+    ],
+  });
+}
+const qmmGeminiDefaultModel="gemini-3.8-flash";
+const qmmGeminiModels=[{"id":"gemini-3.8-flash","label":"Gemini 3.8 Flash • แนะนำ"},{"id":"gemini-3.5-flash-lite","label":"Gemini 3.5 Flash-Lite • เร็วและประหยัด"}];
+function qmmNormalizeGeminiModel(model) {
+  const id = String(model ?? "").trim();
+  return qmmGeminiModels.some((option) => option.id === id) ? id : qmmGeminiDefaultModel;
+}
+function qmmReadGeminiStore(storage) {
+  try {
+    const parsed = JSON.parse(storage?.getItem("commumathy-gemini") || "{}");
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+function qmmReadGeminiConfig(profileId, storage = globalThis.localStorage) {
+  const entry = qmmReadGeminiStore(storage)[profileId];
+  const apiKey = typeof entry?.apiKey === "string" ? entry.apiKey.trim() : "";
+  return apiKey ? { apiKey, model: qmmNormalizeGeminiModel(entry.model) } : null;
+}
+function qmmWriteGeminiConfig(profileId, config, storage = globalThis.localStorage) {
+  const store = qmmReadGeminiStore(storage);
+  const apiKey = String(config?.apiKey ?? "").trim();
+  if (apiKey) store[profileId] = { apiKey, model: qmmNormalizeGeminiModel(config.model) };
+  else delete store[profileId];
+  storage.setItem("commumathy-gemini", JSON.stringify(store));
+  return apiKey ? store[profileId] : null;
+}
+function qmmBuildGeminiContents(messages = [], image = null) {
+  const contents = [];
+  for (const message of Array.isArray(messages) ? messages.slice(-24) : []) {
+    const text = typeof message?.text === "string" ? message.text.trim() : "";
+    // Demo answers and error notices are shown locally but are not part of the conversation.
+    if (!text || message.local) continue;
+    const role = message.role === "tutor" ? "model" : "user";
+    if (!contents.length && role === "model") continue;
+    const previous = contents[contents.length - 1];
+    if (previous?.role === role) previous.parts[0].text += `\n\n${text}`;
+    else contents.push({ role, parts: [{ text }] });
+  }
+  if (contents[contents.length - 1]?.role !== "user") return [];
+  if (image?.data && image?.mimeType) {
+    contents[contents.length - 1].parts.push({ inlineData: { mimeType: image.mimeType, data: image.data } });
+  }
+  return contents;
+}
+function qmmBuildGeminiRequest(messages, { image = null, grade = "", model = qmmGeminiDefaultModel } = {}) {
+  const level = grade ? `ผู้เรียนอยู่ชั้น ${grade} ` : "";
+  // Thinking tokens count against maxOutputTokens, so keep the cap roomy and, on
+  // 3.8 Flash (default "medium"), think less so a tutoring reply is quick and never empty.
+  const generationConfig = { maxOutputTokens: 8192 };
+  if (qmmNormalizeGeminiModel(model) === "gemini-3.8-flash") generationConfig.thinkingConfig = { thinkingLevel: "low" };
+  return {
+    systemInstruction: {
+      parts: [{
+        text: [
+          "คุณคือ Mathy Tutor ติวเตอร์คณิตศาสตร์ภาษาไทยของแอป CommuMathy",
+          `${level}อธิบายเป็นขั้นตอนสั้น ๆ ด้วยภาษาที่เป็นมิตร ชวนผู้เรียนคิดเองก่อนเฉลย และให้คำใบ้แทนคำตอบเมื่อผู้เรียนขอคำใบ้`,
+          "ถ้าข้อมูลในโจทย์ไม่พอหรืออ่านรูปไม่ชัด ให้บอกตรง ๆ และถามกลับ อย่าเดาคำตอบ",
+          "ตอบเป็นข้อความธรรมดา ไม่ใช้ Markdown หรือ LaTeX เขียนสมการแบบ 2x + 3 = 11 และใช้สัญลักษณ์ เช่น ² √ π ≤ ≥ ได้",
+        ].join("\n"),
+      }],
+    },
+    contents: qmmBuildGeminiContents(messages, image),
+    generationConfig,
+  };
+}
+function qmmGeminiError(status, payload) {
+  const detail = payload?.error;
+  const reasons = (Array.isArray(detail?.details) ? detail.details : []).map((item) => item?.reason);
+  const message = String(detail?.message || "");
+  const failure = (code, text) => Object.assign(new Error(text), { code, status });
+  if (reasons.includes("API_KEY_INVALID") || /api key not valid/i.test(message)) {
+    return failure("auth", "API key ไม่ถูกต้อง กรุณาตรวจสอบแล้ววางใหม่อีกครั้ง");
+  }
+  if (status === 401 || status === 403) {
+    return failure("auth", "API key นี้ไม่มีสิทธิ์ใช้ Gemini API กรุณาตรวจสอบ key ใน Google AI Studio");
+  }
+  if (status === 404) return failure("model", "ไม่พบโมเดลที่เลือก ลองเปลี่ยนโมเดลในหน้าการเชื่อมต่อ Gemini");
+  if (status === 429) return failure("quota", "ใช้งาน Gemini เกินโควตาชั่วคราว กรุณารอสักครู่แล้วลองใหม่");
+  if (status >= 500) return failure("server", "เซิร์ฟเวอร์ Gemini ขัดข้องชั่วคราว กรุณาลองใหม่อีกครั้ง");
+  return failure("request", message ? `Gemini แจ้งข้อผิดพลาด: ${message}` : `Gemini แจ้งข้อผิดพลาด (HTTP ${status})`);
+}
+function qmmReadGeminiReply(payload) {
+  const safetyBlock = "Gemini ไม่ตอบคำถามนี้เพราะติดตัวกรองความปลอดภัย ลองถามใหม่ด้วยถ้อยคำอื่น";
+  if (payload?.promptFeedback?.blockReason) throw Object.assign(new Error(safetyBlock), { code: "blocked" });
+  const candidate = payload?.candidates?.[0];
+  const text = (candidate?.content?.parts ?? [])
+    .filter((part) => !part?.thought)
+    .map((part) => (typeof part?.text === "string" ? part.text : ""))
+    .join("")
+    .trim();
+  if (text) {
+    return candidate.finishReason === "MAX_TOKENS"
+      ? `${text}…\n\n(คำตอบยาวเกินกำหนด พิมพ์ “ต่อ” เพื่อให้อธิบายต่อได้ค่ะ)`
+      : text;
+  }
+  if (candidate?.finishReason === "SAFETY") throw Object.assign(new Error(safetyBlock), { code: "blocked" });
+  if (candidate?.finishReason === "MAX_TOKENS") {
+    throw Object.assign(new Error("Gemini ใช้เวลาคิดนานเกินกำหนดจนยังไม่ได้ตอบ ลองแบ่งโจทย์ให้สั้นลงแล้วถามใหม่"), { code: "empty" });
+  }
+  throw Object.assign(new Error("Gemini ไม่ได้ส่งคำตอบกลับมา ลองส่งใหม่อีกครั้ง"), { code: "empty" });
+}
+async function qmmFetchGemini(fetchImpl, url, init) {
+  let response;
+  try {
+    response = await fetchImpl(url, init);
+  } catch {
+    throw Object.assign(new Error("เชื่อมต่อ Gemini ไม่ได้ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่"), { code: "network" });
+  }
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw qmmGeminiError(response.status, payload);
+  return payload;
+}
+async function qmmCallGemini({ apiKey, model, messages, image = null, grade = "", fetchImpl = globalThis.fetch }) {
+  const body = qmmBuildGeminiRequest(messages, { image, grade, model });
+  if (!body.contents.length) throw Object.assign(new Error("ยังไม่มีคำถามให้ส่งถึง Gemini"), { code: "empty" });
+  const payload = await qmmFetchGemini(
+    fetchImpl,
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(qmmNormalizeGeminiModel(model))}:generateContent`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+      body: JSON.stringify(body),
+    },
+  );
+  return qmmReadGeminiReply(payload);
+}
+async function qmmVerifyGeminiKey({ apiKey, model, fetchImpl = globalThis.fetch }) {
+  await qmmFetchGemini(
+    fetchImpl,
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(qmmNormalizeGeminiModel(model))}`,
+    { method: "GET", headers: { "x-goog-api-key": apiKey } },
+  );
+  return true;
+}
+function qmmGeminiImageAccepted(file) {
+  const size = Number(file?.size);
+  return Boolean(
+    file
+      && ["image/jpeg", "image/png", "image/webp"].includes(file.type)
+      && Number.isFinite(size)
+      && size > 0
+      && size <= 15 * 1024 * 1024,
+  );
+}
+function qmmPrepareGeminiImage(file) {
+  if (!qmmGeminiImageAccepted(file)) {
+    return Promise.reject(new Error("แนบได้เฉพาะรูป JPG, PNG หรือ WebP ขนาดไม่เกิน 15 MB"));
+  }
+
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("ไฟล์นี้ไม่ใช่รูปภาพที่รองรับ"));
+    };
+    image.onload = () => {
+      URL.revokeObjectURL(url);
+      const originalWidth = image.naturalWidth || image.width;
+      const originalHeight = image.naturalHeight || image.height;
+      // Large enough to read handwriting, small enough to keep the request quick.
+      const scale = Math.min(1, 1600 / Math.max(originalWidth, originalHeight));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(originalWidth * scale));
+      canvas.height = Math.max(1, Math.round(originalHeight * scale));
+      const context = canvas.getContext("2d");
+      if (!context) {
+        reject(new Error("ไม่สามารถเตรียมรูปภาพได้"));
+        return;
+      }
+      context.fillStyle = "#ffffff";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      try {
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+        resolve({ name: file.name || "รูปโจทย์", mimeType: "image/jpeg", data: dataUrl.slice(dataUrl.indexOf(",") + 1) });
+      } catch {
+        reject(new Error("ไม่สามารถเตรียมรูปภาพได้"));
+      }
+    };
+    image.src = url;
+  });
+}
+function QmmGeminiConnectPanel({ config, onSave, onDisconnect, onClose }) {
+  const [apiKey, setApiKey] = (0, l.useState)(config?.apiKey ?? "");
+  const [model, setModel] = (0, l.useState)(config?.model ?? qmmGeminiDefaultModel);
+  const [status, setStatus] = (0, l.useState)({ state: "idle", text: "" });
+  const checking = status.state === "checking";
+
+  const save = async (event) => {
+    event.preventDefault();
+    const key = apiKey.trim();
+    if (!key) {
+      setStatus({ state: "error", text: "กรุณาวาง Gemini API key ก่อน" });
+      return;
+    }
+    setStatus({ state: "checking", text: "กำลังทดสอบการเชื่อมต่อกับ Gemini…" });
+    try {
+      await qmmVerifyGeminiKey({ apiKey: key, model });
+      onSave({ apiKey: key, model });
+    } catch (error) {
+      setStatus({ state: "error", text: error instanceof Error ? error.message : "ทดสอบการเชื่อมต่อไม่สำเร็จ" });
+    }
+  };
+
+  return (0, X.jsxs)("form", {
+    className: "gemini-connect-card",
+    onSubmit: save,
+    children: [
+      (0, X.jsxs)("div", {
+        className: "gemini-connect-heading",
+        children: [
+          (0, X.jsx)("div", { className: "tutor-avatar", children: (0, X.jsx)(ds, { size: 19 }) }),
+          (0, X.jsxs)("div", {
+            children: [
+              (0, X.jsx)("h2", { children: "เชื่อมต่อ Google Gemini" }),
+              (0, X.jsx)("p", { children: "วาง API key จาก Google AI Studio เพื่อให้ Mathy Tutor ตอบด้วย Gemini แทนคำตอบตัวอย่าง" }),
+            ],
+          }),
+          (0, X.jsx)("button", {
+            type: "button",
+            className: "icon-button",
+            onClick: onClose,
+            "aria-label": "ปิดหน้าการเชื่อมต่อ Gemini",
+            children: (0, X.jsx)(Ts, { size: 17 }),
+          }),
+        ],
+      }),
+      (0, X.jsxs)("div", {
+        className: "gemini-connect-fields",
+        children: [
+          (0, X.jsxs)("label", {
+            children: [
+              "Gemini API key",
+              (0, X.jsx)("input", {
+                type: "password",
+                value: apiKey,
+                onChange: (event) => setApiKey(event.target.value),
+                placeholder: "วาง API key ที่นี่",
+                autoComplete: "off",
+                spellCheck: false,
+                disabled: checking,
+              }),
+            ],
+          }),
+          (0, X.jsxs)("label", {
+            children: [
+              "โมเดล",
+              (0, X.jsx)("select", {
+                value: model,
+                onChange: (event) => setModel(event.target.value),
+                disabled: checking,
+                children: qmmGeminiModels.map((option) => (0, X.jsx)("option", { value: option.id, children: option.label }, option.id)),
+              }),
+            ],
+          }),
+        ],
+      }),
+      (0, X.jsx)("a", {
+        className: "gemini-connect-link",
+        href: "https://aistudio.google.com/apikey",
+        target: "_blank",
+        rel: "noopener noreferrer",
+        children: "ยังไม่มี key? สร้างได้ที่ Google AI Studio",
+      }),
+      status.text && (0, X.jsx)("p", {
+        className: `gemini-connect-status ${status.state}`,
+        role: status.state === "error" ? "alert" : "status",
+        children: status.text,
+      }),
+      (0, X.jsxs)("div", {
+        className: "gemini-connect-actions",
+        children: [
+          config && (0, X.jsx)("button", {
+            type: "button",
+            className: "outline-button",
+            onClick: onDisconnect,
+            disabled: checking,
+            children: "ยกเลิกการเชื่อมต่อ",
+          }),
+          (0, X.jsx)("button", {
+            type: "submit",
+            className: "primary-button",
+            disabled: checking,
+            children: checking ? "กำลังทดสอบ…" : "บันทึกและเชื่อมต่อ",
+          }),
+        ],
+      }),
+      (0, X.jsxs)("small", {
+        className: "privacy-note",
+        children: [
+          (0, X.jsx)(Fo, { size: 13 }),
+          " key จะถูกเก็บในเบราว์เซอร์นี้สำหรับโปรไฟล์นี้เท่านั้น และส่งตรงถึง Google เมื่อถามติวเตอร์ ไม่ควรบันทึก key บนเครื่องที่ใช้ร่วมกับผู้อื่น",
+        ],
+      }),
+    ],
+  });
+}
+function Tl({ messages, setMessages }) {
+  const profileId = qmmGetActiveLocalUser()?.id || "device";
+  const [draft, setDraft] = (0, l.useState)("");
+  const [attachment, setAttachment] = (0, l.useState)(null);
+  const [attachmentError, setAttachmentError] = (0, l.useState)("");
+  const [gemini, setGemini] = (0, l.useState)(() => qmmReadGeminiConfig(profileId));
+  const [panelOpen, setPanelOpen] = (0, l.useState)(false);
+  const [sending, setSending] = (0, l.useState)(false);
+  const fileInput = (0, l.useRef)(null);
+  const connected = Boolean(gemini?.apiKey);
+  const userInitials = qmmLocalUserInitials();
+  const modelLabel = connected ? `Gemini • ${gemini.model}` : "โหมดสาธิต • เชื่อมต่อ Gemini";
+  const clockTime = () => new Date().toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+
+  const saveGemini = (value) => {
+    try {
+      setGemini(qmmWriteGeminiConfig(profileId, value));
+    } catch {
+      throw new Error("บันทึก key ในเบราว์เซอร์นี้ไม่ได้ (อาจเปิดโหมดส่วนตัวอยู่)");
+    }
+    setPanelOpen(false);
+  };
+  const disconnectGemini = () => {
+    try {
+      qmmWriteGeminiConfig(profileId, null);
+    } catch {}
+    setGemini(null);
+    setPanelOpen(false);
+  };
+
+  const attachImage = async (event) => {
+    const input = event.currentTarget;
+    const file = input.files && input.files[0];
+    if (!file) return;
+    setAttachmentError("");
+    try {
+      setAttachment(await qmmPrepareGeminiImage(file));
+    } catch (error) {
+      setAttachment(null);
+      setAttachmentError(error instanceof Error ? error.message : "แนบรูปไม่สำเร็จ");
+    } finally {
+      input.value = "";
+    }
+  };
+
+  const send = async (value = draft) => {
+    const question = value.trim() || (attachment ? "ช่วยดูโจทย์จากรูปนี้ให้หน่อยค่ะ" : "");
+    if (!question || sending) return;
+    const image = attachment;
+    const userMessage = { role: "user", text: image ? `${question}\n📎 ${image.name}` : question, time: clockTime() };
+    const history = [...messages, userMessage];
+    setMessages(history);
+    setDraft("");
+    setAttachment(null);
+    setAttachmentError("");
+
+    if (!connected) {
+      setMessages((current) => [...current, { role: "tutor", text: El(question), time: clockTime(), local: true }]);
+      return;
+    }
+
+    setSending(true);
+    try {
+      const text = await qmmCallGemini({
+        apiKey: gemini.apiKey,
+        model: gemini.model,
+        // The starter chat (nl) is a sample the student never typed; keep it out of the prompt.
+        messages: history.filter((message) => !nl.some((sample) => sample.role === message.role && sample.text === message.text)),
+        image,
+        grade: qmmGetActiveLocalUser()?.grade || "",
+      });
+      setMessages((current) => [...current, { role: "tutor", text, time: clockTime() }]);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : "เชื่อมต่อ Gemini ไม่สำเร็จ";
+      setMessages((current) => [...current, { role: "tutor", text: `ขออภัยค่ะ ${reason}`, time: clockTime(), local: true }]);
+      if (error?.code === "auth" || error?.code === "model") setPanelOpen(true);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (0, X.jsxs)(X.Fragment, {
+    children: [
+      (0, X.jsx)(bl, {
+        eyebrow: "ผู้ช่วยคิดไปด้วยกัน",
+        title: "ติวเตอร์คณิตศาสตร์ AI",
+        description: "ถามได้ทุกเรื่อง ค่อย ๆ คิดไปทีละขั้น และเลือกขอคำใบ้แทนคำตอบได้",
+        action: (0, X.jsxs)("button", {
+          type: "button",
+          className: `demo-badge gemini-badge-button ${connected ? "model-badge" : ""}`,
+          onClick: () => setPanelOpen((open) => !open),
+          "aria-expanded": panelOpen,
+          children: [(0, X.jsx)("span", { className: "status-dot" }), " ", modelLabel],
+        }),
+      }),
+      panelOpen && (0, X.jsx)(QmmGeminiConnectPanel, {
+        config: gemini,
+        onSave: saveGemini,
+        onDisconnect: disconnectGemini,
+        onClose: () => setPanelOpen(false),
+      }),
+      (0, X.jsxs)("div", {
+        className: "tutor-layout",
+        children: [
+          (0, X.jsxs)("aside", {
+            className: "tutor-history",
+            children: [
+              (0, X.jsxs)("button", {
+                className: "primary-button new-chat",
+                onClick: () => setMessages(nl),
+                children: [(0, X.jsx)(Zo, { size: 17 }), " เริ่มบทสนทนาใหม่"],
+              }),
+              (0, X.jsx)("div", { className: "history-label", children: "ประวัติการคุย" }),
+              ["ทำความเข้าใจเรื่องย้ายข้าง", "โจทย์พีทาโกรัส", "ทบทวนก่อนสอบ ม.3"].map((title, index) => (0, X.jsxs)("button", {
+                className: `history-item ${index === 0 ? "active" : ""}`,
+                children: [(0, X.jsx)(Uo, { size: 16 }), (0, X.jsx)("span", { children: title }), (0, X.jsx)(Eo, { size: 15 })],
+              }, title)),
+              (0, X.jsxs)("div", {
+                className: "tutor-history-footer",
+                children: [
+                  (0, X.jsx)(Fo, { size: 15 }),
+                  (0, X.jsxs)("div", {
+                    children: [
+                      (0, X.jsx)("span", {
+                        children: connected
+                          ? "เชื่อมต่อ Gemini แล้ว คำถามจะถูกส่งตรงถึง Google ด้วย key ของคุณ"
+                          : "คำตอบในโหมดสาธิตเป็นตัวอย่าง เชื่อมต่อ Gemini เพื่อให้ AI ตอบจริง",
+                      }),
+                      (0, X.jsx)("button", {
+                        type: "button",
+                        className: "text-button",
+                        onClick: () => setPanelOpen(true),
+                        children: connected ? "จัดการการเชื่อมต่อ" : "เชื่อมต่อ Gemini",
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            ],
+          }),
+          (0, X.jsxs)("section", {
+            className: "chat-window",
+            children: [
+              (0, X.jsxs)("div", {
+                className: "chat-header",
+                children: [
+                  (0, X.jsx)("div", { className: "tutor-avatar", children: (0, X.jsx)(mo, { size: 21 }) }),
+                  (0, X.jsxs)("div", {
+                    children: [
+                      (0, X.jsx)("strong", { children: "Mathy Tutor" }),
+                      (0, X.jsxs)("span", {
+                        children: [(0, X.jsx)("span", { className: "status-dot" }), " ", connected ? `Gemini • ${gemini.model}` : "โหมดสาธิต"],
+                      }),
+                    ],
+                  }),
+                  (0, X.jsx)("button", { className: "icon-button", children: (0, X.jsx)(Eo, { size: 18 }) }),
+                ],
+              }),
+              (0, X.jsxs)("div", {
+                className: "chat-messages",
+                children: [
+                  messages.map((message, index) => (0, X.jsxs)("div", {
+                    className: `chat-row ${message.role}`,
+                    children: [
+                      (0, X.jsx)("div", {
+                        className: `chat-avatar ${message.role}`,
+                        children: message.role === "tutor" ? (0, X.jsx)(ds, { size: 16 }) : userInitials,
+                      }),
+                      (0, X.jsxs)("div", {
+                        className: "message-wrap",
+                        children: [
+                          (0, X.jsxs)("div", {
+                            className: "message-bubble",
+                            children: [
+                              message.text.split("\n").map((line, lineIndex, lines) => (0, X.jsxs)("span", {
+                                children: [line, lineIndex < lines.length - 1 && (0, X.jsx)("br", {})],
+                              }, lineIndex)),
+                              message.role === "tutor" && index > 0 && (0, X.jsxs)("div", {
+                                className: "message-reaction",
+                                children: [
+                                  (0, X.jsx)("button", { children: (0, X.jsx)(hs, { size: 13 }) }),
+                                  (0, X.jsx)("button", { children: (0, X.jsx)(hs, { size: 13, className: "downvote" }) }),
+                                ],
+                              }),
+                            ],
+                          }),
+                          (0, X.jsx)("small", { children: message.time }),
+                        ],
+                      }),
+                    ],
+                  }, `${message.time}-${index}`)),
+                  sending && (0, X.jsxs)("div", {
+                    className: "chat-row tutor",
+                    children: [
+                      (0, X.jsx)("div", { className: "chat-avatar tutor", children: (0, X.jsx)(ds, { size: 16 }) }),
+                      (0, X.jsx)("div", {
+                        className: "message-wrap",
+                        children: (0, X.jsx)("div", { className: "message-bubble", children: "กำลังคิด…" }),
+                      }),
+                    ],
+                  }),
+                  attachment && (0, X.jsxs)("div", {
+                    className: "upload-preview",
+                    children: [
+                      (0, X.jsx)(Po, { size: 16 }),
+                      ` แนบรูปแล้ว: ${attachment.name} `,
+                      (0, X.jsx)("button", {
+                        onClick: () => setAttachment(null),
+                        "aria-label": "เอารูปที่แนบออก",
+                        children: (0, X.jsx)(Ts, { size: 14 }),
+                      }),
+                    ],
+                  }),
+                  attachmentError && (0, X.jsxs)("div", {
+                    className: "upload-preview upload-error",
+                    role: "alert",
+                    children: [(0, X.jsx)(Po, { size: 16 }), ` ${attachmentError}`],
+                  }),
+                ],
+              }),
+              (0, X.jsx)("div", {
+                className: "suggestion-row",
+                children: ["ขอคำใบ้หน่อย", "ช่วยตรวจวิธีทำ", "อธิบายแบบง่าย ๆ"].map((suggestion) => (0, X.jsxs)("button", {
+                  disabled: sending,
+                  onClick: () => send(suggestion),
+                  children: [(0, X.jsx)(Lo, { size: 14 }), " ", suggestion],
+                }, suggestion)),
+              }),
+              (0, X.jsxs)("div", {
+                className: "chat-composer",
+                children: [
+                  (0, X.jsx)("button", {
+                    className: "attach-button",
+                    onClick: () => fileInput.current?.click(),
+                    "aria-label": "แนบรูป",
+                    disabled: sending,
+                    children: (0, X.jsx)(qo, { size: 19 }),
+                  }),
+                  (0, X.jsx)("input", {
+                    ref: fileInput,
+                    type: "file",
+                    accept: "image/jpeg,image/png,image/webp",
+                    hidden: true,
+                    onChange: attachImage,
+                  }),
+                  (0, X.jsx)("input", {
+                    value: draft,
+                    onChange: (event) => setDraft(event.target.value),
+                    onKeyDown: (event) => {
+                      if (event.key === "Enter" && !event.nativeEvent.isComposing) send();
+                    },
+                    placeholder: "พิมพ์คำถามคณิตศาสตร์ของคุณ...",
+                    "aria-label": "คำถามถึงติวเตอร์",
+                    disabled: sending,
+                  }),
+                  (0, X.jsx)("button", {
+                    className: "send-button",
+                    onClick: () => send(),
+                    "aria-label": sending ? "กำลังส่ง" : "ส่ง",
+                    disabled: sending,
+                    children: (0, X.jsx)(as, { size: 18 }),
+                  }),
+                ],
+              }),
+            ],
+          }),
+        ],
+      }),
+    ],
+  });
+}
+function El(e){return e.includes(`ใบ้`)?`ได้เลยค่ะ ลองเริ่มจากเขียนสิ่งที่โจทย์ให้มาก่อน แล้วถามตัวเองว่า “เราต้องการหาค่าอะไร” จากนั้นเลือกสมบัติทางคณิตศาสตร์ที่ทำให้ตัวแปรอยู่เพียงข้างเดียว โดยทำเหมือนกันทั้งสองข้างนะคะ`:e.includes(`ตรวจ`)?`ส่งวิธีทำมาได้เลยค่ะ ในโหมดสาธิตนี้ฉันจะช่วยชี้จุดที่ควรตรวจ โดยจะแยกให้เห็นชัดว่าคำตอบสุดท้ายถูกหรือไม่ และเหตุผลแต่ละขั้นสมเหตุสมผลหรือเปล่า`:`คำถามนี้น่าสนใจมากค่ะ ลองแยกโจทย์เป็น “สิ่งที่รู้” กับ “สิ่งที่ต้องหา” ก่อนนะคะ จากนั้นฉันจะแนะนำคำถามเล็ก ๆ ให้คุณลองคิดต่อเองทีละขั้น (คำตอบนี้เป็นตัวอย่างในโหมดสาธิต)`}function Dl({posts:e,setPosts:t}){let[n,r]=(0,l.useState)(``),[i,a]=(0,l.useState)(`recent`),[o,s]=(0,l.useState)(!1),[c,u]=(0,l.useState)(``),[d,f]=(0,l.useState)(``),[p,m]=(0,l.useState)(null),[h,g]=(0,l.useState)(``),_=e.filter(e=>`${e.title} ${e.body} ${e.tag}`.toLowerCase().includes(n.toLowerCase())).sort((e,t)=>i===`popular`?t.likes-e.likes:t.id.localeCompare(e.id));return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(bl,{eyebrow:`เรียนรู้ไปด้วยกัน`,title:`ชุมชนการเรียนรู้`,description:`ถาม แบ่งปันวิธีคิด และช่วยกันทำให้คณิตศาสตร์เข้าใจง่ายขึ้น`,action:(0,X.jsxs)(`button`,{className:`primary-button`,onClick:()=>s(!0),children:[(0,X.jsx)(Zo,{size:17}),` ตั้งคำถามใหม่`]})}),(0,X.jsxs)(`div`,{className:`community-toolbar`,children:[(0,X.jsxs)(`div`,{className:`community-search`,children:[(0,X.jsx)(rs,{size:17}),(0,X.jsx)(`input`,{value:n,onChange:e=>r(e.target.value),placeholder:`ค้นหาคำถามหรือหัวข้อ...`})]}),(0,X.jsxs)(`div`,{className:`sort-buttons`,children:[(0,X.jsx)(`button`,{className:i===`recent`?`active`:``,onClick:()=>a(`recent`),children:`ล่าสุด`}),(0,X.jsx)(`button`,{className:i===`popular`?`active`:``,onClick:()=>a(`popular`),children:`ยอดนิยม`})]})]}),(0,X.jsxs)(`div`,{className:`community-layout`,children:[(0,X.jsxs)(`section`,{className:`post-feed`,children:[(0,X.jsxs)(`div`,{className:`feed-label`,children:[(0,X.jsxs)(`strong`,{children:[_.length,` การสนทนา`]}),(0,X.jsx)(`span`,{children:`พื้นที่ปลอดภัยสำหรับการเรียนรู้`})]}),_.map(e=>(0,X.jsx)(Ol,{post:e,onOpen:()=>m(e),onLike:()=>t(t=>t.map(t=>t.id===e.id?{...t,likes:t.likes+(t.liked?-1:1),liked:!t.liked}:t))},e.id)),_.length===0&&(0,X.jsxs)(`div`,{className:`empty-state`,children:[(0,X.jsx)(rs,{size:24}),(0,X.jsx)(`h3`,{children:`ยังไม่พบการสนทนา`}),(0,X.jsx)(`p`,{children:`ลองใช้คำค้นอื่น หรือเป็นคนเริ่มถามคำถามแรกกันเลย`})]})]}),(0,X.jsxs)(`aside`,{className:`community-aside`,children:[(0,X.jsxs)(`div`,{className:`side-card topic-card`,children:[(0,X.jsx)(`div`,{className:`side-card-heading`,children:(0,X.jsx)(`h3`,{children:`หัวข้อยอดนิยม`})}),[`พีชคณิต`,`เรขาคณิต`,`โจทย์ประยุกต์`,`เตรียมสอบ ม.3`].map((e,t)=>(0,X.jsxs)(`button`,{className:`topic-row`,children:[(0,X.jsx)(`span`,{className:`topic-color color-${t}`}),e,(0,X.jsx)(`span`,{children:[24,18,12,9][t]})]},e))]}),(0,X.jsxs)(`div`,{className:`community-guideline`,children:[(0,X.jsx)(Cs,{size:18}),(0,X.jsx)(`strong`,{children:`ช่วยกันสร้างพื้นที่ที่ดี`}),(0,X.jsx)(`p`,{children:`อธิบายด้วยเหตุผล ให้เกียรติกัน และจำไว้ว่าทุกคนกำลังเรียนรู้`})]})]})]}),o&&(0,X.jsx)(`div`,{className:`modal-backdrop`,children:(0,X.jsxs)(`div`,{className:`create-modal`,children:[(0,X.jsxs)(`div`,{className:`modal-heading`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{className:`eyebrow-dot`}),` ตั้งคำถามใหม่`]}),(0,X.jsx)(`button`,{onClick:()=>s(!1),children:(0,X.jsx)(Ts,{size:19})})]}),(0,X.jsxs)(`label`,{children:[`หัวข้อคำถาม`,(0,X.jsx)(`input`,{value:c,onChange:e=>u(e.target.value),placeholder:`เช่น มีวิธีคิดข้อนี้แบบอื่นไหม?`})]}),(0,X.jsxs)(`label`,{children:[`รายละเอียด`,(0,X.jsx)(`textarea`,{value:d,onChange:e=>f(e.target.value),placeholder:`เล่าโจทย์หรือสิ่งที่ลองทำมาแล้วได้เลย...`,rows:5})]}),(0,X.jsxs)(`div`,{className:`modal-actions`,children:[(0,X.jsx)(`button`,{className:`outline-button`,onClick:()=>s(!1),children:`ยกเลิก`}),(0,X.jsxs)(`button`,{className:`primary-button`,disabled:!c.trim()||!d.trim(),onClick:()=>{c.trim()&&d.trim()&&(t(e=>[{id:`post-${Date.now()}`,title:c,body:d,author:`พิมพ์ชนก`,initials:`พช`,tag:`คำถาม`,time:`เมื่อสักครู่`,likes:0,comments:0,replies:[]},...e]),u(``),f(``),s(!1))},children:[`เผยแพร่คำถาม `,(0,X.jsx)(as,{size:16})]})]})]})}),p&&(0,X.jsx)(`div`,{className:`modal-backdrop`,onClick:()=>m(null),children:(0,X.jsxs)(`div`,{className:`post-detail-modal`,onClick:e=>e.stopPropagation(),children:[(0,X.jsx)(`button`,{className:`modal-close`,onClick:()=>m(null),children:(0,X.jsx)(Ts,{size:18})}),(0,X.jsx)(Ol,{post:p,onOpen:()=>void 0,onLike:()=>void 0}),(0,X.jsx)(`div`,{className:`reply-list`,children:p.replies.map((e,t)=>(0,X.jsxs)(`div`,{className:`reply-item`,children:[(0,X.jsx)(`div`,{className:`avatar avatar-lavender`,children:t===0?`คม`:`พช`}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:t===0?`ครูเมย์`:`พิมพ์ชนก`}),(0,X.jsx)(`p`,{children:e})]})]},t))}),(0,X.jsxs)(`div`,{className:`reply-composer`,children:[(0,X.jsx)(`input`,{value:h,onChange:e=>g(e.target.value),placeholder:`เขียนคำตอบที่ช่วยให้เพื่อนเข้าใจ...`}),(0,X.jsx)(`button`,{onClick:()=>{p&&h.trim()&&(t(e=>e.map(e=>e.id===p.id?{...e,comments:e.comments+1,replies:[...e.replies,h]}:e)),m({...p,comments:p.comments+1,replies:[...p.replies,h]}),g(``))},children:(0,X.jsx)(as,{size:16})})]})]})})]})}function Ol({post:e,onOpen:t,onLike:n}){return(0,X.jsxs)(`article`,{className:`post-card`,children:[(0,X.jsxs)(`div`,{className:`post-author`,children:[(0,X.jsx)(`div`,{className:`avatar ${e.initials===`พพ`?`avatar-peach`:e.initials===`ตน`?`avatar-teal`:`avatar-lavender`}`,children:e.initials}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:e.author}),(0,X.jsx)(`span`,{children:e.time})]}),(0,X.jsx)(`button`,{className:`more-button`,children:(0,X.jsx)(Eo,{size:18})})]}),(0,X.jsxs)(`button`,{className:`post-content`,onClick:t,children:[(0,X.jsxs)(`div`,{className:`post-title-row`,children:[(0,X.jsx)(`h3`,{children:e.title}),(0,X.jsx)(`span`,{className:`post-tag`,children:e.tag})]}),(0,X.jsx)(`p`,{children:e.body})]}),(0,X.jsxs)(`div`,{className:`post-actions`,children:[(0,X.jsxs)(`button`,{className:e.liked?`liked`:``,onClick:n,children:[(0,X.jsx)(hs,{size:15}),` มีประโยชน์ `,(0,X.jsx)(`span`,{children:e.likes})]}),(0,X.jsxs)(`button`,{onClick:t,children:[(0,X.jsx)(Uo,{size:15}),` ความคิดเห็น `,(0,X.jsx)(`span`,{children:e.comments})]}),(0,X.jsxs)(`button`,{className:`share-button`,children:[(0,X.jsx)(ys,{size:15}),` แชร์`]})]})]})}function kl({progress:e}){return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(bl,{eyebrow:`เติบโตไปด้วยกัน`,title:`กระดานคะแนน`,description:`คะแนนเป็นแรงจูงใจเล็ก ๆ ให้เราเรียนต่อเนื่อง ไม่ใช่ตัววัดคุณค่าหรือความเก่งของใคร`,action:(0,X.jsxs)(`div`,{className:`leaderboard-actions`,children:[(0,X.jsxs)(`div`,{className:`demo-badge`,children:[(0,X.jsx)(`span`,{className:`status-dot`}),` ข้อมูลตัวอย่างในโหมดเดโม`]}),(0,X.jsxs)(`div`,{className:`period-select`,children:[`สัปดาห์นี้ `,(0,X.jsx)(vo,{size:15})]})]})}),(0,X.jsxs)(`div`,{className:`leaderboard-layout`,children:[(0,X.jsxs)(`section`,{className:`leaderboard-main`,children:[(0,X.jsxs)(`div`,{className:`podium`,children:[(0,X.jsxs)(`div`,{className:`podium-person second`,children:[(0,X.jsx)(`div`,{className:`podium-avatar silver-bg`,children:`ตน`}),(0,X.jsx)(`strong`,{children:`ต้นน้ำ`}),(0,X.jsx)(`span`,{children:`1,080 XP`}),(0,X.jsx)(`div`,{className:`podium-block block-two`,children:`2`})]}),(0,X.jsxs)(`div`,{className:`podium-person first`,children:[(0,X.jsx)(`div`,{className:`crown`,children:`✦`}),(0,X.jsx)(`div`,{className:`podium-avatar gold-bg`,children:`ขห`}),(0,X.jsx)(`strong`,{children:`น้องข้าวหอม`}),(0,X.jsx)(`span`,{children:`1,240 XP`}),(0,X.jsx)(`div`,{className:`podium-block block-one`,children:`1`})]}),(0,X.jsxs)(`div`,{className:`podium-person third`,children:[(0,X.jsx)(`div`,{className:`podium-avatar bronze-bg`,children:`พช`}),(0,X.jsx)(`strong`,{children:`พิมพ์ชนก`}),(0,X.jsxs)(`span`,{children:[e.xp.toLocaleString(),` XP`]}),(0,X.jsx)(`div`,{className:`podium-block block-three`,children:`3`})]})]}),(0,X.jsx)(`div`,{className:`rank-list`,children:js.map(t=>(0,X.jsxs)(`div`,{className:`rank-row ${t.rank===3?`current-user`:``}`,children:[(0,X.jsx)(`span`,{className:`rank-number`,children:t.rank}),(0,X.jsx)(`div`,{className:`avatar avatar-${t.color}`,children:t.initials}),(0,X.jsxs)(`div`,{className:`rank-name`,children:[(0,X.jsxs)(`strong`,{children:[t.name,` `,t.rank===3&&(0,X.jsx)(`span`,{children:`คุณ`})]}),(0,X.jsx)(`small`,{children:t.rank===1?`เรียน 4 วันติด`:t.rank===2?`ทำแบบฝึกหัดเก่ง`:`กำลังไปได้ดี`})]}),(0,X.jsxs)(`strong`,{className:`rank-xp`,children:[t.rank===3?e.xp.toLocaleString():t.xp.replace(` XP`,``),` XP`]})]},t.rank))})]}),(0,X.jsxs)(`aside`,{className:`leaderboard-side`,children:[(0,X.jsxs)(`div`,{className:`side-card your-rank`,children:[(0,X.jsxs)(`div`,{className:`side-card-heading`,children:[(0,X.jsx)(`h3`,{children:`อันดับของคุณ`}),(0,X.jsx)(`span`,{children:`สัปดาห์นี้`})]}),(0,X.jsxs)(`div`,{className:`your-rank-number`,children:[(0,X.jsx)(`strong`,{children:`#3`}),(0,X.jsx)(`span`,{children:`จาก 24 คน`})]}),(0,X.jsxs)(`div`,{className:`rank-up`,children:[(0,X.jsx)(Al,{}),` ขึ้นมา 2 อันดับจากสัปดาห์ก่อน`]}),(0,X.jsx)(`div`,{className:`xp-bar`,children:(0,X.jsx)(`span`,{style:{width:`70%`}})}),(0,X.jsx)(`small`,{children:`อีก 240 XP จะถึงอันดับ #2`})]}),(0,X.jsxs)(`div`,{className:`side-card rewards-card`,children:[(0,X.jsx)(`div`,{className:`reward-icon`,children:(0,X.jsx)(ro,{size:20})}),(0,X.jsx)(`h3`,{children:`สะสมความสำเร็จ`}),(0,X.jsx)(`p`,{children:`คุณปลดล็อกแล้ว 4 จาก 12 เหรียญ`}),(0,X.jsxs)(`div`,{className:`reward-dots`,children:[(0,X.jsx)(`i`,{className:`unlocked`}),(0,X.jsx)(`i`,{className:`unlocked`}),(0,X.jsx)(`i`,{className:`unlocked`}),(0,X.jsx)(`i`,{className:`unlocked`}),(0,X.jsx)(`i`,{}),(0,X.jsx)(`i`,{}),(0,X.jsx)(`i`,{}),(0,X.jsx)(`i`,{})]}),(0,X.jsxs)(`button`,{className:`text-button`,children:[`ดูความสำเร็จทั้งหมด `,(0,X.jsx)(to,{size:14})]})]})]})]})]})}function Al(){return(0,X.jsx)(`span`,{className:`arrow-up-small`,children:`↑`})}function jl({progress:e,onNavigate:t,onLesson:n}){const profileSettings=qmmLoadActiveUserSettings(el)||el,profileName=String(profileSettings.displayName||`พิมพ์ชนก`).trim()||`พิมพ์ชนก`,profileGrade=profileSettings.grade||`ม.3`,profileInterests=Array.isArray(profileSettings.mathInterests)?profileSettings.mathInterests:[];const profileAchievements=[];if(e.streak>=5)profileAchievements.push({id:`streak`,kind:`streak`,title:`ไฟแรงต่อเนื่อง`,description:`เรียนต่อเนื่องครบ 5 วัน`});if(e.exerciseCorrect>=5)profileAchievements.push({id:`practice`,kind:`practice`,title:`นักแก้โจทย์`,description:`ตอบถูกครบ 5 ข้อ`});return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsxs)(`div`,{className:`profile-hero`,children:[(0,X.jsx)(`div`,{className:`profile-banner-shape`}),(0,X.jsxs)(`div`,{className:`profile-main`,children:[(0,X.jsx)(`div`,{className:`profile-avatar-large`,children:profileSettings.profilePicture?(0,X.jsx)(`img`,{src:profileSettings.profilePicture,alt:`รูปโปรไฟล์ของ ${profileName}`}):profileName.slice(0,2)}),(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`div`,{className:`profile-name-row`,children:[(0,X.jsx)(`h1`,{children:profileName}),(0,X.jsxs)(`span`,{className:`level-badge`,children:[(0,X.jsx)(ds,{size:13}),` นักสำรวจ`]})]}),(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(`p`,{children:`นักเรียนชั้น ${profileGrade} • สถิติแสดงจากกิจกรรมที่บันทึกไว้`}),(0,X.jsxs)(`div`,{className:`profile-interest-row`,children:[(0,X.jsx)(`span`,{className:`profile-interest-label`,children:`สนใจ`}),(profileInterests.length?profileInterests.map(interest=>(0,X.jsx)(`span`,{className:`profile-interest-pill`,children:interest},interest)):(0,X.jsx)(`button`,{type:`button`,className:`profile-interest-add`,onClick:()=>t(`settings`),children:`+ เพิ่มความสนใจ`}))]})]}),(0,X.jsxs)(`div`,{className:`profile-stat-row`,children:[(0,X.jsxs)(`span`,{children:[(0,X.jsx)(Oo,{size:15}),` `,(0,X.jsx)(`strong`,{children:e.streak}),` วันต่อเนื่อง`]}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(Ds,{size:15}),` `,(0,X.jsx)(`strong`,{children:e.xp.toLocaleString()}),` XP`]}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(so,{size:15}),` `,(0,X.jsx)(`strong`,{children:e.completedLessons.length}),` บทเรียนจบแล้ว`]})]})]})]}),(0,X.jsxs)(`button`,{className:`outline-button profile-edit`,onClick:()=>t(`settings`),children:[(0,X.jsx)(Yo,{size:15}),` แก้ไขโปรไฟล์`]})]}),(0,X.jsxs)(`div`,{className:`profile-grid`,children:[(0,X.jsxs)(`section`,{children:[(0,X.jsx)(fl,{title:`เส้นทางการเรียนรู้`}),(0,X.jsxs)(`div`,{className:`profile-progress-card`,children:[(0,X.jsxs)(`div`,{className:`profile-progress-head`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{children:`ความก้าวหน้าโดยรวม`}),(0,X.jsxs)(`strong`,{children:[Math.round(qmmCompletionPercent(e.completedLessons.length,Os.length)),`%`]})]}),(0,X.jsx)(ps,{size:22})]}),(0,X.jsx)(`div`,{className:`progress-line`,children:(0,X.jsx)(`span`,{style:{width:`${Math.min(100,qmmCompletionPercent(e.completedLessons.length,Os.length))}%`}})}),(0,X.jsxs)(`div`,{className:`profile-progress-foot`,children:[(0,X.jsx)(`span`,{children:`เรียนจบแล้ว ${e.completedLessons.length} บท`}),(0,X.jsx)(`span`,{children:`จากทั้งหมด ${Os.length} บท`})]})]}),(0,X.jsx)(fl,{title:`บทเรียนที่บันทึกไว้`,link:`ดูทั้งหมด`,onLink:()=>t(`lessons`)}),e.bookmarks.length>0?e.bookmarks.map(e=>{let t=Os.find(t=>t.id===e);return t?(0,X.jsx)(gl,{lesson:t,onClick:()=>n(t)},e):null}):(0,X.jsxs)(`div`,{className:`empty-state compact`,children:[(0,X.jsx)(fo,{size:22}),(0,X.jsx)(`p`,{children:`ยังไม่มีบทเรียนที่บันทึกไว้`})]})]}),(0,X.jsxs)(`aside`,{children:[(0,X.jsxs)(`div`,{className:`side-card achievement-card`,children:[(0,X.jsxs)(`div`,{className:`side-card-heading`,children:[(0,X.jsx)(`h3`,{children:`ความสำเร็จล่าสุด`}),(0,X.jsx)(`button`,{children:`ดูทั้งหมด`})]}),(0,X.jsx)(QmmProfileAchievements,{items:profileAchievements})]}),(0,X.jsxs)(`div`,{
+className:`side-card activity-card`,children:[(0,X.jsx)(`div`,{className:`side-card-heading`,children:(0,X.jsx)(`h3`,{children:`กิจกรรมล่าสุด`})}),(0,X.jsx)(QmmProfileActivity,{items:e.recentActivity})]})]})]})]})}
+const qmmMathInterestOptions=["พีชคณิต","เรขาคณิต","จำนวนและทฤษฎีจำนวน","ฟังก์ชันและกราฟ","สถิติ","ความน่าจะเป็น","ตรีโกณมิติ","แคลคูลัส"];
+function qmmProfileImageAccepted(file) {
+  const size = Number(file?.size);
+  return Boolean(
+    file
+      && ["image/jpeg", "image/png", "image/webp"].includes(file.type)
+      && Number.isFinite(size)
+      && size >= 0
+      && size <= 5 * 1024 * 1024,
+  );
+}
+function qmmCompressProfileImage(file) {
+  if (!qmmProfileImageAccepted(file)) {
+    return Promise.reject(new Error("เลือกรูป JPG, PNG หรือ WebP ขนาดไม่เกิน 5 MB"));
+  }
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("ไม่สามารถอ่านไฟล์รูปได้"));
+    reader.onload = () => {
+      const image = new Image();
+      image.onerror = () => reject(new Error("ไฟล์นี้ไม่ใช่รูปภาพที่รองรับ"));
+      image.onload = () => {
+        const originalWidth = image.naturalWidth || image.width;
+        const originalHeight = image.naturalHeight || image.height;
+        const scale = Math.min(1, 320 / Math.max(originalWidth, originalHeight));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(originalWidth * scale));
+        canvas.height = Math.max(1, Math.round(originalHeight * scale));
+        const context = canvas.getContext("2d");
+        if (!context) {
+          reject(new Error("ไม่สามารถปรับขนาดรูปภาพได้"));
+          return;
+        }
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        try {
+          resolve(canvas.toDataURL("image/jpeg", 0.82));
+        } catch {
+          reject(new Error("ไม่สามารถบันทึกรูปภาพนี้ได้"));
+        }
+      };
+      image.src = String(reader.result || "");
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function QmmProfilePhotoEditor({ settings, onUpload, onRemove, error }) {
+  return (0, X.jsxs)("div", {
+    className: "profile-photo-editor",
+    children: [
+      (0, X.jsxs)("div", {
+        className: "profile-photo-copy",
+        children: [
+          (0, X.jsx)("strong", { children: "รูปโปรไฟล์" }),
+          (0, X.jsx)("span", { children: "JPG, PNG หรือ WebP ไม่เกิน 5 MB • ระบบย่อรูปและเก็บไว้บนอุปกรณ์นี้" }),
+        ],
+      }),
+      (0, X.jsxs)("div", {
+        className: "profile-photo-controls",
+        children: [
+          (0, X.jsxs)("label", {
+            className: "profile-photo-upload",
+            children: [
+              (0, X.jsx)("span", { children: settings.profilePicture ? "เปลี่ยนรูป" : "อัปโหลดรูป" }),
+              (0, X.jsx)("input", {
+                type: "file",
+                accept: "image/jpeg,image/png,image/webp",
+                className: "profile-photo-input",
+                "aria-label": "อัปโหลดรูปโปรไฟล์",
+                onChange: onUpload,
+              }),
+            ],
+          }),
+          settings.profilePicture && (0, X.jsx)("button", {
+            type: "button",
+            className: "outline-button profile-photo-remove",
+            onClick: onRemove,
+            children: "ลบรูป",
+          }),
+        ],
+      }),
+      error && (0, X.jsx)("p", { className: "profile-photo-error", role: "alert", children: error }),
+    ],
+  });
+}
+function QmmMathInterestSelector({ selected = [], onToggle }) {
+  return (0, X.jsxs)("div", {
+    className: "settings-section math-interest-section",
+    children: [
+      (0, X.jsxs)("div", {
+        className: "settings-section-copy",
+        children: [
+          (0, X.jsx)("h2", { children: "สาขาคณิตศาสตร์ที่สนใจ" }),
+          (0, X.jsx)("p", { children: "เลือกได้หลายข้อ เพื่อให้เส้นทางเรียนรู้ตรงกับสิ่งที่คุณชอบ" }),
+        ],
+      }),
+      (0, X.jsx)("div", {
+        className: "math-interest-grid",
+        children: qmmMathInterestOptions.map((interest) => {
+          const active = selected.includes(interest);
+          return (0, X.jsx)("button", {
+            type: "button",
+            className: `math-interest-chip ${active ? "selected" : ""}`,
+            "aria-pressed": active,
+            onClick: () => onToggle(interest),
+            children: interest,
+          }, interest);
+        }),
+      }),
+      (0, X.jsx)("p", { className: "math-interest-help", children: `แตะหัวข้อเพื่อเลือกหรือยกเลิกได้ทุกเมื่อ` }),
+    ],
+  });
+}
+function qmmToggleMathInterest(selected, interest) {
+  const current = Array.isArray(selected)
+    ? selected.filter((item) => qmmMathInterestOptions.includes(item))
+    : [];
+  if (!qmmMathInterestOptions.includes(interest)) return current;
+  return current.includes(interest)
+    ? current.filter((item) => item !== interest)
+    : [...current, interest];
+}
+function QmmProfileAchievements({ items = [] }) {
+  if (!Array.isArray(items) || items.length === 0) {
+    return (0, X.jsx)("div", {
+      className: "empty-state compact",
+      children: (0, X.jsx)("p", { children: "ยังไม่มีความสำเร็จที่ปลดล็อก" }),
+    });
+  }
+  return (0, X.jsxs)(X.Fragment, {
+    children: items.map((item) => (0, X.jsxs)("div", {
+      className: "achievement",
+      children: [
+        (0, X.jsx)("div", {
+          className: `achievement-icon ${item.kind === "streak" ? "yellow-achievement" : "purple-achievement"}`,
+          children: (0, X.jsx)(item.kind === "streak" ? Oo : ps, { size: 19 }),
+        }),
+        (0, X.jsxs)("div", {
+          children: [
+            (0, X.jsx)("strong", { children: item.title }),
+            (0, X.jsx)("span", { children: item.description }),
+          ],
+        }),
+        (0, X.jsx)(go, { size: 16 }),
+      ],
+    }, item.id)),
+  });
+}
+function QmmProfileActivity({ items = [] }) {
+  if (!Array.isArray(items) || items.length === 0) {
+    return (0, X.jsx)("div", {
+      className: "empty-state compact",
+      children: (0, X.jsx)("p", { children: "ยังไม่มีกิจกรรมที่บันทึกไว้ เริ่มเรียนหรือทำแบบฝึกหัดเพื่อดูประวัติที่นี่" }),
+    });
+  }
+  return (0, X.jsxs)(X.Fragment, {
+    children: items.slice(0, 3).map((item, index) => {
+      const date = new Date(item.timestamp);
+      const dateLabel = Number.isNaN(date.getTime())
+        ? ""
+        : new Intl.DateTimeFormat("th-TH", { day: "numeric", month: "short" }).format(date);
+      return (0, X.jsxs)("div", {
+        className: "activity-line",
+        children: [
+          (0, X.jsx)("span", { className: `activity-dot ${index === 0 ? "green-dot" : "purple-dot"}` }),
+          (0, X.jsxs)("div", {
+            children: [
+              (0, X.jsx)("strong", { children: item.type === "lesson" ? "เรียนจบบทเรียน" : "ทำแบบฝึกหัด" }),
+              (0, X.jsx)("p", { children: item.label }),
+            ],
+          }),
+          (0, X.jsx)("small", { children: dateLabel }),
+        ],
+      }, item.id || `${item.type}-${item.timestamp}`);
+    }),
+  });
+}
+function Ml({onThemeChange:e}){let[t,n]=(0,l.useState)(`profile`),[r,i]=(0,l.useState)(()=>qmmLoadActiveUserSettings(el)),[a,o]=(0,l.useState)(!0),s=(t,n)=>{i(e=>({...e,[t]:n})),t===`theme`&&e(n),o(!1)},c=()=>{qmmSaveActiveUserSettings(r),o(!0)},u=()=>{i(el),e(el.theme),o(!1)},d=[{id:`profile`,label:`บัญชีและโปรไฟล์`,description:`ข้อมูลที่แสดงกับเพื่อน`,icon:xs},{id:`notifications`,label:`การแจ้งเตือน`,description:`เลือกสิ่งที่อยากให้เตือน`,icon:ao},{id:`appearance`,label:`การแสดงผล`,description:`ปรับหน้าตาให้อ่านง่าย`,icon:Go},{id:`learning`,label:`การเรียนรู้`,description:`ตั้งจังหวะการฝึกของคุณ`,icon:Ao}],f=d.find(e=>e.id===t)??d[0];const [profileImageError,setProfileImageError]=(0,l.useState)("");const handleProfileImageUpload=async event=>{const input=event.currentTarget,file=input.files&&input.files[0];if(!file)return;setProfileImageError("");try{const dataUrl=await qmmCompressProfileImage(file);s("profilePicture",dataUrl)}catch(error){setProfileImageError(error instanceof Error?error.message:"รูปภาพไม่รองรับ กรุณาเลือก JPG, PNG หรือ WebP ไม่เกิน 5 MB")}finally{input.value=""}};const clearProfileImage=()=>{s("profilePicture","");setProfileImageError("")};const handleMathInterestToggle=interest=>{i(current=>({...current,mathInterests:qmmToggleMathInterest(current.mathInterests,interest)}));o(false)};return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(bl,{eyebrow:`ปรับให้เป็นแบบของคุณ`,title:`ตั้งค่า`,description:`จัดการข้อมูลส่วนตัว การแจ้งเตือน และรูปแบบการเรียนรู้ของคุณได้ในที่เดียว`}),(0,X.jsxs)(`div`,{className:`settings-layout`,children:[(0,X.jsx)(`aside`,{className:`settings-nav`,"aria-label":`หมวดการตั้งค่า`,children:d.map(({id:e,label:r,description:i,icon:a})=>(0,X.jsxs)(`button`,{className:t===e?`active`:``,onClick:()=>n(e),children:[(0,X.jsx)(a,{size:17}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(`strong`,{children:r}),(0,X.jsx)(`small`,{children:i})]})]},e))}),(0,X.jsxs)(`section`,{className:`settings-panel`,children:[(0,X.jsxs)(`div`,{className:`settings-panel-heading`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{className:`eyebrow-dot`}),` การตั้งค่าของฉัน`,(0,X.jsx)(`h2`,{children:f.label}),(0,X.jsx)(`p`,{children:f.description})]}),(0,X.jsxs)(`span`,{className:`settings-status`,children:[(0,X.jsx)(`span`,{className:`status-dot ${a?`saved`:`unsaved`}`}),` `,a?`บันทึกแล้ว`:`มีการเปลี่ยนแปลง`]})]}),t===`profile`&&(0,X.jsxs)(X.Fragment,{children:[(0,X.jsxs)(`div`,{className:`settings-section profile-settings-section`,children:[(0,X.jsxs)(`div`,{className:`settings-section-copy`,children:[(0,X.jsx)(`h2`,{children:`ข้อมูลโปรไฟล์`}),(0,X.jsx)(`p`,{children:`ข้อมูลนี้จะแสดงในชุมชนการเรียนรู้และช่วยปรับคำแนะนำให้เหมาะกับคุณ`})]}),(0,X.jsxs)(`div`,{className:`profile-summary`,children:[(0,X.jsx)(`div`,{className:`profile-settings-avatar`,children:r.profilePicture?(0,X.jsx)(`img`,{src:r.profilePicture,alt:`รูปโปรไฟล์`}):(r.displayName||``).slice(0,2)}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:r.displayName}),(0,X.jsxs)(`span`,{children:[`นักเรียน `,r.grade,` • สมาชิก CommuMathy`]})]}),(0,X.jsx)(`button`,{className:`outline-button`,onClick:()=>s(`displayName`,r.displayName.trim()||`พิมพ์ชนก`),children:`อัปเดตชื่อ`})]}),(0,X.jsx)(QmmLocalAccountCard,{}),(0,X.jsx)(QmmProfilePhotoEditor,{settings:r,onUpload:handleProfileImageUpload,onRemove:clearProfileImage,error:profileImageError}),(0,X.jsxs)(`div`,{className:`profile-form`,children:[(0,X.jsxs)(`label`,{children:[`ชื่อที่แสดง`,(0,X.jsx)(`input`,{value:r.displayName,onChange:e=>s(`displayName`,e.target.value),placeholder:`เช่น พิมพ์ชนก`})]}),(0,X.jsxs)(`label`,{children:[`ระดับชั้น`,(0,X.jsxs)(`select`,{value:r.grade,onChange:e=>s(`grade`,e.target.value),children:[(0,X.jsx)(`option`,{children:`ม.1`}),(0,X.jsx)(`option`,{children:`ม.2`}),(0,X.jsx)(`option`,{children:`ม.3`}),(0,X.jsx)(`option`,{children:`ม.4`}),(0,X.jsx)(`option`,{children:`ม.5`}),(0,X.jsx)(`option`,{children:`ม.6`})]})]}),(0,X.jsxs)(`label`,{children:[`อีเมลสำหรับบัญชี`,(0,X.jsx)(`input`,{value:r.email,onChange:e=>s(`email`,e.target.value),type:`email`})]}),(0,X.jsxs)(`label`,{children:[`เกี่ยวกับฉัน`,(0,X.jsx)(`textarea`,{value:r.bio,onChange:e=>s(`bio`,e.target.value),placeholder:`เล่าเกี่ยวกับเป้าหมายการเรียนของคุณ`,rows:3})]})]})]}),(0,X.jsx)(QmmMathInterestSelector,{selected:Array.isArray(r.mathInterests)?r.mathInterests:[],onToggle:handleMathInterestToggle}),(0,X.jsxs)(`div`,{className:`settings-info-strip`,children:[(0,X.jsx)(Fo,{size:16}),(0,X.jsx)(`span`,{children:`ข้อมูลของคุณจะถูกเก็บไว้บนอุปกรณ์นี้ในโหมดเดโม และยังไม่มีการเชื่อมต่อบัญชีออนไลน์`})]})]}),t===`notifications`&&(0,X.jsx)(Nl,{title:`เลือกการแจ้งเตือนที่มีประโยชน์กับคุณ`,description:`เปิดเฉพาะสิ่งที่ช่วยให้คุณเรียนต่อเนื่องโดยไม่รบกวนเกินไป`,children:(0,X.jsxs)(`div`,{className:`setting-toggles`,children:[(0,X.jsx)(Pl,{label:`เตือนการเรียนต่อเนื่อง`,description:`เตือนเบา ๆ เมื่อใกล้หมดวันและยังไม่ได้เรียน`,checked:r.dailyReminder,onChange:e=>s(`dailyReminder`,e)}),(0,X.jsx)(Pl,{label:`แจ้งเตือนการตอบกลับในชุมชน`,description:`บอกเมื่อมีคนตอบหรือช่วยต่อยอดคำถามของคุณ`,checked:r.communityReplies,onChange:e=>s(`communityReplies`,e)}),(0,X.jsx)(Pl,{label:`สรุปความก้าวหน้ารายสัปดาห์`,description:`รับภาพรวมบทเรียน แบบฝึกหัด และเป้าหมายที่เหลือ`,checked:r.weeklySummary,onChange:e=>s(`weeklySummary`,e)})]})}),t===`appearance`&&(0,X.jsxs)(Nl,{title:`ทำให้หน้าจออ่านง่ายขึ้น`,description:`ตัวเลือกเหล่านี้มีผลกับการแสดงผลบนอุปกรณ์นี้`,children:[(0,X.jsxs)(`div`,{className:`settings-choice-grid`,children:[(0,X.jsx)(Fl,{label:`ธีมสี`,description:`เลือกโหมดที่สบายตา`,value:r.theme,options:[`สว่าง`,`มืด`,`ตามระบบ`],onChange:e=>s(`theme`,e)}),(0,X.jsx)(Fl,{label:`ขนาดตัวอักษร`,description:`ปรับให้เหมาะกับการอ่าน`,value:r.fontSize,options:[`มาตรฐาน`,`ใหญ่`],onChange:e=>s(`fontSize`,e)})]}),(0,X.jsxs)(`div`,{className:`settings-preview`,children:[(0,X.jsxs)(`div`,{className:`preview-window`,children:[(0,X.jsx)(`span`,{className:`preview-dot`}),(0,X.jsx)(`span`,{className:`preview-dot`}),(0,X.jsx)(`span`,{className:`preview-dot`}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`ตัวอย่างการอ่านบทเรียน`}),(0,X.jsx)(`p`,{children:`ปรับขนาดตัวอักษรเพื่ออ่านคำอธิบายและสมการได้สบายขึ้น`})]})]}),(0,X.jsx)(`span`,{children:`ตัวอย่างการแสดงผล`})]})]}),t===`learning`&&(0,X.jsx)(Nl,{title:`ตั้งค่าจังหวะการเรียน`,description:`ช่วยให้บทเรียนและแบบฝึกหัดตรงกับเป้าหมายของคุณ`,children:(0,X.jsxs)(`div`,{className:`learning-preferences`,children:[(0,X.jsxs)(`label`,{children:[`ระดับความท้าทายที่แนะนำ`,(0,X.jsxs)(`select`,{value:r.difficulty,onChange:e=>s(`difficulty`,e.target.value),children:[(0,X.jsx)(`option`,{children:`พื้นฐาน`}),(0,X.jsx)(`option`,{children:`กำลังดี`}),(0,X.jsx)(`option`,{children:`ท้าทาย`})]})]}),(0,X.jsxs)(`div`,{className:`setting-toggles`,children:[(0,X.jsx)(Pl,{label:`แสดงคำใบ้ก่อนเฉลย`,description:`ช่วยให้ได้ลองคิดด้วยตัวเองมากขึ้น`,checked:r.showHints,onChange:e=>s(`showHints`,e)}),(0,X.jsx)(Pl,{label:`แสดงสมการแบบเต็มหน้าจอ`,description:`เหมาะกับการอ่านบนมือถือ`,checked:r.fullScreenMath,onChange:e=>s(`fullScreenMath`,e)})]})]})}),(0,X.jsxs)(`div`,{className:`settings-footer`,children:[(0,X.jsxs)(`button`,{className:`reset-settings`,onClick:u,children:[(0,X.jsx)($o,{size:14}),` คืนค่าเริ่มต้น`]}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{children:a?(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(go,{size:15}),` บันทึกแล้ว`]}):`การเปลี่ยนแปลงยังไม่ได้บันทึก`}),(0,X.jsxs)(`button`,{className:`primary-button`,onClick:c,children:[(0,X.jsx)(ts,{size:15}),` บันทึกการตั้งค่า`]})]})]})]})]})]})}function Nl({title:e,description:t,children:n}){return(0,X.jsxs)(`div`,{className:`settings-section`,children:[(0,X.jsxs)(`div`,{className:`settings-section-copy`,children:[(0,X.jsx)(`h2`,{children:e}),(0,X.jsx)(`p`,{children:t})]}),n]})}function Pl({label:e,description:t,checked:n,onChange:r}){return(0,X.jsxs)(`button`,{type:`button`,className:`toggle-row`,onClick:()=>r(!n),"aria-pressed":n,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:e}),(0,X.jsx)(`span`,{children:t})]}),(0,X.jsx)(`span`,{className:`toggle ${n?`on`:``}`,children:(0,X.jsx)(`i`,{})})]})}function Fl({label:e,description:t,value:n,options:r,onChange:i}){return(0,X.jsxs)(`div`,{className:`choice-card`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:e}),(0,X.jsx)(`span`,{children:t})]}),(0,X.jsx)(`div`,{className:`choice-buttons`,children:r.map(e=>(0,X.jsx)(`button`,{type:`button`,className:n===e?`selected`:``,onClick:()=>i(e),children:e},e))})]})}(0,u.createRoot)(document.getElementById(`root`)).render((0,X.jsx)(l.StrictMode,{children:(0,X.jsx)(sl,{})}));

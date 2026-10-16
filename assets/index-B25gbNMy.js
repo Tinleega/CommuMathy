@@ -2007,9 +2007,577 @@ function wl({ score, total, progress, onLessons, questions = [], answers = {} })
     ],
   });
 }
-function Tl({messages:e,setMessages:t}){let[n,r]=(0,l.useState)(``),[i,a]=(0,l.useState)(null),[o,s]=(0,l.useState)(null),[c,u]=(0,l.useState)(!1),d=(0,l.useRef)(null);(0,l.useEffect)(()=>{let e=!0;return fetch(`/api/gemini/status`).then(e=>e.ok?e.json():Promise.reject(Error(`Status unavailable`))).then(t=>{e&&s(t)}).catch(()=>{e&&s({configured:!1,model:`gemini-3.8-flash`})}),()=>{e=!1}},[]);let f=async(s=n)=>{let l=s.trim()||(i?`ช่วยดูโจทย์จากรูปนี้ให้หน่อยค่ะ`:``);if(!l||c)return;let d=new Date().toLocaleTimeString(`th-TH`,{hour:`2-digit`,minute:`2-digit`}),f={role:`user`,text:l,time:d},p=[...e,f];t(p),r(``),a(null),u(!0);try{if(!o?.configured){t(e=>[...e,{role:`tutor`,text:El(l),time:d}]);return}let e=await fetch(`/api/gemini`,{method:`POST`,headers:{"Content-Type":`application/json`},body:JSON.stringify({contents:p.map(e=>({role:e.role===`tutor`?`model`:`user`,parts:[{text:e.text}]}))})}),n=await e.json().catch(()=>({}));if(!e.ok||!n.text)throw Error(n.error||`Gemini request failed`);t(e=>[...e,{role:`tutor`,text:n.text??``,time:d}])}catch(e){let n=e instanceof Error?e.message:`เชื่อมต่อ Gemini ไม่สำเร็จ`;t(e=>[...e,{role:`tutor`,text:`ขออภัยค่ะ ตอนนี้เชื่อมต่อ Gemini ไม่สำเร็จ (${n}) จึงขอใช้คำตอบตัวอย่างแทน\n\n${El(l)}`,time:d}])}finally{u(!1)}},p=!!o?.configured,m=p?`Gemini Flash • ${o?.model}`:`โหมดสาธิต • ยังไม่เชื่อมต่อโมเดลจริง`;return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(bl,{eyebrow:`ผู้ช่วยคิดไปด้วยกัน`,title:`ติวเตอร์คณิตศาสตร์ AI`,description:`ถามได้ทุกเรื่อง ค่อย ๆ คิดไปทีละขั้น และเลือกขอคำใบ้แทนคำตอบได้`,action:(0,X.jsxs)(`div`,{className:`demo-badge ${p?`model-badge`:``}`,children:[(0,X.jsx)(`span`,{className:`status-dot`}),` `,m]})}),(0,X.jsxs)(`div`,{className:`tutor-layout`,children:[(0,X.jsxs)(`aside`,{className:`tutor-history`,children:[(0,X.jsxs)(`button`,{className:`primary-button new-chat`,onClick:()=>t(nl),children:[(0,X.jsx)(Zo,{size:17}),` เริ่มบทสนทนาใหม่`]}),(0,X.jsx)(`div`,{className:`history-label`,children:`ประวัติการคุย`}),[`ทำความเข้าใจเรื่องย้ายข้าง`,`โจทย์พีทาโกรัส`,`ทบทวนก่อนสอบ ม.3`].map((e,t)=>(0,X.jsxs)(`button`,{className:`history-item ${t===0?`active`:``}`,children:[(0,X.jsx)(Uo,{size:16}),(0,X.jsx)(`span`,{children:e}),(0,X.jsx)(Eo,{size:15})]},e)),(0,X.jsxs)(`div`,{className:`tutor-history-footer`,children:[(0,X.jsx)(Fo,{size:15}),(0,X.jsx)(`span`,{children:p?`เชื่อมต่อ Gemini Flash ผ่านเซิร์ฟเวอร์ของแอปแล้ว`:`คำตอบในโหมดสาธิตเป็นตัวอย่างเพื่อแสดงประสบการณ์ใช้งาน`})]})]}),(0,X.jsxs)(`section`,{className:`chat-window`,children:[(0,X.jsxs)(`div`,{className:`chat-header`,children:[(0,X.jsx)(`div`,{className:`tutor-avatar`,children:(0,X.jsx)(mo,{size:21})}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:`Mathy Tutor`}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(`span`,{className:`status-dot`}),` `,p?`Gemini Flash • ${o?.model}`:`พร้อมช่วยอธิบาย`]})]}),(0,X.jsx)(`button`,{className:`icon-button`,children:(0,X.jsx)(Eo,{size:18})})]}),(0,X.jsxs)(`div`,{className:`chat-messages`,children:[e.map((e,t)=>(0,X.jsxs)(`div`,{className:`chat-row ${e.role}`,children:[(0,X.jsx)(`div`,{className:`chat-avatar ${e.role}`,children:e.role===`tutor`?(0,X.jsx)(ds,{size:16}):`พช`}),(0,X.jsxs)(`div`,{className:`message-wrap`,children:[(0,X.jsxs)(`div`,{className:`message-bubble`,children:[e.text.split(`
-`).map((t,n)=>(0,X.jsxs)(`span`,{children:[t,n<e.text.split(`
-`).length-1&&(0,X.jsx)(`br`,{})]},n)),e.role===`tutor`&&t>0&&(0,X.jsxs)(`div`,{className:`message-reaction`,children:[(0,X.jsx)(`button`,{children:(0,X.jsx)(hs,{size:13})}),(0,X.jsx)(`button`,{children:(0,X.jsx)(hs,{size:13,className:`downvote`})})]})]}),(0,X.jsx)(`small`,{children:e.time})]})]},`${e.time}-${t}`)),c&&(0,X.jsxs)(`div`,{className:`chat-row tutor`,children:[(0,X.jsx)(`div`,{className:`chat-avatar tutor`,children:(0,X.jsx)(ds,{size:16})}),(0,X.jsx)(`div`,{className:`message-wrap`,children:(0,X.jsx)(`div`,{className:`message-bubble`,children:`กำลังคิด…`})})]}),i&&(0,X.jsxs)(`div`,{className:`upload-preview`,children:[(0,X.jsx)(Po,{size:16}),` แนบรูปแล้ว `,(0,X.jsx)(`button`,{onClick:()=>a(null),children:(0,X.jsx)(Ts,{size:14})})]})]}),(0,X.jsx)(`div`,{className:`suggestion-row`,children:[`ขอคำใบ้หน่อย`,`ช่วยตรวจวิธีทำ`,`อธิบายแบบง่าย ๆ`].map(e=>(0,X.jsxs)(`button`,{disabled:c,onClick:()=>f(e),children:[(0,X.jsx)(Lo,{size:14}),` `,e]},e))}),(0,X.jsxs)(`div`,{className:`chat-composer`,children:[(0,X.jsx)(`button`,{className:`attach-button`,onClick:()=>d.current?.click(),"aria-label":`แนบรูป`,disabled:c,children:(0,X.jsx)(qo,{size:19})}),(0,X.jsx)(`input`,{ref:d,type:`file`,accept:`image/*`,hidden:!0,onChange:e=>a(e.target.files?.[0]?.name??null)}),(0,X.jsx)(`input`,{value:n,onChange:e=>r(e.target.value),onKeyDown:e=>{e.key===`Enter`&&f()},placeholder:`พิมพ์คำถามคณิตศาสตร์ของคุณ...`,"aria-label":`คำถามถึงติวเตอร์`,disabled:c}),(0,X.jsx)(`button`,{className:`send-button`,onClick:()=>f(),"aria-label":c?`กำลังส่ง`:`ส่ง`,disabled:c,children:(0,X.jsx)(as,{size:18})})]})]})]})]})}function El(e){return e.includes(`ใบ้`)?`ได้เลยค่ะ ลองเริ่มจากเขียนสิ่งที่โจทย์ให้มาก่อน แล้วถามตัวเองว่า “เราต้องการหาค่าอะไร” จากนั้นเลือกสมบัติทางคณิตศาสตร์ที่ทำให้ตัวแปรอยู่เพียงข้างเดียว โดยทำเหมือนกันทั้งสองข้างนะคะ`:e.includes(`ตรวจ`)?`ส่งวิธีทำมาได้เลยค่ะ ในโหมดสาธิตนี้ฉันจะช่วยชี้จุดที่ควรตรวจ โดยจะแยกให้เห็นชัดว่าคำตอบสุดท้ายถูกหรือไม่ และเหตุผลแต่ละขั้นสมเหตุสมผลหรือเปล่า`:`คำถามนี้น่าสนใจมากค่ะ ลองแยกโจทย์เป็น “สิ่งที่รู้” กับ “สิ่งที่ต้องหา” ก่อนนะคะ จากนั้นฉันจะแนะนำคำถามเล็ก ๆ ให้คุณลองคิดต่อเองทีละขั้น (คำตอบนี้เป็นตัวอย่างในโหมดสาธิต)`}function Dl({posts:e,setPosts:t}){let[n,r]=(0,l.useState)(``),[i,a]=(0,l.useState)(`recent`),[o,s]=(0,l.useState)(!1),[c,u]=(0,l.useState)(``),[d,f]=(0,l.useState)(``),[p,m]=(0,l.useState)(null),[h,g]=(0,l.useState)(``),_=e.filter(e=>`${e.title} ${e.body} ${e.tag}`.toLowerCase().includes(n.toLowerCase())).sort((e,t)=>i===`popular`?t.likes-e.likes:t.id.localeCompare(e.id));return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(bl,{eyebrow:`เรียนรู้ไปด้วยกัน`,title:`ชุมชนการเรียนรู้`,description:`ถาม แบ่งปันวิธีคิด และช่วยกันทำให้คณิตศาสตร์เข้าใจง่ายขึ้น`,action:(0,X.jsxs)(`button`,{className:`primary-button`,onClick:()=>s(!0),children:[(0,X.jsx)(Zo,{size:17}),` ตั้งคำถามใหม่`]})}),(0,X.jsxs)(`div`,{className:`community-toolbar`,children:[(0,X.jsxs)(`div`,{className:`community-search`,children:[(0,X.jsx)(rs,{size:17}),(0,X.jsx)(`input`,{value:n,onChange:e=>r(e.target.value),placeholder:`ค้นหาคำถามหรือหัวข้อ...`})]}),(0,X.jsxs)(`div`,{className:`sort-buttons`,children:[(0,X.jsx)(`button`,{className:i===`recent`?`active`:``,onClick:()=>a(`recent`),children:`ล่าสุด`}),(0,X.jsx)(`button`,{className:i===`popular`?`active`:``,onClick:()=>a(`popular`),children:`ยอดนิยม`})]})]}),(0,X.jsxs)(`div`,{className:`community-layout`,children:[(0,X.jsxs)(`section`,{className:`post-feed`,children:[(0,X.jsxs)(`div`,{className:`feed-label`,children:[(0,X.jsxs)(`strong`,{children:[_.length,` การสนทนา`]}),(0,X.jsx)(`span`,{children:`พื้นที่ปลอดภัยสำหรับการเรียนรู้`})]}),_.map(e=>(0,X.jsx)(Ol,{post:e,onOpen:()=>m(e),onLike:()=>t(t=>t.map(t=>t.id===e.id?{...t,likes:t.likes+(t.liked?-1:1),liked:!t.liked}:t))},e.id)),_.length===0&&(0,X.jsxs)(`div`,{className:`empty-state`,children:[(0,X.jsx)(rs,{size:24}),(0,X.jsx)(`h3`,{children:`ยังไม่พบการสนทนา`}),(0,X.jsx)(`p`,{children:`ลองใช้คำค้นอื่น หรือเป็นคนเริ่มถามคำถามแรกกันเลย`})]})]}),(0,X.jsxs)(`aside`,{className:`community-aside`,children:[(0,X.jsxs)(`div`,{className:`side-card topic-card`,children:[(0,X.jsx)(`div`,{className:`side-card-heading`,children:(0,X.jsx)(`h3`,{children:`หัวข้อยอดนิยม`})}),[`พีชคณิต`,`เรขาคณิต`,`โจทย์ประยุกต์`,`เตรียมสอบ ม.3`].map((e,t)=>(0,X.jsxs)(`button`,{className:`topic-row`,children:[(0,X.jsx)(`span`,{className:`topic-color color-${t}`}),e,(0,X.jsx)(`span`,{children:[24,18,12,9][t]})]},e))]}),(0,X.jsxs)(`div`,{className:`community-guideline`,children:[(0,X.jsx)(Cs,{size:18}),(0,X.jsx)(`strong`,{children:`ช่วยกันสร้างพื้นที่ที่ดี`}),(0,X.jsx)(`p`,{children:`อธิบายด้วยเหตุผล ให้เกียรติกัน และจำไว้ว่าทุกคนกำลังเรียนรู้`})]})]})]}),o&&(0,X.jsx)(`div`,{className:`modal-backdrop`,children:(0,X.jsxs)(`div`,{className:`create-modal`,children:[(0,X.jsxs)(`div`,{className:`modal-heading`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{className:`eyebrow-dot`}),` ตั้งคำถามใหม่`]}),(0,X.jsx)(`button`,{onClick:()=>s(!1),children:(0,X.jsx)(Ts,{size:19})})]}),(0,X.jsxs)(`label`,{children:[`หัวข้อคำถาม`,(0,X.jsx)(`input`,{value:c,onChange:e=>u(e.target.value),placeholder:`เช่น มีวิธีคิดข้อนี้แบบอื่นไหม?`})]}),(0,X.jsxs)(`label`,{children:[`รายละเอียด`,(0,X.jsx)(`textarea`,{value:d,onChange:e=>f(e.target.value),placeholder:`เล่าโจทย์หรือสิ่งที่ลองทำมาแล้วได้เลย...`,rows:5})]}),(0,X.jsxs)(`div`,{className:`modal-actions`,children:[(0,X.jsx)(`button`,{className:`outline-button`,onClick:()=>s(!1),children:`ยกเลิก`}),(0,X.jsxs)(`button`,{className:`primary-button`,disabled:!c.trim()||!d.trim(),onClick:()=>{c.trim()&&d.trim()&&(t(e=>[{id:`post-${Date.now()}`,title:c,body:d,author:`พิมพ์ชนก`,initials:`พช`,tag:`คำถาม`,time:`เมื่อสักครู่`,likes:0,comments:0,replies:[]},...e]),u(``),f(``),s(!1))},children:[`เผยแพร่คำถาม `,(0,X.jsx)(as,{size:16})]})]})]})}),p&&(0,X.jsx)(`div`,{className:`modal-backdrop`,onClick:()=>m(null),children:(0,X.jsxs)(`div`,{className:`post-detail-modal`,onClick:e=>e.stopPropagation(),children:[(0,X.jsx)(`button`,{className:`modal-close`,onClick:()=>m(null),children:(0,X.jsx)(Ts,{size:18})}),(0,X.jsx)(Ol,{post:p,onOpen:()=>void 0,onLike:()=>void 0}),(0,X.jsx)(`div`,{className:`reply-list`,children:p.replies.map((e,t)=>(0,X.jsxs)(`div`,{className:`reply-item`,children:[(0,X.jsx)(`div`,{className:`avatar avatar-lavender`,children:t===0?`คม`:`พช`}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:t===0?`ครูเมย์`:`พิมพ์ชนก`}),(0,X.jsx)(`p`,{children:e})]})]},t))}),(0,X.jsxs)(`div`,{className:`reply-composer`,children:[(0,X.jsx)(`input`,{value:h,onChange:e=>g(e.target.value),placeholder:`เขียนคำตอบที่ช่วยให้เพื่อนเข้าใจ...`}),(0,X.jsx)(`button`,{onClick:()=>{p&&h.trim()&&(t(e=>e.map(e=>e.id===p.id?{...e,comments:e.comments+1,replies:[...e.replies,h]}:e)),m({...p,comments:p.comments+1,replies:[...p.replies,h]}),g(``))},children:(0,X.jsx)(as,{size:16})})]})]})})]})}function Ol({post:e,onOpen:t,onLike:n}){return(0,X.jsxs)(`article`,{className:`post-card`,children:[(0,X.jsxs)(`div`,{className:`post-author`,children:[(0,X.jsx)(`div`,{className:`avatar ${e.initials===`พพ`?`avatar-peach`:e.initials===`ตน`?`avatar-teal`:`avatar-lavender`}`,children:e.initials}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:e.author}),(0,X.jsx)(`span`,{children:e.time})]}),(0,X.jsx)(`button`,{className:`more-button`,children:(0,X.jsx)(Eo,{size:18})})]}),(0,X.jsxs)(`button`,{className:`post-content`,onClick:t,children:[(0,X.jsxs)(`div`,{className:`post-title-row`,children:[(0,X.jsx)(`h3`,{children:e.title}),(0,X.jsx)(`span`,{className:`post-tag`,children:e.tag})]}),(0,X.jsx)(`p`,{children:e.body})]}),(0,X.jsxs)(`div`,{className:`post-actions`,children:[(0,X.jsxs)(`button`,{className:e.liked?`liked`:``,onClick:n,children:[(0,X.jsx)(hs,{size:15}),` มีประโยชน์ `,(0,X.jsx)(`span`,{children:e.likes})]}),(0,X.jsxs)(`button`,{onClick:t,children:[(0,X.jsx)(Uo,{size:15}),` ความคิดเห็น `,(0,X.jsx)(`span`,{children:e.comments})]}),(0,X.jsxs)(`button`,{className:`share-button`,children:[(0,X.jsx)(ys,{size:15}),` แชร์`]})]})]})}function kl({progress:e}){return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(bl,{eyebrow:`เติบโตไปด้วยกัน`,title:`กระดานคะแนน`,description:`คะแนนเป็นแรงจูงใจเล็ก ๆ ให้เราเรียนต่อเนื่อง ไม่ใช่ตัววัดคุณค่าหรือความเก่งของใคร`,action:(0,X.jsxs)(`div`,{className:`leaderboard-actions`,children:[(0,X.jsxs)(`div`,{className:`demo-badge`,children:[(0,X.jsx)(`span`,{className:`status-dot`}),` ข้อมูลตัวอย่างในโหมดเดโม`]}),(0,X.jsxs)(`div`,{className:`period-select`,children:[`สัปดาห์นี้ `,(0,X.jsx)(vo,{size:15})]})]})}),(0,X.jsxs)(`div`,{className:`leaderboard-layout`,children:[(0,X.jsxs)(`section`,{className:`leaderboard-main`,children:[(0,X.jsxs)(`div`,{className:`podium`,children:[(0,X.jsxs)(`div`,{className:`podium-person second`,children:[(0,X.jsx)(`div`,{className:`podium-avatar silver-bg`,children:`ตน`}),(0,X.jsx)(`strong`,{children:`ต้นน้ำ`}),(0,X.jsx)(`span`,{children:`1,080 XP`}),(0,X.jsx)(`div`,{className:`podium-block block-two`,children:`2`})]}),(0,X.jsxs)(`div`,{className:`podium-person first`,children:[(0,X.jsx)(`div`,{className:`crown`,children:`✦`}),(0,X.jsx)(`div`,{className:`podium-avatar gold-bg`,children:`ขห`}),(0,X.jsx)(`strong`,{children:`น้องข้าวหอม`}),(0,X.jsx)(`span`,{children:`1,240 XP`}),(0,X.jsx)(`div`,{className:`podium-block block-one`,children:`1`})]}),(0,X.jsxs)(`div`,{className:`podium-person third`,children:[(0,X.jsx)(`div`,{className:`podium-avatar bronze-bg`,children:`พช`}),(0,X.jsx)(`strong`,{children:`พิมพ์ชนก`}),(0,X.jsxs)(`span`,{children:[e.xp.toLocaleString(),` XP`]}),(0,X.jsx)(`div`,{className:`podium-block block-three`,children:`3`})]})]}),(0,X.jsx)(`div`,{className:`rank-list`,children:js.map(t=>(0,X.jsxs)(`div`,{className:`rank-row ${t.rank===3?`current-user`:``}`,children:[(0,X.jsx)(`span`,{className:`rank-number`,children:t.rank}),(0,X.jsx)(`div`,{className:`avatar avatar-${t.color}`,children:t.initials}),(0,X.jsxs)(`div`,{className:`rank-name`,children:[(0,X.jsxs)(`strong`,{children:[t.name,` `,t.rank===3&&(0,X.jsx)(`span`,{children:`คุณ`})]}),(0,X.jsx)(`small`,{children:t.rank===1?`เรียน 4 วันติด`:t.rank===2?`ทำแบบฝึกหัดเก่ง`:`กำลังไปได้ดี`})]}),(0,X.jsxs)(`strong`,{className:`rank-xp`,children:[t.rank===3?e.xp.toLocaleString():t.xp.replace(` XP`,``),` XP`]})]},t.rank))})]}),(0,X.jsxs)(`aside`,{className:`leaderboard-side`,children:[(0,X.jsxs)(`div`,{className:`side-card your-rank`,children:[(0,X.jsxs)(`div`,{className:`side-card-heading`,children:[(0,X.jsx)(`h3`,{children:`อันดับของคุณ`}),(0,X.jsx)(`span`,{children:`สัปดาห์นี้`})]}),(0,X.jsxs)(`div`,{className:`your-rank-number`,children:[(0,X.jsx)(`strong`,{children:`#3`}),(0,X.jsx)(`span`,{children:`จาก 24 คน`})]}),(0,X.jsxs)(`div`,{className:`rank-up`,children:[(0,X.jsx)(Al,{}),` ขึ้นมา 2 อันดับจากสัปดาห์ก่อน`]}),(0,X.jsx)(`div`,{className:`xp-bar`,children:(0,X.jsx)(`span`,{style:{width:`70%`}})}),(0,X.jsx)(`small`,{children:`อีก 240 XP จะถึงอันดับ #2`})]}),(0,X.jsxs)(`div`,{className:`side-card rewards-card`,children:[(0,X.jsx)(`div`,{className:`reward-icon`,children:(0,X.jsx)(ro,{size:20})}),(0,X.jsx)(`h3`,{children:`สะสมความสำเร็จ`}),(0,X.jsx)(`p`,{children:`คุณปลดล็อกแล้ว 4 จาก 12 เหรียญ`}),(0,X.jsxs)(`div`,{className:`reward-dots`,children:[(0,X.jsx)(`i`,{className:`unlocked`}),(0,X.jsx)(`i`,{className:`unlocked`}),(0,X.jsx)(`i`,{className:`unlocked`}),(0,X.jsx)(`i`,{className:`unlocked`}),(0,X.jsx)(`i`,{}),(0,X.jsx)(`i`,{}),(0,X.jsx)(`i`,{}),(0,X.jsx)(`i`,{})]}),(0,X.jsxs)(`button`,{className:`text-button`,children:[`ดูความสำเร็จทั้งหมด `,(0,X.jsx)(to,{size:14})]})]})]})]})]})}function Al(){return(0,X.jsx)(`span`,{className:`arrow-up-small`,children:`↑`})}function jl({progress:e,onNavigate:t,onLesson:n}){const profileSettings=qmmLoadActiveUserSettings(el)||el,profileName=String(profileSettings.displayName||`พิมพ์ชนก`).trim()||`พิมพ์ชนก`,profileGrade=profileSettings.grade||`ม.3`,profileInterests=Array.isArray(profileSettings.mathInterests)?profileSettings.mathInterests:[];const profileAchievements=[];if(e.streak>=5)profileAchievements.push({id:`streak`,kind:`streak`,title:`ไฟแรงต่อเนื่อง`,description:`เรียนต่อเนื่องครบ 5 วัน`});if(e.exerciseCorrect>=5)profileAchievements.push({id:`practice`,kind:`practice`,title:`นักแก้โจทย์`,description:`ตอบถูกครบ 5 ข้อ`});return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsxs)(`div`,{className:`profile-hero`,children:[(0,X.jsx)(`div`,{className:`profile-banner-shape`}),(0,X.jsxs)(`div`,{className:`profile-main`,children:[(0,X.jsx)(`div`,{className:`profile-avatar-large`,children:profileSettings.profilePicture?(0,X.jsx)(`img`,{src:profileSettings.profilePicture,alt:`รูปโปรไฟล์ของ ${profileName}`}):profileName.slice(0,2)}),(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`div`,{className:`profile-name-row`,children:[(0,X.jsx)(`h1`,{children:profileName}),(0,X.jsxs)(`span`,{className:`level-badge`,children:[(0,X.jsx)(ds,{size:13}),` นักสำรวจ`]})]}),(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(`p`,{children:`นักเรียนชั้น ${profileGrade} • สถิติแสดงจากกิจกรรมที่บันทึกไว้`}),(0,X.jsxs)(`div`,{className:`profile-interest-row`,children:[(0,X.jsx)(`span`,{className:`profile-interest-label`,children:`สนใจ`}),(profileInterests.length?profileInterests.map(interest=>(0,X.jsx)(`span`,{className:`profile-interest-pill`,children:interest},interest)):(0,X.jsx)(`button`,{type:`button`,className:`profile-interest-add`,onClick:()=>t(`settings`),children:`+ เพิ่มความสนใจ`}))]})]}),(0,X.jsxs)(`div`,{className:`profile-stat-row`,children:[(0,X.jsxs)(`span`,{children:[(0,X.jsx)(Oo,{size:15}),` `,(0,X.jsx)(`strong`,{children:e.streak}),` วันต่อเนื่อง`]}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(Ds,{size:15}),` `,(0,X.jsx)(`strong`,{children:e.xp.toLocaleString()}),` XP`]}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(so,{size:15}),` `,(0,X.jsx)(`strong`,{children:e.completedLessons.length}),` บทเรียนจบแล้ว`]})]})]})]}),(0,X.jsxs)(`button`,{className:`outline-button profile-edit`,onClick:()=>t(`settings`),children:[(0,X.jsx)(Yo,{size:15}),` แก้ไขโปรไฟล์`]})]}),(0,X.jsxs)(`div`,{className:`profile-grid`,children:[(0,X.jsxs)(`section`,{children:[(0,X.jsx)(fl,{title:`เส้นทางการเรียนรู้`}),(0,X.jsxs)(`div`,{className:`profile-progress-card`,children:[(0,X.jsxs)(`div`,{className:`profile-progress-head`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{children:`ความก้าวหน้าโดยรวม`}),(0,X.jsxs)(`strong`,{children:[Math.round(qmmCompletionPercent(e.completedLessons.length,Os.length)),`%`]})]}),(0,X.jsx)(ps,{size:22})]}),(0,X.jsx)(`div`,{className:`progress-line`,children:(0,X.jsx)(`span`,{style:{width:`${Math.min(100,qmmCompletionPercent(e.completedLessons.length,Os.length))}%`}})}),(0,X.jsxs)(`div`,{className:`profile-progress-foot`,children:[(0,X.jsx)(`span`,{children:`เรียนจบแล้ว ${e.completedLessons.length} บท`}),(0,X.jsx)(`span`,{children:`จากทั้งหมด ${Os.length} บท`})]})]}),(0,X.jsx)(fl,{title:`บทเรียนที่บันทึกไว้`,link:`ดูทั้งหมด`,onLink:()=>t(`lessons`)}),e.bookmarks.length>0?e.bookmarks.map(e=>{let t=Os.find(t=>t.id===e);return t?(0,X.jsx)(gl,{lesson:t,onClick:()=>n(t)},e):null}):(0,X.jsxs)(`div`,{className:`empty-state compact`,children:[(0,X.jsx)(fo,{size:22}),(0,X.jsx)(`p`,{children:`ยังไม่มีบทเรียนที่บันทึกไว้`})]})]}),(0,X.jsxs)(`aside`,{children:[(0,X.jsxs)(`div`,{className:`side-card achievement-card`,children:[(0,X.jsxs)(`div`,{className:`side-card-heading`,children:[(0,X.jsx)(`h3`,{children:`ความสำเร็จล่าสุด`}),(0,X.jsx)(`button`,{children:`ดูทั้งหมด`})]}),(0,X.jsx)(QmmProfileAchievements,{items:profileAchievements})]}),(0,X.jsxs)(`div`,{
+const qmmGeminiDefaultModel="gemini-3.8-flash";
+const qmmGeminiModels=[{"id":"gemini-3.8-flash","label":"Gemini 3.8 Flash • แนะนำ"},{"id":"gemini-3.5-flash-lite","label":"Gemini 3.5 Flash-Lite • เร็วและประหยัด"}];
+function qmmNormalizeGeminiModel(model) {
+  const id = String(model ?? "").trim();
+  return qmmGeminiModels.some((option) => option.id === id) ? id : qmmGeminiDefaultModel;
+}
+function qmmReadGeminiStore(storage) {
+  try {
+    const parsed = JSON.parse(storage?.getItem("commumathy-gemini") || "{}");
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+function qmmReadGeminiConfig(profileId, storage = globalThis.localStorage) {
+  const entry = qmmReadGeminiStore(storage)[profileId];
+  const apiKey = typeof entry?.apiKey === "string" ? entry.apiKey.trim() : "";
+  return apiKey ? { apiKey, model: qmmNormalizeGeminiModel(entry.model) } : null;
+}
+function qmmWriteGeminiConfig(profileId, config, storage = globalThis.localStorage) {
+  const store = qmmReadGeminiStore(storage);
+  const apiKey = String(config?.apiKey ?? "").trim();
+  if (apiKey) store[profileId] = { apiKey, model: qmmNormalizeGeminiModel(config.model) };
+  else delete store[profileId];
+  storage.setItem("commumathy-gemini", JSON.stringify(store));
+  return apiKey ? store[profileId] : null;
+}
+function qmmBuildGeminiContents(messages = [], image = null) {
+  const contents = [];
+  for (const message of Array.isArray(messages) ? messages.slice(-24) : []) {
+    const text = typeof message?.text === "string" ? message.text.trim() : "";
+    // Demo answers and error notices are shown locally but are not part of the conversation.
+    if (!text || message.local) continue;
+    const role = message.role === "tutor" ? "model" : "user";
+    if (!contents.length && role === "model") continue;
+    const previous = contents[contents.length - 1];
+    if (previous?.role === role) previous.parts[0].text += `\n\n${text}`;
+    else contents.push({ role, parts: [{ text }] });
+  }
+  if (contents[contents.length - 1]?.role !== "user") return [];
+  if (image?.data && image?.mimeType) {
+    contents[contents.length - 1].parts.push({ inlineData: { mimeType: image.mimeType, data: image.data } });
+  }
+  return contents;
+}
+function qmmBuildGeminiRequest(messages, { image = null, grade = "", model = qmmGeminiDefaultModel } = {}) {
+  const level = grade ? `ผู้เรียนอยู่ชั้น ${grade} ` : "";
+  // Thinking tokens count against maxOutputTokens, so keep the cap roomy and, on
+  // 3.8 Flash (default "medium"), think less so a tutoring reply is quick and never empty.
+  const generationConfig = { maxOutputTokens: 8192 };
+  if (qmmNormalizeGeminiModel(model) === "gemini-3.8-flash") generationConfig.thinkingConfig = { thinkingLevel: "low" };
+  return {
+    systemInstruction: {
+      parts: [{
+        text: [
+          "คุณคือ Mathy Tutor ติวเตอร์คณิตศาสตร์ภาษาไทยของแอป CommuMathy",
+          `${level}อธิบายเป็นขั้นตอนสั้น ๆ ด้วยภาษาที่เป็นมิตร ชวนผู้เรียนคิดเองก่อนเฉลย และให้คำใบ้แทนคำตอบเมื่อผู้เรียนขอคำใบ้`,
+          "ถ้าข้อมูลในโจทย์ไม่พอหรืออ่านรูปไม่ชัด ให้บอกตรง ๆ และถามกลับ อย่าเดาคำตอบ",
+          "ตอบเป็นข้อความธรรมดา ไม่ใช้ Markdown หรือ LaTeX เขียนสมการแบบ 2x + 3 = 11 และใช้สัญลักษณ์ เช่น ² √ π ≤ ≥ ได้",
+        ].join("\n"),
+      }],
+    },
+    contents: qmmBuildGeminiContents(messages, image),
+    generationConfig,
+  };
+}
+function qmmGeminiError(status, payload) {
+  const detail = payload?.error;
+  const reasons = (Array.isArray(detail?.details) ? detail.details : []).map((item) => item?.reason);
+  const message = String(detail?.message || "");
+  const failure = (code, text) => Object.assign(new Error(text), { code, status });
+  if (reasons.includes("API_KEY_INVALID") || /api key not valid/i.test(message)) {
+    return failure("auth", "API key ไม่ถูกต้อง กรุณาตรวจสอบแล้ววางใหม่อีกครั้ง");
+  }
+  if (status === 401 || status === 403) {
+    return failure("auth", "API key นี้ไม่มีสิทธิ์ใช้ Gemini API กรุณาตรวจสอบ key ใน Google AI Studio");
+  }
+  if (status === 404) return failure("model", "ไม่พบโมเดลที่เลือก ลองเปลี่ยนโมเดลในหน้าการเชื่อมต่อ Gemini");
+  if (status === 429) return failure("quota", "ใช้งาน Gemini เกินโควตาชั่วคราว กรุณารอสักครู่แล้วลองใหม่");
+  if (status >= 500) return failure("server", "เซิร์ฟเวอร์ Gemini ขัดข้องชั่วคราว กรุณาลองใหม่อีกครั้ง");
+  return failure("request", message ? `Gemini แจ้งข้อผิดพลาด: ${message}` : `Gemini แจ้งข้อผิดพลาด (HTTP ${status})`);
+}
+function qmmReadGeminiReply(payload) {
+  const safetyBlock = "Gemini ไม่ตอบคำถามนี้เพราะติดตัวกรองความปลอดภัย ลองถามใหม่ด้วยถ้อยคำอื่น";
+  if (payload?.promptFeedback?.blockReason) throw Object.assign(new Error(safetyBlock), { code: "blocked" });
+  const candidate = payload?.candidates?.[0];
+  const text = (candidate?.content?.parts ?? [])
+    .filter((part) => !part?.thought)
+    .map((part) => (typeof part?.text === "string" ? part.text : ""))
+    .join("")
+    .trim();
+  if (text) {
+    return candidate.finishReason === "MAX_TOKENS"
+      ? `${text}…\n\n(คำตอบยาวเกินกำหนด พิมพ์ “ต่อ” เพื่อให้อธิบายต่อได้ค่ะ)`
+      : text;
+  }
+  if (candidate?.finishReason === "SAFETY") throw Object.assign(new Error(safetyBlock), { code: "blocked" });
+  if (candidate?.finishReason === "MAX_TOKENS") {
+    throw Object.assign(new Error("Gemini ใช้เวลาคิดนานเกินกำหนดจนยังไม่ได้ตอบ ลองแบ่งโจทย์ให้สั้นลงแล้วถามใหม่"), { code: "empty" });
+  }
+  throw Object.assign(new Error("Gemini ไม่ได้ส่งคำตอบกลับมา ลองส่งใหม่อีกครั้ง"), { code: "empty" });
+}
+async function qmmFetchGemini(fetchImpl, url, init) {
+  let response;
+  try {
+    response = await fetchImpl(url, init);
+  } catch {
+    throw Object.assign(new Error("เชื่อมต่อ Gemini ไม่ได้ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่"), { code: "network" });
+  }
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw qmmGeminiError(response.status, payload);
+  return payload;
+}
+async function qmmCallGemini({ apiKey, model, messages, image = null, grade = "", fetchImpl = globalThis.fetch }) {
+  const body = qmmBuildGeminiRequest(messages, { image, grade, model });
+  if (!body.contents.length) throw Object.assign(new Error("ยังไม่มีคำถามให้ส่งถึง Gemini"), { code: "empty" });
+  const payload = await qmmFetchGemini(
+    fetchImpl,
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(qmmNormalizeGeminiModel(model))}:generateContent`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+      body: JSON.stringify(body),
+    },
+  );
+  return qmmReadGeminiReply(payload);
+}
+async function qmmVerifyGeminiKey({ apiKey, model, fetchImpl = globalThis.fetch }) {
+  await qmmFetchGemini(
+    fetchImpl,
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(qmmNormalizeGeminiModel(model))}`,
+    { method: "GET", headers: { "x-goog-api-key": apiKey } },
+  );
+  return true;
+}
+function qmmGeminiImageAccepted(file) {
+  const size = Number(file?.size);
+  return Boolean(
+    file
+      && ["image/jpeg", "image/png", "image/webp"].includes(file.type)
+      && Number.isFinite(size)
+      && size > 0
+      && size <= 15 * 1024 * 1024,
+  );
+}
+function qmmPrepareGeminiImage(file) {
+  if (!qmmGeminiImageAccepted(file)) {
+    return Promise.reject(new Error("แนบได้เฉพาะรูป JPG, PNG หรือ WebP ขนาดไม่เกิน 15 MB"));
+  }
+
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("ไฟล์นี้ไม่ใช่รูปภาพที่รองรับ"));
+    };
+    image.onload = () => {
+      URL.revokeObjectURL(url);
+      const originalWidth = image.naturalWidth || image.width;
+      const originalHeight = image.naturalHeight || image.height;
+      // Large enough to read handwriting, small enough to keep the request quick.
+      const scale = Math.min(1, 1600 / Math.max(originalWidth, originalHeight));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(originalWidth * scale));
+      canvas.height = Math.max(1, Math.round(originalHeight * scale));
+      const context = canvas.getContext("2d");
+      if (!context) {
+        reject(new Error("ไม่สามารถเตรียมรูปภาพได้"));
+        return;
+      }
+      context.fillStyle = "#ffffff";
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      try {
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+        resolve({ name: file.name || "รูปโจทย์", mimeType: "image/jpeg", data: dataUrl.slice(dataUrl.indexOf(",") + 1) });
+      } catch {
+        reject(new Error("ไม่สามารถเตรียมรูปภาพได้"));
+      }
+    };
+    image.src = url;
+  });
+}
+function QmmGeminiConnectPanel({ config, onSave, onDisconnect, onClose }) {
+  const [apiKey, setApiKey] = (0, l.useState)(config?.apiKey ?? "");
+  const [model, setModel] = (0, l.useState)(config?.model ?? qmmGeminiDefaultModel);
+  const [status, setStatus] = (0, l.useState)({ state: "idle", text: "" });
+  const checking = status.state === "checking";
+
+  const save = async (event) => {
+    event.preventDefault();
+    const key = apiKey.trim();
+    if (!key) {
+      setStatus({ state: "error", text: "กรุณาวาง Gemini API key ก่อน" });
+      return;
+    }
+    setStatus({ state: "checking", text: "กำลังทดสอบการเชื่อมต่อกับ Gemini…" });
+    try {
+      await qmmVerifyGeminiKey({ apiKey: key, model });
+      onSave({ apiKey: key, model });
+    } catch (error) {
+      setStatus({ state: "error", text: error instanceof Error ? error.message : "ทดสอบการเชื่อมต่อไม่สำเร็จ" });
+    }
+  };
+
+  return (0, X.jsxs)("form", {
+    className: "gemini-connect-card",
+    onSubmit: save,
+    children: [
+      (0, X.jsxs)("div", {
+        className: "gemini-connect-heading",
+        children: [
+          (0, X.jsx)("div", { className: "tutor-avatar", children: (0, X.jsx)(ds, { size: 19 }) }),
+          (0, X.jsxs)("div", {
+            children: [
+              (0, X.jsx)("h2", { children: "เชื่อมต่อ Google Gemini" }),
+              (0, X.jsx)("p", { children: "วาง API key จาก Google AI Studio เพื่อให้ Mathy Tutor ตอบด้วย Gemini แทนคำตอบตัวอย่าง" }),
+            ],
+          }),
+          (0, X.jsx)("button", {
+            type: "button",
+            className: "icon-button",
+            onClick: onClose,
+            "aria-label": "ปิดหน้าการเชื่อมต่อ Gemini",
+            children: (0, X.jsx)(Ts, { size: 17 }),
+          }),
+        ],
+      }),
+      (0, X.jsxs)("div", {
+        className: "gemini-connect-fields",
+        children: [
+          (0, X.jsxs)("label", {
+            children: [
+              "Gemini API key",
+              (0, X.jsx)("input", {
+                type: "password",
+                value: apiKey,
+                onChange: (event) => setApiKey(event.target.value),
+                placeholder: "วาง API key ที่นี่",
+                autoComplete: "off",
+                spellCheck: false,
+                disabled: checking,
+              }),
+            ],
+          }),
+          (0, X.jsxs)("label", {
+            children: [
+              "โมเดล",
+              (0, X.jsx)("select", {
+                value: model,
+                onChange: (event) => setModel(event.target.value),
+                disabled: checking,
+                children: qmmGeminiModels.map((option) => (0, X.jsx)("option", { value: option.id, children: option.label }, option.id)),
+              }),
+            ],
+          }),
+        ],
+      }),
+      (0, X.jsx)("a", {
+        className: "gemini-connect-link",
+        href: "https://aistudio.google.com/apikey",
+        target: "_blank",
+        rel: "noopener noreferrer",
+        children: "ยังไม่มี key? สร้างได้ที่ Google AI Studio",
+      }),
+      status.text && (0, X.jsx)("p", {
+        className: `gemini-connect-status ${status.state}`,
+        role: status.state === "error" ? "alert" : "status",
+        children: status.text,
+      }),
+      (0, X.jsxs)("div", {
+        className: "gemini-connect-actions",
+        children: [
+          config && (0, X.jsx)("button", {
+            type: "button",
+            className: "outline-button",
+            onClick: onDisconnect,
+            disabled: checking,
+            children: "ยกเลิกการเชื่อมต่อ",
+          }),
+          (0, X.jsx)("button", {
+            type: "submit",
+            className: "primary-button",
+            disabled: checking,
+            children: checking ? "กำลังทดสอบ…" : "บันทึกและเชื่อมต่อ",
+          }),
+        ],
+      }),
+      (0, X.jsxs)("small", {
+        className: "privacy-note",
+        children: [
+          (0, X.jsx)(Fo, { size: 13 }),
+          " key จะถูกเก็บในเบราว์เซอร์นี้สำหรับโปรไฟล์นี้เท่านั้น และส่งตรงถึง Google เมื่อถามติวเตอร์ ไม่ควรบันทึก key บนเครื่องที่ใช้ร่วมกับผู้อื่น",
+        ],
+      }),
+    ],
+  });
+}
+function Tl({ messages, setMessages }) {
+  const profileId = qmmGetActiveLocalUser()?.id || "device";
+  const [draft, setDraft] = (0, l.useState)("");
+  const [attachment, setAttachment] = (0, l.useState)(null);
+  const [attachmentError, setAttachmentError] = (0, l.useState)("");
+  const [gemini, setGemini] = (0, l.useState)(() => qmmReadGeminiConfig(profileId));
+  const [panelOpen, setPanelOpen] = (0, l.useState)(false);
+  const [sending, setSending] = (0, l.useState)(false);
+  const fileInput = (0, l.useRef)(null);
+  const connected = Boolean(gemini?.apiKey);
+  const userInitials = qmmLocalUserInitials();
+  const modelLabel = connected ? `Gemini • ${gemini.model}` : "โหมดสาธิต • เชื่อมต่อ Gemini";
+  const clockTime = () => new Date().toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+
+  const saveGemini = (value) => {
+    try {
+      setGemini(qmmWriteGeminiConfig(profileId, value));
+    } catch {
+      throw new Error("บันทึก key ในเบราว์เซอร์นี้ไม่ได้ (อาจเปิดโหมดส่วนตัวอยู่)");
+    }
+    setPanelOpen(false);
+  };
+  const disconnectGemini = () => {
+    try {
+      qmmWriteGeminiConfig(profileId, null);
+    } catch {}
+    setGemini(null);
+    setPanelOpen(false);
+  };
+
+  const attachImage = async (event) => {
+    const input = event.currentTarget;
+    const file = input.files && input.files[0];
+    if (!file) return;
+    setAttachmentError("");
+    try {
+      setAttachment(await qmmPrepareGeminiImage(file));
+    } catch (error) {
+      setAttachment(null);
+      setAttachmentError(error instanceof Error ? error.message : "แนบรูปไม่สำเร็จ");
+    } finally {
+      input.value = "";
+    }
+  };
+
+  const send = async (value = draft) => {
+    const question = value.trim() || (attachment ? "ช่วยดูโจทย์จากรูปนี้ให้หน่อยค่ะ" : "");
+    if (!question || sending) return;
+    const image = attachment;
+    const userMessage = { role: "user", text: image ? `${question}\n📎 ${image.name}` : question, time: clockTime() };
+    const history = [...messages, userMessage];
+    setMessages(history);
+    setDraft("");
+    setAttachment(null);
+    setAttachmentError("");
+
+    if (!connected) {
+      setMessages((current) => [...current, { role: "tutor", text: El(question), time: clockTime(), local: true }]);
+      return;
+    }
+
+    setSending(true);
+    try {
+      const text = await qmmCallGemini({
+        apiKey: gemini.apiKey,
+        model: gemini.model,
+        // The starter chat (nl) is a sample the student never typed; keep it out of the prompt.
+        messages: history.filter((message) => !nl.some((sample) => sample.role === message.role && sample.text === message.text)),
+        image,
+        grade: qmmGetActiveLocalUser()?.grade || "",
+      });
+      setMessages((current) => [...current, { role: "tutor", text, time: clockTime() }]);
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : "เชื่อมต่อ Gemini ไม่สำเร็จ";
+      setMessages((current) => [...current, { role: "tutor", text: `ขออภัยค่ะ ${reason}`, time: clockTime(), local: true }]);
+      if (error?.code === "auth" || error?.code === "model") setPanelOpen(true);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (0, X.jsxs)(X.Fragment, {
+    children: [
+      (0, X.jsx)(bl, {
+        eyebrow: "ผู้ช่วยคิดไปด้วยกัน",
+        title: "ติวเตอร์คณิตศาสตร์ AI",
+        description: "ถามได้ทุกเรื่อง ค่อย ๆ คิดไปทีละขั้น และเลือกขอคำใบ้แทนคำตอบได้",
+        action: (0, X.jsxs)("button", {
+          type: "button",
+          className: `demo-badge gemini-badge-button ${connected ? "model-badge" : ""}`,
+          onClick: () => setPanelOpen((open) => !open),
+          "aria-expanded": panelOpen,
+          children: [(0, X.jsx)("span", { className: "status-dot" }), " ", modelLabel],
+        }),
+      }),
+      panelOpen && (0, X.jsx)(QmmGeminiConnectPanel, {
+        config: gemini,
+        onSave: saveGemini,
+        onDisconnect: disconnectGemini,
+        onClose: () => setPanelOpen(false),
+      }),
+      (0, X.jsxs)("div", {
+        className: "tutor-layout",
+        children: [
+          (0, X.jsxs)("aside", {
+            className: "tutor-history",
+            children: [
+              (0, X.jsxs)("button", {
+                className: "primary-button new-chat",
+                onClick: () => setMessages(nl),
+                children: [(0, X.jsx)(Zo, { size: 17 }), " เริ่มบทสนทนาใหม่"],
+              }),
+              (0, X.jsx)("div", { className: "history-label", children: "ประวัติการคุย" }),
+              ["ทำความเข้าใจเรื่องย้ายข้าง", "โจทย์พีทาโกรัส", "ทบทวนก่อนสอบ ม.3"].map((title, index) => (0, X.jsxs)("button", {
+                className: `history-item ${index === 0 ? "active" : ""}`,
+                children: [(0, X.jsx)(Uo, { size: 16 }), (0, X.jsx)("span", { children: title }), (0, X.jsx)(Eo, { size: 15 })],
+              }, title)),
+              (0, X.jsxs)("div", {
+                className: "tutor-history-footer",
+                children: [
+                  (0, X.jsx)(Fo, { size: 15 }),
+                  (0, X.jsxs)("div", {
+                    children: [
+                      (0, X.jsx)("span", {
+                        children: connected
+                          ? "เชื่อมต่อ Gemini แล้ว คำถามจะถูกส่งตรงถึง Google ด้วย key ของคุณ"
+                          : "คำตอบในโหมดสาธิตเป็นตัวอย่าง เชื่อมต่อ Gemini เพื่อให้ AI ตอบจริง",
+                      }),
+                      (0, X.jsx)("button", {
+                        type: "button",
+                        className: "text-button",
+                        onClick: () => setPanelOpen(true),
+                        children: connected ? "จัดการการเชื่อมต่อ" : "เชื่อมต่อ Gemini",
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            ],
+          }),
+          (0, X.jsxs)("section", {
+            className: "chat-window",
+            children: [
+              (0, X.jsxs)("div", {
+                className: "chat-header",
+                children: [
+                  (0, X.jsx)("div", { className: "tutor-avatar", children: (0, X.jsx)(mo, { size: 21 }) }),
+                  (0, X.jsxs)("div", {
+                    children: [
+                      (0, X.jsx)("strong", { children: "Mathy Tutor" }),
+                      (0, X.jsxs)("span", {
+                        children: [(0, X.jsx)("span", { className: "status-dot" }), " ", connected ? `Gemini • ${gemini.model}` : "โหมดสาธิต"],
+                      }),
+                    ],
+                  }),
+                  (0, X.jsx)("button", { className: "icon-button", children: (0, X.jsx)(Eo, { size: 18 }) }),
+                ],
+              }),
+              (0, X.jsxs)("div", {
+                className: "chat-messages",
+                children: [
+                  messages.map((message, index) => (0, X.jsxs)("div", {
+                    className: `chat-row ${message.role}`,
+                    children: [
+                      (0, X.jsx)("div", {
+                        className: `chat-avatar ${message.role}`,
+                        children: message.role === "tutor" ? (0, X.jsx)(ds, { size: 16 }) : userInitials,
+                      }),
+                      (0, X.jsxs)("div", {
+                        className: "message-wrap",
+                        children: [
+                          (0, X.jsxs)("div", {
+                            className: "message-bubble",
+                            children: [
+                              message.text.split("\n").map((line, lineIndex, lines) => (0, X.jsxs)("span", {
+                                children: [line, lineIndex < lines.length - 1 && (0, X.jsx)("br", {})],
+                              }, lineIndex)),
+                              message.role === "tutor" && index > 0 && (0, X.jsxs)("div", {
+                                className: "message-reaction",
+                                children: [
+                                  (0, X.jsx)("button", { children: (0, X.jsx)(hs, { size: 13 }) }),
+                                  (0, X.jsx)("button", { children: (0, X.jsx)(hs, { size: 13, className: "downvote" }) }),
+                                ],
+                              }),
+                            ],
+                          }),
+                          (0, X.jsx)("small", { children: message.time }),
+                        ],
+                      }),
+                    ],
+                  }, `${message.time}-${index}`)),
+                  sending && (0, X.jsxs)("div", {
+                    className: "chat-row tutor",
+                    children: [
+                      (0, X.jsx)("div", { className: "chat-avatar tutor", children: (0, X.jsx)(ds, { size: 16 }) }),
+                      (0, X.jsx)("div", {
+                        className: "message-wrap",
+                        children: (0, X.jsx)("div", { className: "message-bubble", children: "กำลังคิด…" }),
+                      }),
+                    ],
+                  }),
+                  attachment && (0, X.jsxs)("div", {
+                    className: "upload-preview",
+                    children: [
+                      (0, X.jsx)(Po, { size: 16 }),
+                      ` แนบรูปแล้ว: ${attachment.name} `,
+                      (0, X.jsx)("button", {
+                        onClick: () => setAttachment(null),
+                        "aria-label": "เอารูปที่แนบออก",
+                        children: (0, X.jsx)(Ts, { size: 14 }),
+                      }),
+                    ],
+                  }),
+                  attachmentError && (0, X.jsxs)("div", {
+                    className: "upload-preview upload-error",
+                    role: "alert",
+                    children: [(0, X.jsx)(Po, { size: 16 }), ` ${attachmentError}`],
+                  }),
+                ],
+              }),
+              (0, X.jsx)("div", {
+                className: "suggestion-row",
+                children: ["ขอคำใบ้หน่อย", "ช่วยตรวจวิธีทำ", "อธิบายแบบง่าย ๆ"].map((suggestion) => (0, X.jsxs)("button", {
+                  disabled: sending,
+                  onClick: () => send(suggestion),
+                  children: [(0, X.jsx)(Lo, { size: 14 }), " ", suggestion],
+                }, suggestion)),
+              }),
+              (0, X.jsxs)("div", {
+                className: "chat-composer",
+                children: [
+                  (0, X.jsx)("button", {
+                    className: "attach-button",
+                    onClick: () => fileInput.current?.click(),
+                    "aria-label": "แนบรูป",
+                    disabled: sending,
+                    children: (0, X.jsx)(qo, { size: 19 }),
+                  }),
+                  (0, X.jsx)("input", {
+                    ref: fileInput,
+                    type: "file",
+                    accept: "image/jpeg,image/png,image/webp",
+                    hidden: true,
+                    onChange: attachImage,
+                  }),
+                  (0, X.jsx)("input", {
+                    value: draft,
+                    onChange: (event) => setDraft(event.target.value),
+                    onKeyDown: (event) => {
+                      if (event.key === "Enter" && !event.nativeEvent.isComposing) send();
+                    },
+                    placeholder: "พิมพ์คำถามคณิตศาสตร์ของคุณ...",
+                    "aria-label": "คำถามถึงติวเตอร์",
+                    disabled: sending,
+                  }),
+                  (0, X.jsx)("button", {
+                    className: "send-button",
+                    onClick: () => send(),
+                    "aria-label": sending ? "กำลังส่ง" : "ส่ง",
+                    disabled: sending,
+                    children: (0, X.jsx)(as, { size: 18 }),
+                  }),
+                ],
+              }),
+            ],
+          }),
+        ],
+      }),
+    ],
+  });
+}
+function El(e){return e.includes(`ใบ้`)?`ได้เลยค่ะ ลองเริ่มจากเขียนสิ่งที่โจทย์ให้มาก่อน แล้วถามตัวเองว่า “เราต้องการหาค่าอะไร” จากนั้นเลือกสมบัติทางคณิตศาสตร์ที่ทำให้ตัวแปรอยู่เพียงข้างเดียว โดยทำเหมือนกันทั้งสองข้างนะคะ`:e.includes(`ตรวจ`)?`ส่งวิธีทำมาได้เลยค่ะ ในโหมดสาธิตนี้ฉันจะช่วยชี้จุดที่ควรตรวจ โดยจะแยกให้เห็นชัดว่าคำตอบสุดท้ายถูกหรือไม่ และเหตุผลแต่ละขั้นสมเหตุสมผลหรือเปล่า`:`คำถามนี้น่าสนใจมากค่ะ ลองแยกโจทย์เป็น “สิ่งที่รู้” กับ “สิ่งที่ต้องหา” ก่อนนะคะ จากนั้นฉันจะแนะนำคำถามเล็ก ๆ ให้คุณลองคิดต่อเองทีละขั้น (คำตอบนี้เป็นตัวอย่างในโหมดสาธิต)`}function Dl({posts:e,setPosts:t}){let[n,r]=(0,l.useState)(``),[i,a]=(0,l.useState)(`recent`),[o,s]=(0,l.useState)(!1),[c,u]=(0,l.useState)(``),[d,f]=(0,l.useState)(``),[p,m]=(0,l.useState)(null),[h,g]=(0,l.useState)(``),_=e.filter(e=>`${e.title} ${e.body} ${e.tag}`.toLowerCase().includes(n.toLowerCase())).sort((e,t)=>i===`popular`?t.likes-e.likes:t.id.localeCompare(e.id));return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(bl,{eyebrow:`เรียนรู้ไปด้วยกัน`,title:`ชุมชนการเรียนรู้`,description:`ถาม แบ่งปันวิธีคิด และช่วยกันทำให้คณิตศาสตร์เข้าใจง่ายขึ้น`,action:(0,X.jsxs)(`button`,{className:`primary-button`,onClick:()=>s(!0),children:[(0,X.jsx)(Zo,{size:17}),` ตั้งคำถามใหม่`]})}),(0,X.jsxs)(`div`,{className:`community-toolbar`,children:[(0,X.jsxs)(`div`,{className:`community-search`,children:[(0,X.jsx)(rs,{size:17}),(0,X.jsx)(`input`,{value:n,onChange:e=>r(e.target.value),placeholder:`ค้นหาคำถามหรือหัวข้อ...`})]}),(0,X.jsxs)(`div`,{className:`sort-buttons`,children:[(0,X.jsx)(`button`,{className:i===`recent`?`active`:``,onClick:()=>a(`recent`),children:`ล่าสุด`}),(0,X.jsx)(`button`,{className:i===`popular`?`active`:``,onClick:()=>a(`popular`),children:`ยอดนิยม`})]})]}),(0,X.jsxs)(`div`,{className:`community-layout`,children:[(0,X.jsxs)(`section`,{className:`post-feed`,children:[(0,X.jsxs)(`div`,{className:`feed-label`,children:[(0,X.jsxs)(`strong`,{children:[_.length,` การสนทนา`]}),(0,X.jsx)(`span`,{children:`พื้นที่ปลอดภัยสำหรับการเรียนรู้`})]}),_.map(e=>(0,X.jsx)(Ol,{post:e,onOpen:()=>m(e),onLike:()=>t(t=>t.map(t=>t.id===e.id?{...t,likes:t.likes+(t.liked?-1:1),liked:!t.liked}:t))},e.id)),_.length===0&&(0,X.jsxs)(`div`,{className:`empty-state`,children:[(0,X.jsx)(rs,{size:24}),(0,X.jsx)(`h3`,{children:`ยังไม่พบการสนทนา`}),(0,X.jsx)(`p`,{children:`ลองใช้คำค้นอื่น หรือเป็นคนเริ่มถามคำถามแรกกันเลย`})]})]}),(0,X.jsxs)(`aside`,{className:`community-aside`,children:[(0,X.jsxs)(`div`,{className:`side-card topic-card`,children:[(0,X.jsx)(`div`,{className:`side-card-heading`,children:(0,X.jsx)(`h3`,{children:`หัวข้อยอดนิยม`})}),[`พีชคณิต`,`เรขาคณิต`,`โจทย์ประยุกต์`,`เตรียมสอบ ม.3`].map((e,t)=>(0,X.jsxs)(`button`,{className:`topic-row`,children:[(0,X.jsx)(`span`,{className:`topic-color color-${t}`}),e,(0,X.jsx)(`span`,{children:[24,18,12,9][t]})]},e))]}),(0,X.jsxs)(`div`,{className:`community-guideline`,children:[(0,X.jsx)(Cs,{size:18}),(0,X.jsx)(`strong`,{children:`ช่วยกันสร้างพื้นที่ที่ดี`}),(0,X.jsx)(`p`,{children:`อธิบายด้วยเหตุผล ให้เกียรติกัน และจำไว้ว่าทุกคนกำลังเรียนรู้`})]})]})]}),o&&(0,X.jsx)(`div`,{className:`modal-backdrop`,children:(0,X.jsxs)(`div`,{className:`create-modal`,children:[(0,X.jsxs)(`div`,{className:`modal-heading`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{className:`eyebrow-dot`}),` ตั้งคำถามใหม่`]}),(0,X.jsx)(`button`,{onClick:()=>s(!1),children:(0,X.jsx)(Ts,{size:19})})]}),(0,X.jsxs)(`label`,{children:[`หัวข้อคำถาม`,(0,X.jsx)(`input`,{value:c,onChange:e=>u(e.target.value),placeholder:`เช่น มีวิธีคิดข้อนี้แบบอื่นไหม?`})]}),(0,X.jsxs)(`label`,{children:[`รายละเอียด`,(0,X.jsx)(`textarea`,{value:d,onChange:e=>f(e.target.value),placeholder:`เล่าโจทย์หรือสิ่งที่ลองทำมาแล้วได้เลย...`,rows:5})]}),(0,X.jsxs)(`div`,{className:`modal-actions`,children:[(0,X.jsx)(`button`,{className:`outline-button`,onClick:()=>s(!1),children:`ยกเลิก`}),(0,X.jsxs)(`button`,{className:`primary-button`,disabled:!c.trim()||!d.trim(),onClick:()=>{c.trim()&&d.trim()&&(t(e=>[{id:`post-${Date.now()}`,title:c,body:d,author:`พิมพ์ชนก`,initials:`พช`,tag:`คำถาม`,time:`เมื่อสักครู่`,likes:0,comments:0,replies:[]},...e]),u(``),f(``),s(!1))},children:[`เผยแพร่คำถาม `,(0,X.jsx)(as,{size:16})]})]})]})}),p&&(0,X.jsx)(`div`,{className:`modal-backdrop`,onClick:()=>m(null),children:(0,X.jsxs)(`div`,{className:`post-detail-modal`,onClick:e=>e.stopPropagation(),children:[(0,X.jsx)(`button`,{className:`modal-close`,onClick:()=>m(null),children:(0,X.jsx)(Ts,{size:18})}),(0,X.jsx)(Ol,{post:p,onOpen:()=>void 0,onLike:()=>void 0}),(0,X.jsx)(`div`,{className:`reply-list`,children:p.replies.map((e,t)=>(0,X.jsxs)(`div`,{className:`reply-item`,children:[(0,X.jsx)(`div`,{className:`avatar avatar-lavender`,children:t===0?`คม`:`พช`}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:t===0?`ครูเมย์`:`พิมพ์ชนก`}),(0,X.jsx)(`p`,{children:e})]})]},t))}),(0,X.jsxs)(`div`,{className:`reply-composer`,children:[(0,X.jsx)(`input`,{value:h,onChange:e=>g(e.target.value),placeholder:`เขียนคำตอบที่ช่วยให้เพื่อนเข้าใจ...`}),(0,X.jsx)(`button`,{onClick:()=>{p&&h.trim()&&(t(e=>e.map(e=>e.id===p.id?{...e,comments:e.comments+1,replies:[...e.replies,h]}:e)),m({...p,comments:p.comments+1,replies:[...p.replies,h]}),g(``))},children:(0,X.jsx)(as,{size:16})})]})]})})]})}function Ol({post:e,onOpen:t,onLike:n}){return(0,X.jsxs)(`article`,{className:`post-card`,children:[(0,X.jsxs)(`div`,{className:`post-author`,children:[(0,X.jsx)(`div`,{className:`avatar ${e.initials===`พพ`?`avatar-peach`:e.initials===`ตน`?`avatar-teal`:`avatar-lavender`}`,children:e.initials}),(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`strong`,{children:e.author}),(0,X.jsx)(`span`,{children:e.time})]}),(0,X.jsx)(`button`,{className:`more-button`,children:(0,X.jsx)(Eo,{size:18})})]}),(0,X.jsxs)(`button`,{className:`post-content`,onClick:t,children:[(0,X.jsxs)(`div`,{className:`post-title-row`,children:[(0,X.jsx)(`h3`,{children:e.title}),(0,X.jsx)(`span`,{className:`post-tag`,children:e.tag})]}),(0,X.jsx)(`p`,{children:e.body})]}),(0,X.jsxs)(`div`,{className:`post-actions`,children:[(0,X.jsxs)(`button`,{className:e.liked?`liked`:``,onClick:n,children:[(0,X.jsx)(hs,{size:15}),` มีประโยชน์ `,(0,X.jsx)(`span`,{children:e.likes})]}),(0,X.jsxs)(`button`,{onClick:t,children:[(0,X.jsx)(Uo,{size:15}),` ความคิดเห็น `,(0,X.jsx)(`span`,{children:e.comments})]}),(0,X.jsxs)(`button`,{className:`share-button`,children:[(0,X.jsx)(ys,{size:15}),` แชร์`]})]})]})}function kl({progress:e}){return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(bl,{eyebrow:`เติบโตไปด้วยกัน`,title:`กระดานคะแนน`,description:`คะแนนเป็นแรงจูงใจเล็ก ๆ ให้เราเรียนต่อเนื่อง ไม่ใช่ตัววัดคุณค่าหรือความเก่งของใคร`,action:(0,X.jsxs)(`div`,{className:`leaderboard-actions`,children:[(0,X.jsxs)(`div`,{className:`demo-badge`,children:[(0,X.jsx)(`span`,{className:`status-dot`}),` ข้อมูลตัวอย่างในโหมดเดโม`]}),(0,X.jsxs)(`div`,{className:`period-select`,children:[`สัปดาห์นี้ `,(0,X.jsx)(vo,{size:15})]})]})}),(0,X.jsxs)(`div`,{className:`leaderboard-layout`,children:[(0,X.jsxs)(`section`,{className:`leaderboard-main`,children:[(0,X.jsxs)(`div`,{className:`podium`,children:[(0,X.jsxs)(`div`,{className:`podium-person second`,children:[(0,X.jsx)(`div`,{className:`podium-avatar silver-bg`,children:`ตน`}),(0,X.jsx)(`strong`,{children:`ต้นน้ำ`}),(0,X.jsx)(`span`,{children:`1,080 XP`}),(0,X.jsx)(`div`,{className:`podium-block block-two`,children:`2`})]}),(0,X.jsxs)(`div`,{className:`podium-person first`,children:[(0,X.jsx)(`div`,{className:`crown`,children:`✦`}),(0,X.jsx)(`div`,{className:`podium-avatar gold-bg`,children:`ขห`}),(0,X.jsx)(`strong`,{children:`น้องข้าวหอม`}),(0,X.jsx)(`span`,{children:`1,240 XP`}),(0,X.jsx)(`div`,{className:`podium-block block-one`,children:`1`})]}),(0,X.jsxs)(`div`,{className:`podium-person third`,children:[(0,X.jsx)(`div`,{className:`podium-avatar bronze-bg`,children:`พช`}),(0,X.jsx)(`strong`,{children:`พิมพ์ชนก`}),(0,X.jsxs)(`span`,{children:[e.xp.toLocaleString(),` XP`]}),(0,X.jsx)(`div`,{className:`podium-block block-three`,children:`3`})]})]}),(0,X.jsx)(`div`,{className:`rank-list`,children:js.map(t=>(0,X.jsxs)(`div`,{className:`rank-row ${t.rank===3?`current-user`:``}`,children:[(0,X.jsx)(`span`,{className:`rank-number`,children:t.rank}),(0,X.jsx)(`div`,{className:`avatar avatar-${t.color}`,children:t.initials}),(0,X.jsxs)(`div`,{className:`rank-name`,children:[(0,X.jsxs)(`strong`,{children:[t.name,` `,t.rank===3&&(0,X.jsx)(`span`,{children:`คุณ`})]}),(0,X.jsx)(`small`,{children:t.rank===1?`เรียน 4 วันติด`:t.rank===2?`ทำแบบฝึกหัดเก่ง`:`กำลังไปได้ดี`})]}),(0,X.jsxs)(`strong`,{className:`rank-xp`,children:[t.rank===3?e.xp.toLocaleString():t.xp.replace(` XP`,``),` XP`]})]},t.rank))})]}),(0,X.jsxs)(`aside`,{className:`leaderboard-side`,children:[(0,X.jsxs)(`div`,{className:`side-card your-rank`,children:[(0,X.jsxs)(`div`,{className:`side-card-heading`,children:[(0,X.jsx)(`h3`,{children:`อันดับของคุณ`}),(0,X.jsx)(`span`,{children:`สัปดาห์นี้`})]}),(0,X.jsxs)(`div`,{className:`your-rank-number`,children:[(0,X.jsx)(`strong`,{children:`#3`}),(0,X.jsx)(`span`,{children:`จาก 24 คน`})]}),(0,X.jsxs)(`div`,{className:`rank-up`,children:[(0,X.jsx)(Al,{}),` ขึ้นมา 2 อันดับจากสัปดาห์ก่อน`]}),(0,X.jsx)(`div`,{className:`xp-bar`,children:(0,X.jsx)(`span`,{style:{width:`70%`}})}),(0,X.jsx)(`small`,{children:`อีก 240 XP จะถึงอันดับ #2`})]}),(0,X.jsxs)(`div`,{className:`side-card rewards-card`,children:[(0,X.jsx)(`div`,{className:`reward-icon`,children:(0,X.jsx)(ro,{size:20})}),(0,X.jsx)(`h3`,{children:`สะสมความสำเร็จ`}),(0,X.jsx)(`p`,{children:`คุณปลดล็อกแล้ว 4 จาก 12 เหรียญ`}),(0,X.jsxs)(`div`,{className:`reward-dots`,children:[(0,X.jsx)(`i`,{className:`unlocked`}),(0,X.jsx)(`i`,{className:`unlocked`}),(0,X.jsx)(`i`,{className:`unlocked`}),(0,X.jsx)(`i`,{className:`unlocked`}),(0,X.jsx)(`i`,{}),(0,X.jsx)(`i`,{}),(0,X.jsx)(`i`,{}),(0,X.jsx)(`i`,{})]}),(0,X.jsxs)(`button`,{className:`text-button`,children:[`ดูความสำเร็จทั้งหมด `,(0,X.jsx)(to,{size:14})]})]})]})]})]})}function Al(){return(0,X.jsx)(`span`,{className:`arrow-up-small`,children:`↑`})}function jl({progress:e,onNavigate:t,onLesson:n}){const profileSettings=qmmLoadActiveUserSettings(el)||el,profileName=String(profileSettings.displayName||`พิมพ์ชนก`).trim()||`พิมพ์ชนก`,profileGrade=profileSettings.grade||`ม.3`,profileInterests=Array.isArray(profileSettings.mathInterests)?profileSettings.mathInterests:[];const profileAchievements=[];if(e.streak>=5)profileAchievements.push({id:`streak`,kind:`streak`,title:`ไฟแรงต่อเนื่อง`,description:`เรียนต่อเนื่องครบ 5 วัน`});if(e.exerciseCorrect>=5)profileAchievements.push({id:`practice`,kind:`practice`,title:`นักแก้โจทย์`,description:`ตอบถูกครบ 5 ข้อ`});return(0,X.jsxs)(X.Fragment,{children:[(0,X.jsxs)(`div`,{className:`profile-hero`,children:[(0,X.jsx)(`div`,{className:`profile-banner-shape`}),(0,X.jsxs)(`div`,{className:`profile-main`,children:[(0,X.jsx)(`div`,{className:`profile-avatar-large`,children:profileSettings.profilePicture?(0,X.jsx)(`img`,{src:profileSettings.profilePicture,alt:`รูปโปรไฟล์ของ ${profileName}`}):profileName.slice(0,2)}),(0,X.jsxs)(`div`,{children:[(0,X.jsxs)(`div`,{className:`profile-name-row`,children:[(0,X.jsx)(`h1`,{children:profileName}),(0,X.jsxs)(`span`,{className:`level-badge`,children:[(0,X.jsx)(ds,{size:13}),` นักสำรวจ`]})]}),(0,X.jsxs)(X.Fragment,{children:[(0,X.jsx)(`p`,{children:`นักเรียนชั้น ${profileGrade} • สถิติแสดงจากกิจกรรมที่บันทึกไว้`}),(0,X.jsxs)(`div`,{className:`profile-interest-row`,children:[(0,X.jsx)(`span`,{className:`profile-interest-label`,children:`สนใจ`}),(profileInterests.length?profileInterests.map(interest=>(0,X.jsx)(`span`,{className:`profile-interest-pill`,children:interest},interest)):(0,X.jsx)(`button`,{type:`button`,className:`profile-interest-add`,onClick:()=>t(`settings`),children:`+ เพิ่มความสนใจ`}))]})]}),(0,X.jsxs)(`div`,{className:`profile-stat-row`,children:[(0,X.jsxs)(`span`,{children:[(0,X.jsx)(Oo,{size:15}),` `,(0,X.jsx)(`strong`,{children:e.streak}),` วันต่อเนื่อง`]}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(Ds,{size:15}),` `,(0,X.jsx)(`strong`,{children:e.xp.toLocaleString()}),` XP`]}),(0,X.jsxs)(`span`,{children:[(0,X.jsx)(so,{size:15}),` `,(0,X.jsx)(`strong`,{children:e.completedLessons.length}),` บทเรียนจบแล้ว`]})]})]})]}),(0,X.jsxs)(`button`,{className:`outline-button profile-edit`,onClick:()=>t(`settings`),children:[(0,X.jsx)(Yo,{size:15}),` แก้ไขโปรไฟล์`]})]}),(0,X.jsxs)(`div`,{className:`profile-grid`,children:[(0,X.jsxs)(`section`,{children:[(0,X.jsx)(fl,{title:`เส้นทางการเรียนรู้`}),(0,X.jsxs)(`div`,{className:`profile-progress-card`,children:[(0,X.jsxs)(`div`,{className:`profile-progress-head`,children:[(0,X.jsxs)(`div`,{children:[(0,X.jsx)(`span`,{children:`ความก้าวหน้าโดยรวม`}),(0,X.jsxs)(`strong`,{children:[Math.round(qmmCompletionPercent(e.completedLessons.length,Os.length)),`%`]})]}),(0,X.jsx)(ps,{size:22})]}),(0,X.jsx)(`div`,{className:`progress-line`,children:(0,X.jsx)(`span`,{style:{width:`${Math.min(100,qmmCompletionPercent(e.completedLessons.length,Os.length))}%`}})}),(0,X.jsxs)(`div`,{className:`profile-progress-foot`,children:[(0,X.jsx)(`span`,{children:`เรียนจบแล้ว ${e.completedLessons.length} บท`}),(0,X.jsx)(`span`,{children:`จากทั้งหมด ${Os.length} บท`})]})]}),(0,X.jsx)(fl,{title:`บทเรียนที่บันทึกไว้`,link:`ดูทั้งหมด`,onLink:()=>t(`lessons`)}),e.bookmarks.length>0?e.bookmarks.map(e=>{let t=Os.find(t=>t.id===e);return t?(0,X.jsx)(gl,{lesson:t,onClick:()=>n(t)},e):null}):(0,X.jsxs)(`div`,{className:`empty-state compact`,children:[(0,X.jsx)(fo,{size:22}),(0,X.jsx)(`p`,{children:`ยังไม่มีบทเรียนที่บันทึกไว้`})]})]}),(0,X.jsxs)(`aside`,{children:[(0,X.jsxs)(`div`,{className:`side-card achievement-card`,children:[(0,X.jsxs)(`div`,{className:`side-card-heading`,children:[(0,X.jsx)(`h3`,{children:`ความสำเร็จล่าสุด`}),(0,X.jsx)(`button`,{children:`ดูทั้งหมด`})]}),(0,X.jsx)(QmmProfileAchievements,{items:profileAchievements})]}),(0,X.jsxs)(`div`,{
 className:`side-card activity-card`,children:[(0,X.jsx)(`div`,{className:`side-card-heading`,children:(0,X.jsx)(`h3`,{children:`กิจกรรมล่าสุด`})}),(0,X.jsx)(QmmProfileActivity,{items:e.recentActivity})]})]})]})]})}
 const qmmMathInterestOptions=["พีชคณิต","เรขาคณิต","จำนวนและทฤษฎีจำนวน","ฟังก์ชันและกราฟ","สถิติ","ความน่าจะเป็น","ตรีโกณมิติ","แคลคูลัส"];
 function qmmProfileImageAccepted(file) {

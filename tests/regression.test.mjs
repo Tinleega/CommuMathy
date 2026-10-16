@@ -5,6 +5,15 @@ import { fileURLToPath } from "node:url";
 import test from "node:test";
 import {
   patchBundle,
+  qmmBuildGeminiContents,
+  qmmBuildGeminiRequest,
+  qmmCallGemini,
+  qmmGeminiError,
+  qmmGeminiImageAccepted,
+  qmmReadGeminiConfig,
+  qmmReadGeminiReply,
+  qmmVerifyGeminiKey,
+  qmmWriteGeminiConfig,
   qmmBuildTopicScores,
   qmmCompletionPercent,
   qmmComputeStreak,
@@ -376,4 +385,108 @@ test("local profile switching keeps progress/settings separate and signs out wit
   assert.match(switchStyles, /settings-local-account-card--prominent/);
   assert.match(switchStyles, /background: #bf3545 !important/);
   assert.match(switchStyles, /@media \(max-width: 640px\)/);
+});
+
+function memoryStorage() {
+  const values = new Map();
+  return {
+    getItem: (key) => (values.has(key) ? values.get(key) : null),
+    setItem: (key, value) => values.set(key, String(value)),
+  };
+}
+
+test("Gemini keys are stored per local profile and a disconnect only clears that profile", () => {
+  const storage = memoryStorage();
+  assert.equal(qmmReadGeminiConfig("a", storage), null);
+  qmmWriteGeminiConfig("a", { apiKey: "  key-a ", model: "gemini-3.5-flash-lite" }, storage);
+  qmmWriteGeminiConfig("b", { apiKey: "key-b", model: "not-a-model" }, storage);
+  assert.deepEqual(qmmReadGeminiConfig("a", storage), { apiKey: "key-a", model: "gemini-3.5-flash-lite" });
+  assert.deepEqual(qmmReadGeminiConfig("b", storage), { apiKey: "key-b", model: "gemini-3.8-flash" });
+  qmmWriteGeminiConfig("a", null, storage);
+  assert.equal(qmmReadGeminiConfig("a", storage), null);
+  assert.equal(qmmReadGeminiConfig("b", storage).apiKey, "key-b");
+  storage.setItem("commumathy-gemini", "{broken");
+  assert.equal(qmmReadGeminiConfig("b", storage), null);
+});
+
+test("Gemini history skips the greeting and local-only notices, merges turns, and attaches the image last", () => {
+  const messages = [
+    { role: "tutor", text: "สวัสดีค่ะ" },
+    { role: "user", text: "2x + 3 = 11" },
+    { role: "tutor", text: "ขออภัยค่ะ เชื่อมต่อไม่ได้", local: true },
+    { role: "user", text: "ช่วยอีกครั้ง" },
+  ];
+  const image = { name: "q.jpg", mimeType: "image/jpeg", data: "AAAA" };
+  assert.deepEqual(qmmBuildGeminiContents(messages, image), [
+    { role: "user", parts: [{ text: "2x + 3 = 11\n\nช่วยอีกครั้ง" }, { inlineData: { mimeType: "image/jpeg", data: "AAAA" } }] },
+  ]);
+  assert.deepEqual(qmmBuildGeminiContents([...messages, { role: "tutor", text: "x = 4" }]), []);
+
+  const request = qmmBuildGeminiRequest(messages, { grade: "ม.2" });
+  assert.match(request.systemInstruction.parts[0].text, /ผู้เรียนอยู่ชั้น ม\.2/);
+  assert.equal(request.contents.length, 1);
+  assert.deepEqual(request.generationConfig, { maxOutputTokens: 8192, thinkingConfig: { thinkingLevel: "low" } });
+  assert.deepEqual(qmmBuildGeminiRequest(messages, { model: "gemini-3.5-flash-lite" }).generationConfig, { maxOutputTokens: 8192 });
+});
+
+test("Gemini replies, safety blocks, truncation, and HTTP errors become clear Thai messages", () => {
+  assert.equal(qmmReadGeminiReply({ candidates: [{ content: { parts: [{ text: "x = " }, { text: "4" }] }, finishReason: "STOP" }] }), "x = 4");
+  assert.match(qmmReadGeminiReply({ candidates: [{ content: { parts: [{ text: "ขั้นที่ 1" }] }, finishReason: "MAX_TOKENS" }] }), /พิมพ์ “ต่อ”/);
+  assert.throws(() => qmmReadGeminiReply({ promptFeedback: { blockReason: "SAFETY" } }), { code: "blocked" });
+  assert.throws(() => qmmReadGeminiReply({ candidates: [] }), { code: "empty" });
+  assert.throws(
+    () => qmmReadGeminiReply({ candidates: [{ content: { parts: [{ text: "…", thought: true }] }, finishReason: "MAX_TOKENS" }] }),
+    { code: "empty", message: /คิดนานเกินกำหนด/ },
+  );
+
+  const invalidKey = { error: { message: "API key not valid. Please pass a valid API key.", details: [{ reason: "API_KEY_INVALID" }] } };
+  assert.equal(qmmGeminiError(400, invalidKey).code, "auth");
+  assert.equal(qmmGeminiError(403, {}).code, "auth");
+  assert.equal(qmmGeminiError(404, {}).code, "model");
+  assert.equal(qmmGeminiError(429, {}).code, "quota");
+  assert.equal(qmmGeminiError(503, {}).code, "server");
+});
+
+test("the tutor calls Google's Gemini API directly with the profile's key", async () => {
+  const calls = [];
+  const fetchImpl = async (url, init) => {
+    calls.push({ url, init });
+    return { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: "ลองลบ 3 ทั้งสองข้างค่ะ" }] } }] }) };
+  };
+  const text = await qmmCallGemini({ apiKey: "test-key", model: "gemini-3.8-flash", messages: [{ role: "user", text: "2x + 3 = 11" }], fetchImpl });
+  assert.equal(text, "ลองลบ 3 ทั้งสองข้างค่ะ");
+  assert.equal(calls[0].url, "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent");
+  assert.equal(calls[0].init.headers["x-goog-api-key"], "test-key");
+  assert.equal(JSON.parse(calls[0].init.body).contents[0].parts[0].text, "2x + 3 = 11");
+
+  await assert.rejects(
+    qmmVerifyGeminiKey({ apiKey: "bad", model: "gemini-3.8-flash", fetchImpl: async () => ({ ok: false, status: 400, json: async () => ({ error: { details: [{ reason: "API_KEY_INVALID" }] } }) }) }),
+    { code: "auth" },
+  );
+  await assert.rejects(
+    qmmCallGemini({ apiKey: "k", model: "gemini-3.8-flash", messages: [{ role: "user", text: "hi" }], fetchImpl: async () => { throw new TypeError("Failed to fetch"); } }),
+    { code: "network" },
+  );
+});
+
+test("tutor image attachments accept common photo formats up to 15 MB", () => {
+  assert.equal(qmmGeminiImageAccepted({ type: "image/jpeg", size: 15 * 1024 * 1024 }), true);
+  assert.equal(qmmGeminiImageAccepted({ type: "image/png", size: 15 * 1024 * 1024 + 1 }), false);
+  assert.equal(qmmGeminiImageAccepted({ type: "image/gif", size: 10 }), false);
+  assert.equal(qmmGeminiImageAccepted({ type: "image/webp", size: 0 }), false);
+});
+
+test("the patched tutor page no longer depends on the missing /api/gemini server", async () => {
+  const patched = patchBundle(await readBundle());
+  assert.doesNotMatch(patched, /\/api\/gemini/);
+  for (const marker of [
+    "function qmmCallGemini(",
+    "function QmmGeminiConnectPanel(",
+    "generativelanguage.googleapis.com/v1beta/models/",
+    "(0, X.jsx)(QmmGeminiConnectPanel, {",
+    "const qmmGeminiModels=",
+    "messages: history.filter((message) => !nl.some(",
+  ]) {
+    assert.ok(patched.includes(marker), `missing Gemini tutor marker: ${marker}`);
+  }
 });

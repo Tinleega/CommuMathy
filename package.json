@@ -4,28 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "@vitejs/plugin-react": "latest",
-    "katex": "latest",
-    "lucide-react": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "vite": "latest"
-  },
-  "devDependencies": {
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "gh-pages": "^6.1.1",
-    "typescript": "latest"
-  },
-  "scripts": {
-  	"dev": "vite",
-	"build": "tsc -b && vite build",
-	"preview": "vite preview",
-	"deploy": "gh-pages -d dist -b main"
+    "build": "node scripts/patch-legacy-bundle.mjs --write && node scripts/build.mjs",
+    "test": "node --test",
+    "check": "npm test && npm run build",
+    "preview": "node scripts/preview.mjs"
   }
 }

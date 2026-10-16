@@ -1,27 +1,24 @@
-# CommuMathy exercise-topic fix
+# CommuMathy
 
-This package contains a replacement for **`assets/index-B25gbNMy.js`**. It fixes cross-topic exercise generation by routing specialized generators only to chapters they match, using a chapter/subtopic-aware fallback for the rest, and passing the selected subtopic through so the prompt and displayed label agree.
+A Thai-language mathematics-learning demo. The committed app is a self-contained compiled frontend bundle; the original React/TypeScript source was not present in the repository history when this repair was made. `scripts/patch-legacy-bundle.mjs` contains the readable repair templates and regression-tested helpers used to maintain that legacy bundle.
 
-## Apply it to the live site
+## Local workflow
 
-1. In your local **CommuMathy** repository, save or commit any work you want to keep, then switch to `main` and pull the latest version.
-2. Extract this ZIP at the repository root and allow it to replace `assets/index-B25gbNMy.js`.
-3. Check the change, then commit and push **only that asset**:
+Requires Node.js 20 or newer.
 
-   ```bash
-   git status --short
-   git diff -- assets/index-B25gbNMy.js
-   git add assets/index-B25gbNMy.js
-   git commit -m "Fix chapter exercise topic routing"
-   git push origin main
-   ```
+```sh
+npm ci
+npm test
+npm run build
+npm run preview
+```
 
-4. Keep GitHub Pages set to **Deploy from a branch → `main` → `/ (root)`**. Do not switch to `gh-pages` for this fix. After GitHub Pages finishes publishing, reload the site and try chapters such as Integers, Geometric Constructions, Counting, Qualitative Data, and Random Variables.
+The static build is written to `dist/`. The build checks that `index.html` references existing app assets, that stylesheet font URLs are relative, and that the page entry point is present. Relative paths let the app run at the repository root or below a GitHub Pages project path.
 
-This is a code fix; clearing browser storage is not required.
+## Publishing
 
-## Validation performed
+This repository is configured for GitHub Pages to deploy from **`main` / repository root**. After reviewed changes are merged to `main`, GitHub Pages will publish the root `index.html` and `assets/` automatically. The project intentionally has no `gh-pages` deployment command, which would conflict with that Pages configuration.
 
-- `npm run check`: all 8 regression tests passed and the static build completed.
-- Regression coverage checks all 49 current curriculum chapters.
-- Browser smoke tests confirmed that Integers no longer produces a linear-equation exercise, and that formerly misrouted geometry/counting/data chapters use content from their own chapter/subtopic. The Pythagorean chapter retains a Pythagorean exercise.
+## Editing limitation
+
+The upstream editable component source and Vite/TypeScript project files were not recoverable from local repository history. The visible app is preserved as a bundled legacy artifact, with readable, idempotent patches and tests for the repaired behavior. Restoring the original source (or replacing the legacy bundle with a fully source-maintained application) remains a worthwhile follow-up.

@@ -343,6 +343,16 @@ test("Project14 video guide renders an accessible player and official-source lin
   assert.equal(qmmRenderProject14Guide(runtime, "missing-chapter", {}), null);
 });
 
+test("Project14 video guide follows the app dark-theme palette", async () => {
+  const css = await readFile(path.join(projectDir, "assets", "project14-video-guide.css"), "utf8");
+  assert.ok(css.includes('html[data-theme="มืด"] .project14-video-guide {'));
+  assert.ok(css.includes("background: linear-gradient(145deg, #20263a 0%, #171c29 72%)"));
+  assert.ok(css.includes("color: #eef1fb;"));
+  assert.ok(css.includes('html[data-theme="มืด"] .project14-video-guide__badge {'));
+  assert.ok(css.includes('html[data-theme="มืด"] .project14-video-guide__watch {'));
+  assert.ok(css.includes('html[data-theme="มืด"] .project14-video-guide__source {'));
+});
+
 test("every curriculum chapter has a verified Project14 source and its own video mapping", async () => {
   const bundle = await readBundle();
   const chapterIds = [

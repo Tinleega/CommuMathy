@@ -1,12 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { qmmExerciseGeneratorType, qmmGenerateVariedExercise } from "./exercise-generators.mjs";
-import { qmmRenderExerciseDiagram } from "./exercise-diagrams.mjs";
-import { qmmProject14Videos } from "./project14-videos.mjs";
-
-export { qmmExerciseGeneratorType, qmmGenerateVariedExercise, qmmRenderExerciseDiagram };
-export { qmmProject14Videos };
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const projectDir = path.resolve(scriptDir, "..");
@@ -45,61 +39,6 @@ export function qmmFormatElapsed(totalSeconds) {
   const minutesPart = String(Math.floor(seconds / 60)).padStart(2, "0");
   const secondsPart = String(seconds % 60).padStart(2, "0");
   return `${minutesPart}:${secondsPart}`;
-}
-
-export function qmmRenderProject14Guide(runtime, chapterId, videos) {
-  const video = videos?.[chapterId];
-  if (!video) return null;
-  const jsx = runtime.jsx;
-  const jsxs = runtime.jsxs;
-  const children = [
-    jsxs("div", {
-      className: "project14-video-guide__heading",
-      children: [
-        jsx("span", { className: "project14-video-guide__badge", children: "Project14 • สสวท." }),
-        jsxs("div", {
-          children: [
-            jsx("strong", { children: "วิดีโอแนะนำบทเรียน" }),
-            jsx("p", { children: video.title }),
-          ],
-        }),
-      ],
-    }),
-    video.embedUrl && jsx("div", {
-      className: "project14-video-guide__player",
-      children: jsx("iframe", {
-        src: video.embedUrl,
-        title: video.title,
-        loading: "lazy",
-        referrerPolicy: "strict-origin-when-cross-origin",
-        allow: "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
-        allowFullScreen: true,
-      }),
-    }),
-    jsx("a", {
-      className: "project14-video-guide__watch",
-      href: video.watchUrl,
-      target: "_blank",
-      rel: "noopener noreferrer",
-      children: "ดูวิดีโอ (YouTube)",
-    }),
-    jsx("a", {
-      className: "project14-video-guide__source",
-      href: video.sourceUrl,
-      target: "_blank",
-      rel: "noopener noreferrer",
-      children: "ดูแหล่งอ้างอิงจาก Project14/IPST",
-    }),
-    video.matchType === "closest_match" && jsx("small", {
-      className: "project14-video-guide__note",
-      children: "วิดีโอหัวข้อใกล้เคียงจาก Project14",
-    }),
-  ].filter(Boolean);
-  return jsxs("section", {
-    className: "project14-video-guide",
-    "aria-label": `วิดีโอแนะนำบท ${video.chapterTitle}`,
-    children,
-  });
 }
 
 export const qmmMathInterestOptions = [
@@ -405,12 +344,12 @@ function qmmSignOutLocalUser() {
 function QmmLocalAccountCard() {
   const active = qmmGetActiveLocalUser();
   return (0, X.jsxs)("section", {
-    className: "settings-local-account-card settings-local-account-card--prominent",
+    className: "settings-local-account-card",
     children: [
       (0, X.jsxs)("div", {
         className: "settings-local-account-copy",
         children: [
-          (0, X.jsx)("strong", { children: "สลับผู้ใช้บนอุปกรณ์นี้ / Switch user" }),
+          (0, X.jsx)("strong", { children: "โปรไฟล์บนอุปกรณ์นี้" }),
           (0, X.jsx)("p", { children: `กำลังใช้โปรไฟล์ ${active?.displayName || "ผู้เรียน"} ข้อมูลไม่ซิงก์ไปยังอุปกรณ์อื่น` }),
         ],
       }),
@@ -418,7 +357,7 @@ function QmmLocalAccountCard() {
         type: "button",
         className: "outline-button local-signout-button",
         onClick: qmmSignOutLocalUser,
-        children: "เปลี่ยนผู้ใช้ / Switch user",
+        children: "ออกจากระบบ / เปลี่ยนผู้ใช้",
       }),
     ],
   });
@@ -1023,6 +962,28 @@ function xl({ lesson, progress, onBack, onComplete, onBookmark, onPractice }) {
   });
 }
 
+export function qmmExerciseGeneratorType(chapterId) {
+  const chapterRoutes = {
+    "m1-linear-equation": "algebra",
+    "m2-pythagorean": "geometry",
+    "m1-graphs-linear": "function",
+    "m1-exponents": "exponents",
+    "m2-exponent-properties": "exponents",
+    "m1-statistics-1": "statistics",
+    "m2-statistics-2": "statistics",
+    "m3-statistics-3": "statistics",
+    "m3-probability": "probability",
+    "m3-trig-ratios": "trigonometry",
+    "upper-logic": "logic",
+    "upper-probability": "probability",
+    "upper-trig-functions": "trigonometry",
+    "upper-sequences-series": "sequence",
+    "upper-calculus": "calculus",
+    "upper-quantitative-data": "statistics",
+  };
+  return chapterRoutes[String(chapterId).toLowerCase()] ?? "concept";
+}
+
 function replaceExactlyOnce(source, oldText, newText, description) {
   const first = source.indexOf(oldText);
   if (first < 0 || source.indexOf(oldText, first + oldText.length) >= 0) {
@@ -1059,67 +1020,29 @@ function replaceEveryOrVerify(source, oldText, newText, marker, description) {
 export function patchBundle(input) {
   let output = input;
 
-  const project14VideoRuntime = `const qmmProject14Videos=${JSON.stringify(qmmProject14Videos)};\n${qmmRenderProject14Guide.toString()}\nfunction QmmProject14GuideCard({chapterId}){return qmmRenderProject14Guide(X,chapterId,qmmProject14Videos)}`;
-  const exerciseRuntime = `${qmmExerciseGeneratorType.toString()}\nfunction uc(e){return qmmExerciseGeneratorType(e)}\n${qmmGenerateVariedExercise.toString()}\n${qmmRenderExerciseDiagram.toString()}\nfunction QmmExerciseDiagram({question}){return qmmRenderExerciseDiagram(X,question)}\n${project14VideoRuntime}`;
-  if (output.includes("function qmmExerciseGeneratorType(")) {
-    output = replaceFunctionRegion(
-      output,
-      "function qmmExerciseGeneratorType(",
-      "function dc(e){",
-      exerciseRuntime,
-      "refresh chapter routes and install varied exercise generator",
-    );
-  } else {
+  if (!output.includes("function qmmExerciseGeneratorType(")) {
     output = replaceFunctionRegion(
       output,
       "function uc(e){",
       "function dc(e){",
-      exerciseRuntime,
-      "install chapter-specific routes and varied exercise generator",
+      `${qmmExerciseGeneratorType.toString()}\nfunction uc(e){return qmmExerciseGeneratorType(e)}`,
+      "chapter-specific exercise routing",
     );
   }
 
   output = replaceOrVerify(
     output,
-    "(0,X.jsx)(`h2`,{children:v.prompt}),(0,X.jsx)(`div`,{className:`qb-answer-options`",
-    "(0,X.jsx)(`h2`,{children:v.prompt}),(0,X.jsx)(QmmExerciseDiagram,{question:v}),(0,X.jsx)(`div`,{className:`qb-answer-options`",
-    "QmmExerciseDiagram,{question:v}",
-    "render chapter-matched inline SVG figures in exercise questions",
+    "function Cc(e,t,n){let r=ic(n),i=e.subtopics[t%e.subtopics.length]??e.title,",
+    "function Cc(e,t,n,selectedSubtopic){let r=ic(n),i=selectedSubtopic??e.subtopics[t%e.subtopics.length]??e.title,",
+    "function Cc(e,t,n,selectedSubtopic){",
+    "fallback question subtopic handling",
   );
-
   output = replaceOrVerify(
     output,
-    "(0,X.jsx)(vo,{size:15})]}),(0,X.jsx)(`label`,{children:`ระดับชั้น`})",
-    "(0,X.jsx)(vo,{size:15})]}),(0,X.jsx)(QmmProject14GuideCard,{chapterId:i.chapterId}),(0,X.jsx)(`label`,{children:`ระดับชั้น`})",
-    "QmmProject14GuideCard,{chapterId:i.chapterId}",
-    "show the selected chapter's Project14 video in exercise setup",
-  );
-
-  const chapterVideoCardMarker = "QmmProject14GuideCard,{chapterId:e.id}";
-  const malformedChapterVideoCard = "(0,X.jsx)(to,{size:13})]})]})],(0,X.jsx)(QmmProject14GuideCard,{chapterId:e.id})]})]})]})]})";
-  const sidebarChapterVideoCard = "(0,X.jsx)(to,{size:13})]})]}) ,(0,X.jsx)(QmmProject14GuideCard,{chapterId:e.id})]})]})]})]})";
-  const originalSourceCardEnd = "(0,X.jsx)(to,{size:13})]})]})]})]})]})]})";
-  if (output.includes(malformedChapterVideoCard)) {
-    output = output.replace(malformedChapterVideoCard, originalSourceCardEnd);
-  } else if (output.includes(sidebarChapterVideoCard)) {
-    output = output.replace(sidebarChapterVideoCard, originalSourceCardEnd);
-  }
-  if (!output.includes(chapterVideoCardMarker)) {
-    output = replaceOrVerify(
-      output,
-      "(0,X.jsxs)(`div`,{className:`chapter-content-layout`,children:[",
-      "(0,X.jsxs)(`div`,{className:`chapter-content-layout`,children:[(0,X.jsx)(QmmProject14GuideCard,{chapterId:e.id}),",
-      chapterVideoCardMarker,
-      "show the chapter's Project14 video in the curriculum overview",
-    );
-  }
-
-  output = replaceFunctionRegion(
-    output,
-    "function wc(e,t,n,r,i){",
-    "function Tc(e,t){",
-    "function wc(e,t,n,r,i){return qmmGenerateVariedExercise(e,t,n,r,i)}",
-    "replace generic exercise fallback with topic-specific varied questions",
+    "default:return Cc(e,t,n)}}",
+    "default:return Cc(e,t,n,i)}}",
+    "default:return Cc(e,t,n,i)}}",
+    "fallback generator subtopic propagation",
   );
 
   if (!output.includes("lesson-formula-preview")) {
@@ -1226,35 +1149,6 @@ export function patchBundle(input) {
     'function qmmLoadProgress(){return qmmLoadActiveUserProgress()}',
     "load progress from the active local profile",
   );
-  const previousLocalAccountCard = `function QmmLocalAccountCard() {
-  const active = qmmGetActiveLocalUser();
-  return (0, X.jsxs)("section", {
-    className: "settings-local-account-card",
-    children: [
-      (0, X.jsxs)("div", {
-        className: "settings-local-account-copy",
-        children: [
-          (0, X.jsx)("strong", { children: "โปรไฟล์บนอุปกรณ์นี้" }),
-          (0, X.jsx)("p", { children: \`กำลังใช้โปรไฟล์ \${active?.displayName || "ผู้เรียน"} ข้อมูลไม่ซิงก์ไปยังอุปกรณ์อื่น\` }),
-        ],
-      }),
-      (0, X.jsx)("button", {
-        type: "button",
-        className: "outline-button local-signout-button",
-        onClick: qmmSignOutLocalUser,
-        children: "ออกจากระบบ / เปลี่ยนผู้ใช้",
-      }),
-    ],
-  });
-}`;
-  if (output.includes(previousLocalAccountCard)) {
-    output = replaceExactlyOnce(
-      output,
-      previousLocalAccountCard,
-      QmmLocalAccountCard.toString(),
-      "upgrade the existing local account card to the prominent switch-user version",
-    );
-  }
   const qmmLocalUserRuntime = [
     qmmReadLocalUsers.toString(),
     qmmEnsureLocalUsers.toString(),
@@ -1678,22 +1572,12 @@ export function patchBundle(input) {
       "repair local account card JSX child separator",
     );
   }
-  const existingBottomAccountCard = `(0,X.jsx)(QmmLocalAccountCard,{}),${settingsInfoStrip}`;
-  if (output.includes(existingBottomAccountCard)) {
-    output = replaceExactlyOnce(
-      output,
-      existingBottomAccountCard,
-      settingsInfoStrip,
-      "move local account card out of the bottom of Settings",
-    );
-  }
-  const profilePhotoEditorCall = "(0,X.jsx)(QmmProfilePhotoEditor,{settings:r,onUpload:handleProfileImageUpload,onRemove:clearProfileImage,error:profileImageError})";
   output = replaceOrVerify(
     output,
-    profilePhotoEditorCall,
-    `(0,X.jsx)(QmmLocalAccountCard,{}),${profilePhotoEditorCall}`,
+    settingsInfoStrip,
+    `(0,X.jsx)(QmmLocalAccountCard,{}),${settingsInfoStrip}`,
     "QmmLocalAccountCard,{})",
-    "show a prominent local profile switcher at the top of Settings",
+    "add local sign-out and profile-switch entry in settings",
   );
 
   return output;

@@ -84,6 +84,36 @@
   font-size: 0.75rem;
 }
 
+html[data-theme="มืด"] .project14-video-guide {
+  color: #eef1fb;
+  border-color: #394257;
+  background: linear-gradient(145deg, #20263a 0%, #171c29 72%);
+}
+
+html[data-theme="มืด"] .project14-video-guide__badge {
+  color: #d2d0ff;
+  background: #29284b;
+}
+
+html[data-theme="มืด"] .project14-video-guide__heading p,
+html[data-theme="มืด"] .project14-video-guide__note {
+  color: #aeb5c8;
+}
+
+html[data-theme="มืด"] .project14-video-guide__watch {
+  color: #fff;
+  background: #625dc0;
+}
+
+html[data-theme="มืด"] .project14-video-guide__watch:hover,
+html[data-theme="มืด"] .project14-video-guide__watch:focus-visible {
+  background: #817cf0;
+}
+
+html[data-theme="มืด"] .project14-video-guide__source {
+  color: #b3aff2;
+}
+
 .chapter-content-layout > .project14-video-guide {
   grid-column: 1 / -1;
   margin: 0 0 0.25rem;

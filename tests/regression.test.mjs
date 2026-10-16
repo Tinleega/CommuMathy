@@ -317,9 +317,17 @@ test("local profile switching keeps progress/settings separate and signs out wit
   ]) {
     assert.ok(patched.includes(marker), `missing local-profile feature marker: ${marker}`);
   }
-  assert.ok(
-    patched.includes('(0,X.jsx)(QmmLocalAccountCard,{}),(0,X.jsxs)(`div`,{className:`settings-info-strip`'),
-    "the local-account card must remain a separate Settings child",
-  );
+  const accountCardIndex = patched.indexOf("(0,X.jsx)(QmmLocalAccountCard,{})");
+  const photoEditorIndex = patched.indexOf("(0,X.jsx)(QmmProfilePhotoEditor,{settings:r");
+  assert.ok(accountCardIndex >= 0 && accountCardIndex < photoEditorIndex,
+    "the switch-user card must appear before the photo editor and profile form");
+  assert.ok(patched.includes("Switch user"), "the action must be explicitly labeled for users seeking a switch option");
   assert.doesNotMatch(patched, /localStorage\.clear\(/, "sign-out must not erase other local profiles");
+
+  const html = await readFile(path.join(projectDir, "index.html"), "utf8");
+  const switchStyles = await readFile(path.join(projectDir, "assets", "settings-switch-user.css"), "utf8");
+  assert.ok(html.includes('href="./assets/settings-switch-user.css"'), "the prominent switch-user stylesheet must load");
+  assert.match(switchStyles, /settings-local-account-card--prominent/);
+  assert.match(switchStyles, /background: #bf3545 !important/);
+  assert.match(switchStyles, /@media \(max-width: 640px\)/);
 });

@@ -344,12 +344,12 @@ function qmmSignOutLocalUser() {
 function QmmLocalAccountCard() {
   const active = qmmGetActiveLocalUser();
   return (0, X.jsxs)("section", {
-    className: "settings-local-account-card",
+    className: "settings-local-account-card settings-local-account-card--prominent",
     children: [
       (0, X.jsxs)("div", {
         className: "settings-local-account-copy",
         children: [
-          (0, X.jsx)("strong", { children: "โปรไฟล์บนอุปกรณ์นี้" }),
+          (0, X.jsx)("strong", { children: "สลับผู้ใช้บนอุปกรณ์นี้ / Switch user" }),
           (0, X.jsx)("p", { children: `กำลังใช้โปรไฟล์ ${active?.displayName || "ผู้เรียน"} ข้อมูลไม่ซิงก์ไปยังอุปกรณ์อื่น` }),
         ],
       }),
@@ -357,7 +357,7 @@ function QmmLocalAccountCard() {
         type: "button",
         className: "outline-button local-signout-button",
         onClick: qmmSignOutLocalUser,
-        children: "ออกจากระบบ / เปลี่ยนผู้ใช้",
+        children: "เปลี่ยนผู้ใช้ / Switch user",
       }),
     ],
   });
@@ -1149,6 +1149,35 @@ export function patchBundle(input) {
     'function qmmLoadProgress(){return qmmLoadActiveUserProgress()}',
     "load progress from the active local profile",
   );
+  const previousLocalAccountCard = `function QmmLocalAccountCard() {
+  const active = qmmGetActiveLocalUser();
+  return (0, X.jsxs)("section", {
+    className: "settings-local-account-card",
+    children: [
+      (0, X.jsxs)("div", {
+        className: "settings-local-account-copy",
+        children: [
+          (0, X.jsx)("strong", { children: "โปรไฟล์บนอุปกรณ์นี้" }),
+          (0, X.jsx)("p", { children: \`กำลังใช้โปรไฟล์ \${active?.displayName || "ผู้เรียน"} ข้อมูลไม่ซิงก์ไปยังอุปกรณ์อื่น\` }),
+        ],
+      }),
+      (0, X.jsx)("button", {
+        type: "button",
+        className: "outline-button local-signout-button",
+        onClick: qmmSignOutLocalUser,
+        children: "ออกจากระบบ / เปลี่ยนผู้ใช้",
+      }),
+    ],
+  });
+}`;
+  if (output.includes(previousLocalAccountCard)) {
+    output = replaceExactlyOnce(
+      output,
+      previousLocalAccountCard,
+      QmmLocalAccountCard.toString(),
+      "upgrade the existing local account card to the prominent switch-user version",
+    );
+  }
   const qmmLocalUserRuntime = [
     qmmReadLocalUsers.toString(),
     qmmEnsureLocalUsers.toString(),
@@ -1572,12 +1601,22 @@ export function patchBundle(input) {
       "repair local account card JSX child separator",
     );
   }
+  const existingBottomAccountCard = `(0,X.jsx)(QmmLocalAccountCard,{}),${settingsInfoStrip}`;
+  if (output.includes(existingBottomAccountCard)) {
+    output = replaceExactlyOnce(
+      output,
+      existingBottomAccountCard,
+      settingsInfoStrip,
+      "move local account card out of the bottom of Settings",
+    );
+  }
+  const profilePhotoEditorCall = "(0,X.jsx)(QmmProfilePhotoEditor,{settings:r,onUpload:handleProfileImageUpload,onRemove:clearProfileImage,error:profileImageError})";
   output = replaceOrVerify(
     output,
-    settingsInfoStrip,
-    `(0,X.jsx)(QmmLocalAccountCard,{}),${settingsInfoStrip}`,
+    profilePhotoEditorCall,
+    `(0,X.jsx)(QmmLocalAccountCard,{}),${profilePhotoEditorCall}`,
     "QmmLocalAccountCard,{})",
-    "add local sign-out and profile-switch entry in settings",
+    "show a prominent local profile switcher at the top of Settings",
   );
 
   return output;

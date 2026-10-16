@@ -2,8 +2,9 @@ import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { qmmExerciseGeneratorType, qmmGenerateVariedExercise } from "./exercise-generators.mjs";
+import { qmmRenderExerciseDiagram } from "./exercise-diagrams.mjs";
 
-export { qmmExerciseGeneratorType, qmmGenerateVariedExercise };
+export { qmmExerciseGeneratorType, qmmGenerateVariedExercise, qmmRenderExerciseDiagram };
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const projectDir = path.resolve(scriptDir, "..");
@@ -1001,7 +1002,7 @@ function replaceEveryOrVerify(source, oldText, newText, marker, description) {
 export function patchBundle(input) {
   let output = input;
 
-  const exerciseRuntime = `${qmmExerciseGeneratorType.toString()}\nfunction uc(e){return qmmExerciseGeneratorType(e)}\n${qmmGenerateVariedExercise.toString()}`;
+  const exerciseRuntime = `${qmmExerciseGeneratorType.toString()}\nfunction uc(e){return qmmExerciseGeneratorType(e)}\n${qmmGenerateVariedExercise.toString()}\n${qmmRenderExerciseDiagram.toString()}\nfunction QmmExerciseDiagram({question}){return qmmRenderExerciseDiagram(X,question)}`;
   if (output.includes("function qmmExerciseGeneratorType(")) {
     output = replaceFunctionRegion(
       output,
@@ -1019,6 +1020,14 @@ export function patchBundle(input) {
       "install chapter-specific routes and varied exercise generator",
     );
   }
+
+  output = replaceOrVerify(
+    output,
+    "(0,X.jsx)(`h2`,{children:v.prompt}),(0,X.jsx)(`div`,{className:`qb-answer-options`",
+    "(0,X.jsx)(`h2`,{children:v.prompt}),(0,X.jsx)(QmmExerciseDiagram,{question:v}),(0,X.jsx)(`div`,{className:`qb-answer-options`",
+    "QmmExerciseDiagram,{question:v}",
+    "render chapter-matched inline SVG figures in exercise questions",
+  );
 
   output = replaceFunctionRegion(
     output,

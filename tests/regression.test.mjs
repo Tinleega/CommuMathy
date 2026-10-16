@@ -10,6 +10,7 @@ import {
   qmmComputeStreak,
   qmmExerciseAccuracy,
   qmmExerciseGeneratorType,
+  qmmRenderExerciseDiagram,
   qmmGenerateVariedExercise,
   qmmFormatElapsed,
   qmmFormatThaiDate,
@@ -244,9 +245,40 @@ test("every curriculum chapter receives topic-matched, varied exercise templates
   assert.ok([0, 1, 2, 3].every((index) => sample("m3-linear-systems", index).prompt.includes("ระบบ")), "linear-systems chapter should always ask about systems");
   assert.doesNotMatch(JSON.stringify([0, 1, 2, 3].map((index) => sample("m2-congruence", index))), /夹/, "congruence copy should remain Thai, without a stray Chinese character");
 
+  const mockRuntime = {
+    jsx: (type, props) => ({ type, props }),
+    jsxs: (type, props) => ({ type, props }),
+  };
+  const hasSvg = (element) => {
+    if (!element || typeof element !== "object") return false;
+    if (element.type === "svg") return true;
+    const children = element.props?.children;
+    return Array.isArray(children) ? children.some(hasSvg) : hasSvg(children);
+  };
+  const diagramChapterIds = [
+    "m1-geometric-construction", "m1-2d-3d-figures", "m1-graphs-linear", "m2-pythagorean",
+    "m2-prisms-cylinders", "m2-transformations", "m2-congruence", "m2-parallel-lines",
+    "m2-geometric-reasoning", "m3-similarity", "m3-circles", "m3-pyramids-cones-spheres",
+    "m3-quadratic-graphs", "m3-trig-ratios", "upper-analytic-geometry", "upper-vectors",
+  ];
+  for (const chapterId of diagramChapterIds) {
+    for (let index = 0; index < 4; index += 1) {
+      const question = { ...sample(chapterId, index), chapterId };
+      const figure = qmmRenderExerciseDiagram(mockRuntime, question);
+      assert.equal(figure?.type, "div", `${chapterId} question ${index} should render a figure container`);
+      assert.equal(figure.props.role, "img", `${chapterId} question ${index} should expose image semantics`);
+      assert.ok(figure.props["aria-label"], `${chapterId} question ${index} should have an accessible description`);
+      assert.ok(hasSvg(figure), `${chapterId} question ${index} should contain an inline SVG`);
+    }
+  }
+  assert.equal(qmmRenderExerciseDiagram(mockRuntime, { ...sample("m1-integers", 0), chapterId: "m1-integers" }), null, "nonvisual arithmetic questions should not gain an unrelated figure");
+
   const patchedBundle = patchBundle(bundle);
   assert.match(patchedBundle, /function uc\(e\)\{return qmmExerciseGeneratorType\(e\)\}/);
   assert.ok(patchedBundle.includes("function qmmGenerateVariedExercise("));
+  assert.ok(patchedBundle.includes("function qmmRenderExerciseDiagram("));
+  assert.ok(patchedBundle.includes("function QmmExerciseDiagram({question})"));
+  assert.ok(patchedBundle.includes("(0,X.jsx)(QmmExerciseDiagram,{question:v})"), "question card should display the matching inline diagram");
   assert.ok(patchedBundle.includes("function wc(e,t,n,r,i){return qmmGenerateVariedExercise(e,t,n,r,i)}"));
   assert.ok(patchedBundle.includes("var Ec=Gs.flatMap("), "the unit/offering collection must remain available to the prepared exercise pool");
 });

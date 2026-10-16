@@ -1,0 +1,164 @@
+.qb-exercise-figure {
+  --diagram-ink: #334155;
+  --diagram-blue: #4776b8;
+  --diagram-accent: #d7604d;
+  --diagram-grid: #dbe3ed;
+  display: grid;
+  place-items: center;
+  width: min(100%, 620px);
+  min-height: 150px;
+  margin: 14px auto 18px;
+  padding: 10px 14px;
+  overflow: hidden;
+  border: 1px solid #e1e8f0;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #f8fbff 0%, #ffffff 72%);
+}
+
+.qb-exercise-figure svg {
+  display: block;
+  width: min(100%, 520px);
+  height: auto;
+  max-height: 230px;
+  overflow: visible;
+}
+
+.qb-exercise-figure .diagram-stroke,
+.qb-exercise-figure .diagram-shape {
+  fill: none;
+  stroke: var(--diagram-ink);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.qb-exercise-figure .diagram-blue {
+  stroke: var(--diagram-blue);
+}
+
+.qb-exercise-figure .diagram-accent,
+.qb-exercise-figure .diagram-vector {
+  fill: none;
+  stroke: var(--diagram-accent);
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.qb-exercise-figure .diagram-vector {
+  marker-end: url(#qmm-arrowhead);
+}
+
+.qb-exercise-figure .diagram-dash,
+.qb-exercise-figure .diagram-muted {
+  fill: none;
+  stroke: #8190a3;
+  stroke-width: 2;
+  stroke-dasharray: 6 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.qb-exercise-figure .diagram-grid {
+  stroke: var(--diagram-grid);
+  stroke-width: 1;
+  stroke-dasharray: 2 5;
+}
+
+.qb-exercise-figure .diagram-axis {
+  stroke: #718096;
+  stroke-width: 1.7;
+}
+
+.qb-exercise-figure .diagram-point,
+.qb-exercise-figure .diagram-point-accent {
+  fill: #ffffff;
+  stroke: var(--diagram-blue);
+  stroke-width: 2.7;
+}
+
+.qb-exercise-figure .diagram-point-accent {
+  stroke: var(--diagram-accent);
+}
+
+.qb-exercise-figure .diagram-right-angle {
+  fill: #ffffff;
+  stroke: var(--diagram-ink);
+  stroke-width: 2;
+}
+
+.qb-exercise-figure .diagram-mark {
+  stroke: var(--diagram-accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.qb-exercise-figure .diagram-arrow {
+  fill: var(--diagram-blue);
+  stroke: none;
+}
+
+.qb-exercise-figure .diagram-sector {
+  fill: rgba(215, 96, 77, 0.14);
+  stroke: var(--diagram-accent);
+  stroke-width: 1.8;
+}
+
+.qb-exercise-figure .diagram-curve {
+  fill: none;
+  stroke: var(--diagram-blue);
+  stroke-width: 3.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.qb-exercise-figure .diagram-label,
+.qb-exercise-figure .diagram-point-label,
+.qb-exercise-figure .diagram-accent-label,
+.qb-exercise-figure .diagram-small-label,
+.qb-exercise-figure .diagram-axis-label {
+  fill: var(--diagram-ink);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.qb-exercise-figure .diagram-point-label {
+  font-size: 11px;
+}
+
+.qb-exercise-figure .diagram-small-label {
+  fill: #64748b;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.qb-exercise-figure .diagram-accent-label {
+  fill: var(--diagram-accent);
+}
+
+.qb-exercise-figure .diagram-axis-label {
+  fill: #64748b;
+  font-size: 12px;
+  font-style: italic;
+}
+
+@media (max-width: 640px) {
+  .qb-exercise-figure {
+    min-height: 125px;
+    margin: 10px auto 14px;
+    padding: 8px;
+    border-radius: 12px;
+  }
+
+  .qb-exercise-figure svg {
+    max-height: 190px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qb-exercise-figure,
+  .qb-exercise-figure * {
+    scroll-behavior: auto;
+  }
+}

@@ -1,6 +1,6 @@
 # CommuMathy
 
-A Thai-language mathematics-learning demo. The committed app is a self-contained compiled frontend bundle; the original React/TypeScript source was not present in the repository history when this repair was made. `scripts/exercise-generators.mjs` defines varied, topic-specific question templates for all 49 curriculum chapters, and `scripts/patch-legacy-bundle.mjs` injects them alongside the other readable repairs into the legacy bundle.
+A Thai-language mathematics-learning demo. The committed app is a self-contained compiled frontend bundle; the original React/TypeScript source was not present in the repository history when this repair was made. `scripts/exercise-generators.mjs` defines varied, topic-specific question templates for all 49 curriculum chapters, while `scripts/exercise-diagrams.mjs` draws accessible inline SVG figures for geometry, coordinate, vector and graph questions. `scripts/patch-legacy-bundle.mjs` injects these readable repairs into the legacy bundle.
 
 ## Local workflow
 

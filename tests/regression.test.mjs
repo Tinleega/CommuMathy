@@ -5,21 +5,14 @@ import { fileURLToPath } from "node:url";
 import test from "node:test";
 import {
   patchBundle,
-  qmmBuildGeminiContents,
-  qmmBuildGeminiRequest,
-  qmmCallGemini,
-  qmmGeminiError,
-  qmmGeminiImageAccepted,
-  qmmReadGeminiConfig,
-  qmmReadGeminiReply,
-  qmmVerifyGeminiKey,
-  qmmWriteGeminiConfig,
   qmmBuildTopicScores,
   qmmCompletionPercent,
   qmmComputeStreak,
   qmmExerciseAccuracy,
   qmmExerciseGeneratorType,
   qmmRenderExerciseDiagram,
+  qmmRenderProject14Guide,
+  qmmProject14Videos,
   qmmGenerateVariedExercise,
   qmmFormatElapsed,
   qmmFormatThaiDate,
@@ -160,6 +153,7 @@ test("relative app assets resolve under a GitHub Pages project prefix", async ()
   const html = await readFile(path.join(projectDir, "index.html"), "utf8");
   assert.match(html, /src="\.\/assets\//);
   assert.match(html, /href="\.\/assets\//);
+  assert.match(html, /href="\.\/assets\/project14-video-guide\.css"/);
   assert.equal(
     new URL("./assets/app.js", "https://tinleega.github.io/CommuMathy/").pathname,
     "/CommuMathy/assets/app.js",
@@ -315,6 +309,74 @@ test("Pythagorean lesson metadata and the lesson renderer stay topic-consistent"
   assert.doesNotMatch(renderer, /สมการเชิงเส้นตัวแปรเดียวคืออะไร/);
 });
 
+test("Project14 video guide renders an accessible player and official-source links", () => {
+  const runtime = {
+    jsx: (type, props) => ({ type, props }),
+    jsxs: (type, props) => ({ type, props }),
+  };
+  const video = {
+    chapterTitle: "ทฤษฎีบทพีทาโกรัส",
+    title: "บทเรียน Project14: ทฤษฎีบทพีทาโกรัส",
+    watchUrl: "https://www.youtube.com/watch?v=abc123xyz89",
+    embedUrl: "https://www.youtube-nocookie.com/embed/abc123xyz89",
+    sourceUrl: "https://project14.ipst.ac.th/m2-math/",
+    matchType: "exact",
+  };
+  const guide = qmmRenderProject14Guide(runtime, "m2-pythagorean", { "m2-pythagorean": video });
+  const collect = (node, predicate, found = []) => {
+    if (!node || typeof node !== "object") return found;
+    if (predicate(node)) found.push(node);
+    const children = node.props?.children;
+    (Array.isArray(children) ? children : [children]).forEach((child) => collect(child, predicate, found));
+    return found;
+  };
+  assert.equal(guide.type, "section");
+  assert.match(guide.props["aria-label"], /ทฤษฎีบทพีทาโกรัส/);
+  const iframe = collect(guide, (node) => node.type === "iframe")[0];
+  assert.equal(iframe.props.src, video.embedUrl);
+  assert.equal(iframe.props.loading, "lazy");
+  const links = collect(guide, (node) => node.type === "a");
+  assert.equal(links.length, 2);
+  assert.ok(links.every((link) => link.props.target === "_blank" && link.props.rel === "noopener noreferrer"));
+  assert.equal(links[0].props.href, video.watchUrl);
+  assert.equal(links[1].props.href, video.sourceUrl);
+  assert.equal(qmmRenderProject14Guide(runtime, "missing-chapter", {}), null);
+});
+
+test("every curriculum chapter has a verified Project14 source and its own video mapping", async () => {
+  const bundle = await readBundle();
+  const chapterIds = [
+    ...bundle.matchAll(/zs\(`([^`]+)`\s*,/g),
+    ...bundle.matchAll(/Bs\(`(upper-[^`]+)`\s*,/g),
+  ].map(([, id]) => id);
+  const videoChapterIds = Object.keys(qmmProject14Videos);
+  assert.equal(chapterIds.length, 49);
+  assert.equal(videoChapterIds.length, 49);
+  assert.deepEqual([...videoChapterIds].sort(), [...chapterIds].sort());
+
+  for (const [chapterId, video] of Object.entries(qmmProject14Videos)) {
+    assert.ok(video.title, `${chapterId} should have a readable video title`);
+    assert.ok(video.chapterTitle, `${chapterId} should identify its curriculum topic`);
+    assert.ok(video.videoId, `${chapterId} should have a Project14 video ID`);
+    const source = new URL(video.sourceUrl);
+    const watch = new URL(video.watchUrl);
+    assert.equal(source.protocol, "https:");
+    assert.equal(source.hostname, "proj14.ipst.ac.th", `${chapterId} source should be the official IPST site`);
+    assert.equal(watch.hostname, "www.youtube.com");
+    assert.equal(watch.searchParams.get("v"), video.videoId);
+    if (video.embedUrl) {
+      const embed = new URL(video.embedUrl);
+      assert.ok(["www.youtube-nocookie.com", "www.youtube.com"].includes(embed.hostname));
+      assert.equal(embed.pathname, `/embed/${video.videoId}`);
+    }
+  }
+  assert.notEqual(
+    qmmProject14Videos["m3-probability"].videoId,
+    qmmProject14Videos["upper-probability"].videoId,
+    "upper-level probability must not reuse the unrelated M.3 video",
+  );
+});
+
 test("legacy bundle patches are complete, content-aware, and idempotent", async () => {
   const patched = patchBundle(await readBundle());
 
@@ -328,6 +390,13 @@ test("legacy bundle patches are complete, content-aware, and idempotent", async 
   assert.match(patched, /className:`profile-interest-row`/);
   assert.match(patched, /function qmmBuildTopicScores\(/);
   assert.match(patched, /lesson-formula-preview/);
+  assert.match(patched, /function qmmRenderProject14Guide\(/);
+  assert.match(patched, /const qmmProject14Videos=\{/);
+  assert.match(patched, /QmmProject14GuideCard,\{chapterId:i\.chapterId\}/);
+  assert.match(patched, /QmmProject14GuideCard,\{chapterId:e\.id\}/);
+  const chapterGrid = patched.indexOf("className:`chapter-content-layout`,children:[");
+  const chapterVideoCard = patched.indexOf("QmmProject14GuideCard,{chapterId:e.id}");
+  assert.ok(chapterVideoCard > chapterGrid && chapterVideoCard - chapterGrid < 180, "chapter video should span the full curriculum content row");
   assert.match(patched, /QmmAssessmentTimer/);
   assert.match(patched, /qmmFormatThaiDate\(new Date\(\)\)/);
   assert.match(patched, /function qmmNormalizeProgress\(/);
@@ -385,108 +454,4 @@ test("local profile switching keeps progress/settings separate and signs out wit
   assert.match(switchStyles, /settings-local-account-card--prominent/);
   assert.match(switchStyles, /background: #bf3545 !important/);
   assert.match(switchStyles, /@media \(max-width: 640px\)/);
-});
-
-function memoryStorage() {
-  const values = new Map();
-  return {
-    getItem: (key) => (values.has(key) ? values.get(key) : null),
-    setItem: (key, value) => values.set(key, String(value)),
-  };
-}
-
-test("Gemini keys are stored per local profile and a disconnect only clears that profile", () => {
-  const storage = memoryStorage();
-  assert.equal(qmmReadGeminiConfig("a", storage), null);
-  qmmWriteGeminiConfig("a", { apiKey: "  key-a ", model: "gemini-3.5-flash-lite" }, storage);
-  qmmWriteGeminiConfig("b", { apiKey: "key-b", model: "not-a-model" }, storage);
-  assert.deepEqual(qmmReadGeminiConfig("a", storage), { apiKey: "key-a", model: "gemini-3.5-flash-lite" });
-  assert.deepEqual(qmmReadGeminiConfig("b", storage), { apiKey: "key-b", model: "gemini-3.8-flash" });
-  qmmWriteGeminiConfig("a", null, storage);
-  assert.equal(qmmReadGeminiConfig("a", storage), null);
-  assert.equal(qmmReadGeminiConfig("b", storage).apiKey, "key-b");
-  storage.setItem("commumathy-gemini", "{broken");
-  assert.equal(qmmReadGeminiConfig("b", storage), null);
-});
-
-test("Gemini history skips the greeting and local-only notices, merges turns, and attaches the image last", () => {
-  const messages = [
-    { role: "tutor", text: "สวัสดีค่ะ" },
-    { role: "user", text: "2x + 3 = 11" },
-    { role: "tutor", text: "ขออภัยค่ะ เชื่อมต่อไม่ได้", local: true },
-    { role: "user", text: "ช่วยอีกครั้ง" },
-  ];
-  const image = { name: "q.jpg", mimeType: "image/jpeg", data: "AAAA" };
-  assert.deepEqual(qmmBuildGeminiContents(messages, image), [
-    { role: "user", parts: [{ text: "2x + 3 = 11\n\nช่วยอีกครั้ง" }, { inlineData: { mimeType: "image/jpeg", data: "AAAA" } }] },
-  ]);
-  assert.deepEqual(qmmBuildGeminiContents([...messages, { role: "tutor", text: "x = 4" }]), []);
-
-  const request = qmmBuildGeminiRequest(messages, { grade: "ม.2" });
-  assert.match(request.systemInstruction.parts[0].text, /ผู้เรียนอยู่ชั้น ม\.2/);
-  assert.equal(request.contents.length, 1);
-  assert.deepEqual(request.generationConfig, { maxOutputTokens: 8192, thinkingConfig: { thinkingLevel: "low" } });
-  assert.deepEqual(qmmBuildGeminiRequest(messages, { model: "gemini-3.5-flash-lite" }).generationConfig, { maxOutputTokens: 8192 });
-});
-
-test("Gemini replies, safety blocks, truncation, and HTTP errors become clear Thai messages", () => {
-  assert.equal(qmmReadGeminiReply({ candidates: [{ content: { parts: [{ text: "x = " }, { text: "4" }] }, finishReason: "STOP" }] }), "x = 4");
-  assert.match(qmmReadGeminiReply({ candidates: [{ content: { parts: [{ text: "ขั้นที่ 1" }] }, finishReason: "MAX_TOKENS" }] }), /พิมพ์ “ต่อ”/);
-  assert.throws(() => qmmReadGeminiReply({ promptFeedback: { blockReason: "SAFETY" } }), { code: "blocked" });
-  assert.throws(() => qmmReadGeminiReply({ candidates: [] }), { code: "empty" });
-  assert.throws(
-    () => qmmReadGeminiReply({ candidates: [{ content: { parts: [{ text: "…", thought: true }] }, finishReason: "MAX_TOKENS" }] }),
-    { code: "empty", message: /คิดนานเกินกำหนด/ },
-  );
-
-  const invalidKey = { error: { message: "API key not valid. Please pass a valid API key.", details: [{ reason: "API_KEY_INVALID" }] } };
-  assert.equal(qmmGeminiError(400, invalidKey).code, "auth");
-  assert.equal(qmmGeminiError(403, {}).code, "auth");
-  assert.equal(qmmGeminiError(404, {}).code, "model");
-  assert.equal(qmmGeminiError(429, {}).code, "quota");
-  assert.equal(qmmGeminiError(503, {}).code, "server");
-});
-
-test("the tutor calls Google's Gemini API directly with the profile's key", async () => {
-  const calls = [];
-  const fetchImpl = async (url, init) => {
-    calls.push({ url, init });
-    return { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: "ลองลบ 3 ทั้งสองข้างค่ะ" }] } }] }) };
-  };
-  const text = await qmmCallGemini({ apiKey: "test-key", model: "gemini-3.8-flash", messages: [{ role: "user", text: "2x + 3 = 11" }], fetchImpl });
-  assert.equal(text, "ลองลบ 3 ทั้งสองข้างค่ะ");
-  assert.equal(calls[0].url, "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent");
-  assert.equal(calls[0].init.headers["x-goog-api-key"], "test-key");
-  assert.equal(JSON.parse(calls[0].init.body).contents[0].parts[0].text, "2x + 3 = 11");
-
-  await assert.rejects(
-    qmmVerifyGeminiKey({ apiKey: "bad", model: "gemini-3.8-flash", fetchImpl: async () => ({ ok: false, status: 400, json: async () => ({ error: { details: [{ reason: "API_KEY_INVALID" }] } }) }) }),
-    { code: "auth" },
-  );
-  await assert.rejects(
-    qmmCallGemini({ apiKey: "k", model: "gemini-3.8-flash", messages: [{ role: "user", text: "hi" }], fetchImpl: async () => { throw new TypeError("Failed to fetch"); } }),
-    { code: "network" },
-  );
-});
-
-test("tutor image attachments accept common photo formats up to 15 MB", () => {
-  assert.equal(qmmGeminiImageAccepted({ type: "image/jpeg", size: 15 * 1024 * 1024 }), true);
-  assert.equal(qmmGeminiImageAccepted({ type: "image/png", size: 15 * 1024 * 1024 + 1 }), false);
-  assert.equal(qmmGeminiImageAccepted({ type: "image/gif", size: 10 }), false);
-  assert.equal(qmmGeminiImageAccepted({ type: "image/webp", size: 0 }), false);
-});
-
-test("the patched tutor page no longer depends on the missing /api/gemini server", async () => {
-  const patched = patchBundle(await readBundle());
-  assert.doesNotMatch(patched, /\/api\/gemini/);
-  for (const marker of [
-    "function qmmCallGemini(",
-    "function QmmGeminiConnectPanel(",
-    "generativelanguage.googleapis.com/v1beta/models/",
-    "(0, X.jsx)(QmmGeminiConnectPanel, {",
-    "const qmmGeminiModels=",
-    "messages: history.filter((message) => !nl.some(",
-  ]) {
-    assert.ok(patched.includes(marker), `missing Gemini tutor marker: ${marker}`);
-  }
 });

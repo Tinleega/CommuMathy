@@ -1,0 +1,67 @@
+const project14Video = (chapterTitle, title, videoId, sourceUrl, { embed = true, embedHost = "https://www.youtube-nocookie.com/embed" } = {}) => Object.freeze({
+  chapterTitle,
+  title,
+  videoId,
+  watchUrl: `https://www.youtube.com/watch?v=${videoId}`,
+  embedUrl: embed ? `${embedHost}/${videoId}` : "",
+  sourceUrl,
+});
+
+// One verified Project14 lesson per curriculum chapter. Each sourceUrl is the
+// official IPST lesson page; videoId/watchUrl point to the linked Project14 video.
+export const qmmProject14Videos = Object.freeze({
+  "m1-integers": project14Video("จำนวนเต็ม", "จำนวนเต็ม ตอนที่ 1", "n8UWaASdJ2Q", "https://proj14.ipst.ac.th/m1/m1-math-book1/math-m1b1-001/"),
+  "m1-geometric-construction": project14Video("การสร้างทางเรขาคณิต", "การสร้างเกี่ยวกับส่วนของเส้นตรง", "jXOgL2ni3jg", "https://proj14.ipst.ac.th/m1/m1-math-book1/math-m1b1-017/"),
+  "m1-exponents": project14Video("เลขยกกำลัง", "ความหมายของเลขยกกำลัง ตอนที่ 1", "qX08gbcsjsg", "https://proj14.ipst.ac.th/m1/m1-math-book1/math-m1b1-051/"),
+  "m1-decimals-fractions": project14Video("ทศนิยมและเศษส่วน", "การบวกเศษส่วน", "T7XqRWEoOlo", "https://proj14.ipst.ac.th/m1/m1-math-book1/math-m1b1-042/"),
+  "m1-2d-3d-figures": project14Video("รูปเรขาคณิตสองมิติและสามมิติ", "รูปเรขาคณิตสองมิติและสามมิติ ตอนที่ 1", "qeZO91nF6u8", "https://proj14.ipst.ac.th/m1/m1-math-book1/math-m1b1-035/"),
+  "m1-linear-equation": project14Video("สมการเชิงเส้นตัวแปรเดียว", "การแก้สมการเชิงเส้นตัวแปรเดียว ตอนที่ 1", "X0SSEFANabs", "https://proj14.ipst.ac.th/m1/m1-math-book2/math-m1b2-004/"),
+  "m1-ratio-proportion-percent": project14Video("อัตราส่วน สัดส่วน และร้อยละ", "อัตราส่วน", "zUjZEEyZr80", "https://proj14.ipst.ac.th/m1/m1-math-book2/math-m1b2-005/"),
+  "m1-graphs-linear": project14Video("กราฟและความสัมพันธ์เชิงเส้น", "ความสัมพันธ์เชิงเส้น", "GyJmsnD2qPA", "https://proj14.ipst.ac.th/m1/m1-math-book2/math-m1b2-032/"),
+  "m1-statistics-1": project14Video("สถิติ (1)", "คำถามทางสถิติ", "2RPVmtZ6APs", "https://proj14.ipst.ac.th/m1/m1-math-book2/math-m1b2-012/"),
+
+  "m2-pythagorean": project14Video("ทฤษฎีบทพีทาโกรัส", "ทฤษฎีบทพีทาโกรัส ตอนที่ 1", "-PO_2BtO0Xg", "https://proj14.ipst.ac.th/m2/m2-math-book1/math-m2b1-001/"),
+  "m2-real-numbers-intro": project14Video("ความรู้เบื้องต้นเกี่ยวกับจำนวนจริง", "ความรู้เบื้องต้นเกี่ยวกับจำนวนจริง ตอนที่ 1", "YOJAWKz6U8s", "https://proj14.ipst.ac.th/m2/m2-math-book1/math-m2b1-008/"),
+  "m2-prisms-cylinders": project14Video("ปริซึมและทรงกระบอก", "พื้นที่ผิวและปริมาตรของปริซึม ตอนที่ 1", "CWcJF1rh58Y", "https://proj14.ipst.ac.th/m2/m2-math-book1/math-m2b1-019/", { embed: false }),
+  "m2-transformations": project14Video("การแปลงทางเรขาคณิต", "การแปลงทางเรขาคณิต", "bPyxXEQ7A9M", "https://proj14.ipst.ac.th/m2/m2-math-book1/math-m2b1-027/"),
+  "m2-exponent-properties": project14Video("สมบัติของเลขยกกำลัง", "สมบัติอื่น ๆ ของเลขยกกำลัง ตอนที่ 1", "TQZMry961OU", "https://proj14.ipst.ac.th/m2/m2-math-book1/math-m2b1-043/"),
+  "m2-polynomials": project14Video("พหุนาม", "พหุนามและการบวกพหุนาม", "d_CkbOX_VKg", "https://proj14.ipst.ac.th/m2/m2-math-book1/math-m2b1-049/"),
+  "m2-statistics-2": project14Video("สถิติ (2)", "มัธยฐานและฐานนิยม", "XP-vajBuZ2k", "https://proj14.ipst.ac.th/m2/m2-math-book2/math-m2b2-007/", { embed: false }),
+  "m2-congruence": project14Video("ความเท่ากันทุกประการ", "ความเท่ากันทุกประการของรูปเรขาคณิต", "EY3Ac6Faf-M", "https://proj14.ipst.ac.th/m2/m2-math-book2/math-m2b2-010/"),
+  "m2-parallel-lines": project14Video("เส้นขนาน", "บทนิยามของเส้นขนาน", "qelTda5MGZo", "https://proj14.ipst.ac.th/m2/m2-math-book2/math-m2b2-029/"),
+  "m2-geometric-reasoning": project14Video("การใช้เหตุผลทางเรขาคณิต", "ความรู้พื้นฐานเกี่ยวกับการให้เหตุผลทางเรขาคณิต", "EqSak_CM6mc", "https://proj14.ipst.ac.th/m2/m2-math-book2/math-m2b2-014/"),
+  // Project14's lesson-detail metadata has a chapter-label typo; the official M.2 Book 2 listing places this lesson in Chapter 5, quadratic factorization.
+  "m2-quadratic-factoring": project14Video("การแยกตัวประกอบของพหุนามดีกรีสอง", "การแยกตัวประกอบของพหุนามดีกรีสองตัวแปรเดียว ตอนที่ 1", "qimi6n9QBbI", "https://proj14.ipst.ac.th/m2/m2-math-book2/"),
+
+  "m3-linear-inequality": project14Video("อสมการเชิงเส้นตัวแปรเดียว", "แนะนำอสมการเชิงเส้นตัวแปรเดียว ตอนที่ 1", "HtIEEVt0NY0", "https://proj14.ipst.ac.th/m3/m3-math-book1/math-m3b1-001/", { embed: false }),
+  "m3-higher-degree-factoring": project14Video("การแยกตัวประกอบของพหุนามที่มีดีกรีสูงกว่าสอง", "การแยกตัวประกอบของพหุนามที่มีดีกรีสูงกว่าสอง ตอนที่ 1", "Nv7HHjMaGFs", "https://proj14.ipst.ac.th/m3/m3-math-book1/math-m3b1-013/"),
+  "m3-quadratic-equation": project14Video("สมการกำลังสองตัวแปรเดียว", "แนะนำสมการกำลังสองตัวแปรเดียว", "vxIRgwBHp3Y", "https://proj14.ipst.ac.th/m3/m3-math-book1/math-m3b1-018/"),
+  "m3-similarity": project14Video("ความคล้าย", "รูปเรขาคณิตที่คล้ายกัน", "v-cnr8Tv5Dk", "https://proj14.ipst.ac.th/m3/m3-math-book1/math-m3b1-033/"),
+  "m3-quadratic-graphs": project14Video("กราฟของฟังก์ชันกำลังสอง", "กราฟของฟังก์ชันกำลังสอง ตอนที่ 1", "qIFneopNWag", "https://proj14.ipst.ac.th/m3/m3-math-book1/math-m3b1-044/", { embed: false }),
+  "m3-statistics-3": project14Video("สถิติ (3)", "แผนภาพกล่องกับการกระจายของข้อมูล", "OZ21kS7yaVU", "https://proj14.ipst.ac.th/m3/m3-math-book1/math-m3b1-030/"),
+  "m3-linear-systems": project14Video("ระบบสมการเชิงเส้นสองตัวแปร", "แนะนำระบบสมการเชิงเส้นสองตัวแปร", "-eXNHrJwR-A", "https://proj14.ipst.ac.th/m3/m3-math-book2/math-m3b2-001/"),
+  "m3-circles": project14Video("วงกลม", "ความหมายและส่วนประกอบของวงกลม", "uvuQkHLn208", "https://proj14.ipst.ac.th/m3/m3-math-book2/math-m3b2-007/"),
+  "m3-pyramids-cones-spheres": project14Video("พีระมิด กรวย และทรงกลม", "ปริมาตรและพื้นที่ผิวของพีระมิด ตอนที่ 1", "U3oiOUsMq2o", "https://proj14.ipst.ac.th/m3/m3-math-book2/math-m3b2-035/"),
+  "m3-probability": project14Video("ความน่าจะเป็น", "ความน่าจะเป็น ตอนที่ 2", "2kTcrnNSeHY", "https://proj14.ipst.ac.th/m3/m3-math-book2/math-m3b2-025/"),
+  "m3-trig-ratios": project14Video("อัตราส่วนตรีโกณมิติ", "ความหมายของอัตราส่วนตรีโกณมิติ ตอนที่ 1", "qfBl4MLwebU", "https://proj14.ipst.ac.th/m3/m3-math-book2/math-m3b2-027/"),
+
+  "upper-sets": project14Video("เซต", "เซต ตอน 1", "PD0WduIFTKQ", "https://proj14.ipst.ac.th/m4-6-math-basic/m4-math-basic/math-m4-001/"),
+  "upper-logic": project14Video("ตรรกศาสตร์", "ตรรกศาสตร์ ตอน 1", "TGFM0pV7WTo", "https://proj14.ipst.ac.th/m4-6-math-adv/m4-math-adv-book1/math-m4b1-007/", { embed: false }),
+  "upper-real-numbers": project14Video("จำนวนจริง", "จำนวนจริง ตอน 1", "BOOc0tibz6w", "https://proj14.ipst.ac.th/m4-6-math-adv/m4-math-adv-book1/math-m4b1-024/"),
+  "upper-relations-functions": project14Video("ความสัมพันธ์และฟังก์ชัน", "ความสัมพันธ์และฟังก์ชัน ตอน 1", "d3SKEOWZzSc", "https://proj14.ipst.ac.th/m4-6-math-adv/m4-math-adv-book2/math-m4b2-001/"),
+  "upper-exponential-log": project14Video("ฟังก์ชันเอกซ์โพเนนเชียลและฟังก์ชันลอการิทึม", "ฟังก์ชันเอกซ์โพเนนเชียลและฟังก์ชันลอการิทึม ตอน 9", "u-7_Q9inlUM", "https://proj14.ipst.ac.th/m4-6-math-adv/m4-math-adv-book2/math-m4b2-020/"),
+  "upper-analytic-geometry": project14Video("เรขาคณิตวิเคราะห์", "เรขาคณิตวิเคราะห์ ตอน 1", "Nz1XL17W804", "https://proj14.ipst.ac.th/m4-6-math-adv/m4-math-adv-book2/math-m4b2-024/"),
+  "upper-trig-functions": project14Video("ฟังก์ชันตรีโกณมิติ", "ฟังก์ชันตรีโกณมิติ ตอน 1", "1mwpIsRhe1Y", "https://proj14.ipst.ac.th/m4-6-math-adv/m5-math-adv-book1/math-m5b1-001/"),
+  "upper-matrices": project14Video("เมทริกซ์", "เมทริกซ์ ตอน 1", "eXr01ZtyCXs", "https://proj14.ipst.ac.th/m4-6-math-adv/m5-math-adv-book1/math-m5b1-010/", { embed: false }),
+  "upper-vectors": project14Video("เวกเตอร์", "เวกเตอร์ ตอน 1", "LVJE-Kp5dLA", "https://proj14.ipst.ac.th/m4-6-math-adv/m5-math-adv-book1/math-m5b1-025/"),
+  "upper-complex": project14Video("จำนวนเชิงซ้อน", "จำนวนเชิงซ้อน ตอน 1", "st2LkH_G8r4", "https://proj14.ipst.ac.th/m4-6-math-adv/m5-math-adv-book2/math-m5b2-001/"),
+  "upper-counting": project14Video("หลักการนับเบื้องต้น", "หลักการนับเบื้องต้น ตอน 1", "55esiJvyz8g", "https://proj14.ipst.ac.th/m4-6-math-basic/m4-math-basic/math-m4-016/"),
+  // This is the verified M.4 basic-math series; it is deliberately distinct from the M.3 probability lesson above.
+  "upper-probability": project14Video("ความน่าจะเป็น", "ความน่าจะเป็น ตอน 1", "XdO2m4L-pmg", "https://proj14.ipst.ac.th/m4-6-math-basic/m4-math-basic/math-m4-021/", { embedHost: "https://www.youtube.com/embed" }),
+  "upper-sequences-series": project14Video("ลำดับและอนุกรม", "ลำดับและอนุกรม ตอน 1", "QHnQXy9t_rQ", "https://proj14.ipst.ac.th/m4-6-math-basic/m5-math-basic/math-m5-014/"),
+  "upper-calculus": project14Video("แคลคูลัสเบื้องต้น", "แคลคูลัสเบื้องต้น ตอน 1", "BZvRG7COx9E", "https://proj14.ipst.ac.th/m4-6-math-adv/m6-math-adv-book1/math-m6b1-023/"),
+  "upper-statistics-meaning": project14Video("ความหมายของสถิติศาสตร์และข้อมูล", "ความหมายของสถิติศาสตร์และข้อมูล ตอน 1", "jFEoYMxBJoY", "https://proj14.ipst.ac.th/m4-6-math-basic/m6-math-basic/math-m6-001/"),
+  "upper-qualitative-data": project14Video("การวิเคราะห์และนำเสนอข้อมูลเชิงคุณภาพ", "การวิเคราะห์และนำเสนอข้อมูลเชิงคุณภาพ ตอน 1", "PsEYbGXQgh4", "https://proj14.ipst.ac.th/m4-6-math-adv/m6-math-adv-book2/math-m6b2-005/"),
+  "upper-quantitative-data": project14Video("การวิเคราะห์และนำเสนอข้อมูลเชิงปริมาณ", "การวิเคราะห์และนำเสนอข้อมูลเชิงปริมาณ ตอน 1", "GSwLO1prgak", "https://proj14.ipst.ac.th/m4-6-math-basic/m6-math-basic/math-m6-010/"),
+  "upper-random-variables": project14Video("ตัวแปรสุ่มและการแจกแจงความน่าจะเป็น", "ตัวแปรสุ่มและการแจกแจงความน่าจะเป็น ตอน 1", "-rdqcLZbk34", "https://proj14.ipst.ac.th/m4-6-math-adv/m6-math-adv-book2/math-m6b2-018/"),
+});

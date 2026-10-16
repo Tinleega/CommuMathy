@@ -29,30 +29,3 @@
 .profile-interest-pill{padding:3px 7px;color:#5847a1;background:#f0edff;border:1px solid #e3def8;border-radius:999px;font-size:8px;font-weight:700}
 .profile-interest-add{padding:0;color:#6251aa;background:transparent;border:0;font:inherit;font-size:9px;font-weight:700;cursor:pointer}
 @media(max-width:640px){.profile-photo-editor{align-items:flex-start;flex-direction:column}.profile-photo-controls{flex-wrap:wrap}.math-interest-grid{gap:6px}.math-interest-chip{padding:7px 9px}}
-.gemini-badge-button{font-family:inherit;cursor:pointer}
-.gemini-badge-button:focus-visible,.gemini-connect-link:focus-visible{outline:3px solid #d9d1fb;outline-offset:2px}
-.gemini-connect-card{display:grid;gap:12px;margin-bottom:18px;padding:16px 18px;background:#fff;border:1px solid #e3def8;border-radius:13px;box-shadow:0 10px 24px #4f46e50d}
-.gemini-connect-heading{display:flex;align-items:flex-start;gap:10px}
-.gemini-connect-heading>div:nth-child(2){flex:1;min-width:0}
-.gemini-connect-heading h2{margin:0;color:var(--ink);font-size:13px}
-.gemini-connect-heading p{margin:3px 0 0;color:#8b90a0;font-size:10px;line-height:1.6}
-.gemini-connect-fields{display:grid;grid-template-columns:minmax(0,1fr) 230px;gap:12px}
-.gemini-connect-fields label{color:#6f7487;font-size:10px;font-weight:700}
-.gemini-connect-fields input,.gemini-connect-fields select{display:block;width:100%;margin-top:6px;padding:9px 10px;color:#555b70;background:#fff;border:1px solid #e4e6ee;border-radius:7px;outline:0;font-family:inherit;font-size:10px}
-.gemini-connect-fields input:focus,.gemini-connect-fields select:focus{border-color:#a99bdc;box-shadow:0 0 0 3px #eeebff}
-.gemini-connect-link{justify-self:start;color:#5847a1;font-size:10px;font-weight:700}
-.gemini-connect-status{margin:0;padding:8px 10px;border-radius:7px;font-size:10px;line-height:1.5}
-.gemini-connect-status.checking{color:#5b55be;background:#f1f0ff}
-.gemini-connect-status.error{color:#b42318;background:#fef1f0}
-.gemini-connect-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}
-.gemini-connect-card .privacy-note{margin:0;line-height:1.5}
-.tutor-history-footer .text-button{margin-top:5px;font-size:9px}
-.upload-preview.upload-error{color:#b42318;background:#fef1f0}
-html[data-theme=มืด] .gemini-connect-card{background:#171c29;border-color:#2c3447;box-shadow:none}
-html[data-theme=มืด] .gemini-connect-heading p,html[data-theme=มืด] .gemini-connect-fields label{color:#aeb5c8}
-html[data-theme=มืด] .gemini-connect-fields input,html[data-theme=มืด] .gemini-connect-fields select{color:#eef1fb;background:#1e2535;border-color:#394257}
-html[data-theme=มืด] .gemini-connect-fields input:focus,html[data-theme=มืด] .gemini-connect-fields select:focus{border-color:#8d86ff;box-shadow:0 0 0 3px #292c47}
-html[data-theme=มืด] .gemini-connect-link{color:#aaa5ff}
-html[data-theme=มืด] .gemini-connect-status.checking{color:#c6c8e7;background:#292c47}
-html[data-theme=มืด] .gemini-connect-status.error,html[data-theme=มืด] .upload-preview.upload-error{color:#ffb4ab;background:#3a1f1d}
-@media(max-width:640px){.gemini-connect-card{padding:14px}.gemini-connect-fields{grid-template-columns:1fr}.gemini-connect-actions button{flex:1}}

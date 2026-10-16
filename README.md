@@ -2,6 +2,8 @@
 
 A Thai-language mathematics-learning demo. The committed app is a self-contained compiled frontend bundle; the original React/TypeScript source was not present in the repository history when this repair was made. `scripts/exercise-generators.mjs` defines varied, topic-specific question templates for all 49 curriculum chapters, while `scripts/exercise-diagrams.mjs` draws accessible inline SVG figures for geometry, coordinate, vector and graph questions. `scripts/patch-legacy-bundle.mjs` injects these readable repairs into the legacy bundle.
 
+`scripts/project14-videos.mjs` maps all 49 chapters to official Project14/IPST lesson pages and their associated videos. Chapter pages show a responsive embedded player; exercise setup keeps a direct YouTube link, and the official Project14 source link remains available for every chapter.
+
 ## Local workflow
 
 Requires Node.js 20 or newer.
